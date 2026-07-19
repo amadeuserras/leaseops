@@ -1,0 +1,32 @@
+---
+description: "Backend and Python conventions for LeaseOps"
+globs: ["backend/"]
+alwaysApply: false
+---
+
+# Backend Python Standards
+
+## General
+
+- Comments should be rare and intentional: non-obvious business rules, external constraints, API quirks, or non-intuitive edge cases. Do not default to docstrings.
+
+## Package Init Files
+
+- All `__init__.py` files should be empty by default.
+- Only add re-exports if an import path becomes genuinely painful through repeated use.
+
+## Types and Validation
+
+- Internal code should rely on type hints and Pyright dataclasses.
+- Use Pydantic only at API boundaries: FastAPI request and response models.
+
+## Verification
+
+After backend changes, run from `backend/` when relevant:
+
+```bash
+uv run pytest
+uv run ruff check .
+uv run ruff format .
+uv run pyright
+```

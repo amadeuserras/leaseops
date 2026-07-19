@@ -1,0 +1,8 @@
+# OS
+.DS_Store
+
+# Python
+.venv/
+
+# Local working docs
+SPEC.md

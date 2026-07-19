@@ -1,0 +1,34 @@
+---
+description: "Commit message style for this repo (Conventional Commits)"
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Commit Guide
+
+Only create commits when the user asks.
+
+## Format
+
+Use Conventional Commits:
+
+`<type>(<optional scope>): <short description>`
+
+- Subject line uses imperative mood, lowercase, no trailing period, and 72 characters or fewer.
+- Do not write a commit body unless requested.
+- For breaking changes, add `!` after type/scope (e.g. `feat(api)!: ...`).
+
+## Types
+
+`feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `build`, `ci`
+
+## Scopes
+
+Prefer localized scopes when the change is clearly contained:
+
+`corpus`, `ingest`, `retrieval`, `cli`, `eval`, `api`, `deps`, `ci`
+
+## Examples
+
+- `feat(ingest): chunk leases by section heading`
+- `fix(retrieval): return empty list when index is missing`

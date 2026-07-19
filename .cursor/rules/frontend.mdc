@@ -1,0 +1,55 @@
+---
+description: "Frontend React, Next.js, TypeScript, and Tailwind conventions"
+globs: ["frontend/"]
+alwaysApply: false
+---
+
+# Frontend React Standards
+
+## General
+
+- Keep components thin and logic-free; move logic into custom hooks.
+- Prefer flat file structure — avoid nested component folders unless reuse demands it.
+- Define subcomponents only used by one parent in the same file, above that component.
+- In array method callbacks (`.map`, `.filter`, `.reduce`, etc.), prefer short single-letter params for concise callbacks.
+- Comments should be exceptional and rare, not routine. Write one only when there's a non-obvious reason the reader can't get from the code itself. Never restate what the code already says.
+
+## Next.js
+
+- This is NOT the Next.js you know. This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+- Default to Server Components; use Client Components only at interactive leaves.
+- Use the modern App Router (`app/` directory) for layouts and page structures.
+- Fetch data in Server Components (`async` components, direct `await`) — never in `useEffect`.
+
+## Functions
+
+- Components (pages, layouts, exported React components): function declarations (`export default function Page() {}`).
+- Everything else (hooks, callbacks, helpers): arrow functions.
+
+## Types
+
+- Use `type`, never `interface`.
+- Define prop types immediately above the component that uses them.
+- Import hooks/types from `"react"` by name (`import { useState }`) — no namespace access (`React.useState`).
+
+## Exports
+
+- Next.js special files (`page`, `layout`, `loading`, `error`, `template`, `not-found`): default export (framework requirement).
+- Route handlers (`route.ts`): named exports per HTTP method.
+- Everything else: named exports. Keep internal helpers/subcomponents/types unexported unless reused elsewhere.
+
+## Styling
+
+- Embrace Tailwind's utility-first philosophy. Extend `globals.css` only for styles missing globally, not one-offs.
+- Prefer `flex`/`grid`/`gap`/container padding over per-child spacing.
+- Design-system tokens as CSS custom properties: `--color-bg-main`, `--color-bg-surface`, `--color-text-main`, `--color-text-muted`.
+
+## Verification
+
+After frontend changes, from `frontend/`:
+
+```bash
+npm run lint
+npm run format
+npm run check
+```
