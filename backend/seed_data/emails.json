@@ -1,0 +1,10 @@
+[
+  {
+    "id": "email_001",
+    "sender": "deshawn.johnson@example.com",
+    "subject": "Kitchen sink leaking again",
+    "body": "Hi — the kitchen sink under the cabinet is dripping steadily since yesterday. Unit 5 at 1142 Sunset Ridge Drive. Can someone take a look?",
+    "received_at": "2026-07-18T14:32:00Z",
+    "status": "pending"
+  }
+]
