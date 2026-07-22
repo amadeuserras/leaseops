@@ -11,12 +11,6 @@ mcp = FastMCP("leaseops")
 
 
 @mcp.tool()
-def ping() -> str:
-    """Health check for the LeaseOps MCP server."""
-    return "pong"
-
-
-@mcp.tool()
 async def tenant_lookup(email: str) -> TenantResponse:
     """Resolve a sender email to tenant, unit, and LeaseClear document id."""
     async with SessionLocal() as session:
