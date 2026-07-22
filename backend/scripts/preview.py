@@ -2,50 +2,22 @@ from __future__ import annotations
 
 import asyncio
 import shutil
+from collections.abc import Sequence
 
-import asyncpg
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from leaseops.core.config import settings
+from leaseops.db.base import Base
+from leaseops.db.models import Email, Tenant
 
 MAX_ROWS = 4
 MAX_CELL_WIDTH = 48
 SEPARATOR = " | "
 
-
-def asyncpg_url(database_url: str) -> str:
-    return database_url.replace("postgresql+asyncpg://", "postgresql://", 1)
-
-
-async def list_tables(conn: asyncpg.Connection) -> list[str]:
-    rows = await conn.fetch(
-        """
-        SELECT tablename
-        FROM pg_tables
-        WHERE schemaname = 'public'
-        ORDER BY tablename
-        """
-    )
-    return [row["tablename"] for row in rows]
-
-
-async def list_columns(conn: asyncpg.Connection, table: str) -> list[tuple[str, str]]:
-    rows = await conn.fetch(
-        """
-        SELECT
-            a.attname AS column_name,
-            pg_catalog.format_type(a.atttypid, a.atttypmod) AS data_type
-        FROM pg_catalog.pg_attribute a
-        JOIN pg_catalog.pg_class c ON a.attrelid = c.oid
-        JOIN pg_catalog.pg_namespace n ON c.relnamespace = n.oid
-        WHERE n.nspname = 'public'
-          AND c.relname = $1
-          AND a.attnum > 0
-          AND NOT a.attisdropped
-        ORDER BY a.attnum
-        """,
-        table,
-    )
-    return [(row["column_name"], row["data_type"]) for row in rows]
+MODELS: Sequence[type[Base]] = tuple(
+    sorted((Email, Tenant), key=lambda model: model.__tablename__)
+)
 
 
 def format_cell(value: object) -> str:
@@ -60,7 +32,7 @@ def format_cell(value: object) -> str:
 def print_table(
     table: str,
     columns: list[tuple[str, str]],
-    rows: list[asyncpg.Record],
+    rows: Sequence[object],
     total_rows: int,
 ) -> None:
     headers = [f"{name} ({dtype})" for name, dtype in columns]
@@ -73,7 +45,9 @@ def print_table(
         print("  (no rows)")
         return
 
-    rendered = [[format_cell(row[name]) for name in column_names] for row in rows]
+    rendered = [
+        [format_cell(getattr(row, name)) for name in column_names] for row in rows
+    ]
     widths = [
         min(
             max(len(headers[i]), *(len(r[i]) for r in rendered)),
@@ -86,7 +60,7 @@ def print_table(
         for i, row in enumerate(rows, start=1):
             print(f"\n--- row {i} ---")
             for header, name in zip(headers, column_names, strict=True):
-                print(f"{header}: {format_cell(row[name])}")
+                print(f"{header}: {format_cell(getattr(row, name))}")
         return
 
     print(SEPARATOR.join(h.ljust(w) for h, w in zip(headers, widths, strict=True)))
@@ -97,21 +71,25 @@ def print_table(
         )
 
 
-async def main() -> None:
-    conn = await asyncpg.connect(asyncpg_url(settings.database_url))
-    try:
-        tables = await list_tables(conn)
-        if not tables:
-            print("No tables in public schema.")
-            return
+async def preview_model(session: AsyncSession, model: type[Base]) -> None:
+    columns = [(column.name, str(column.type)) for column in model.__table__.columns]
+    total_rows = await session.scalar(select(func.count()).select_from(model)) or 0
+    rows = list((await session.scalars(select(model).limit(MAX_ROWS))).all())
+    print_table(model.__tablename__, columns, rows, total_rows)
 
-        for table in tables:
-            columns = await list_columns(conn, table)
-            total_rows = await conn.fetchval(f'SELECT COUNT(*) FROM "{table}"')
-            rows = await conn.fetch(f'SELECT * FROM "{table}" LIMIT {MAX_ROWS}')
-            print_table(table, columns, rows, total_rows)
+
+async def main() -> None:
+    engine = create_async_engine(settings.database_url)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
+    try:
+        async with session_factory() as session:
+            if not MODELS:
+                print("No mapped models.")
+                return
+            for model in MODELS:
+                await preview_model(session, model)
     finally:
-        await conn.close()
+        await engine.dispose()
 
 
 if __name__ == "__main__":
