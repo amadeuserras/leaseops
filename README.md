@@ -26,6 +26,17 @@ From `backend/`, run the MCP server with the Inspector (opens in the browser):
 uv run mcp dev src/leaseops/mcp/server.py
 ```
 
+## MCP smoke test
+
+Calls every tool through a bare MCP stdio client (Postgres must be seeded):
+
+```bash
+cd backend
+uv run python scripts/smoke_mcp.py
+# if LeaseClear is not up on LEASECLEAR_BASE_URL:
+uv run python scripts/smoke_mcp.py --skip-lease-qa
+```
+
 ## Tests
 
 ```bash
