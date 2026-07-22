@@ -30,7 +30,8 @@ def _tenant_from_row(row: dict[str, object]) -> Tenant:
         email=str(row["email"]),
         name=str(row["name"]),
         document_id=UUID(str(row["document_id"])),
-        property_address=str(row["property_address"]),
+        address=str(row["address"]),
+        unit=str(row["unit"]) if row.get("unit") is not None else None,
     )
 
 

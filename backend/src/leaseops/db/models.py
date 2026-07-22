@@ -20,7 +20,8 @@ class Tenant(Base):
     email: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
     name: Mapped[str] = mapped_column(Text, nullable=False)
     document_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
-    property_address: Mapped[str] = mapped_column(Text, nullable=False)
+    address: Mapped[str] = mapped_column(Text, nullable=False)
+    unit: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
 class Email(Base):
