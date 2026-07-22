@@ -18,6 +18,14 @@ cd ..
 Frontend: http://localhost:3000  
 API: http://localhost:8000
 
+## MCP Inspector
+
+From `backend/`, run the MCP server with the Inspector (opens in the browser):
+
+```bash
+uv run mcp dev src/leaseops/mcp/server.py
+```
+
 ## Tests
 
 ```bash
