@@ -10,7 +10,7 @@ from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from leaseops.core.config import settings
-from leaseops.db.models import Email, Tenant
+from leaseops.db.models import AuditLog, Email, Outbox, Run, Step, Tenant, WorkOrder
 from leaseops.models.schemas import EmailStatus
 
 SEED_DIR = Path(__file__).resolve().parent.parent / "seed_data"
@@ -45,12 +45,21 @@ def _email_from_row(row: dict[str, object]) -> Email:
     )
 
 
+async def _clear_tables(session: AsyncSession) -> None:
+    await session.execute(delete(AuditLog))
+    await session.execute(delete(Step))
+    await session.execute(delete(Run))
+    await session.execute(delete(Outbox))
+    await session.execute(delete(WorkOrder))
+    await session.execute(delete(Email))
+    await session.execute(delete(Tenant))
+
+
 async def seed(session: AsyncSession) -> tuple[int, int]:
     tenants = [_tenant_from_row(row) for row in load_json("tenants.json")]
     emails = [_email_from_row(row) for row in load_json("emails.json")]
 
-    await session.execute(delete(Email))
-    await session.execute(delete(Tenant))
+    await _clear_tables(session)
     session.add_all(tenants)
     session.add_all(emails)
     await session.commit()
