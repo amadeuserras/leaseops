@@ -1,11 +1,21 @@
 from __future__ import annotations
 
+from uuid import UUID
+
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 
 from leaseops.db import tenants as tenants_repo
+from leaseops.db import work_orders as work_orders_repo
 from leaseops.db.session import SessionLocal
-from leaseops.models.schemas import TenantResponse
+from leaseops.models.schemas import (
+    TenantResponse,
+    WorkOrderCreate,
+    WorkOrderListResponse,
+    WorkOrderResponse,
+    WorkOrderStatus,
+    WorkOrderUpdate,
+)
 
 mcp = FastMCP("leaseops")
 
@@ -18,6 +28,77 @@ async def tenant_lookup(email: str) -> TenantResponse:
     if tenant is None:
         raise ToolError(f"tenant not found for email: {email.strip().lower()}")
     return TenantResponse.model_validate(tenant)
+
+
+@mcp.tool()
+async def work_order_create(
+    tenant_id: UUID,
+    unit: str,
+    issue: str,
+    status: WorkOrderStatus = WorkOrderStatus.OPEN,
+) -> WorkOrderResponse:
+    """Create a maintenance work order for a tenant."""
+    async with SessionLocal() as session:
+        tenant = await tenants_repo.get_tenant_by_id(session, tenant_id)
+        if tenant is None:
+            raise ToolError(f"tenant not found for id: {tenant_id}")
+        work_order = await work_orders_repo.create_work_order(
+            session,
+            WorkOrderCreate(
+                tenant_id=tenant_id,
+                unit=unit,
+                issue=issue,
+                status=status,
+            ),
+        )
+    return WorkOrderResponse.model_validate(work_order)
+
+
+@mcp.tool()
+async def work_order_get(work_order_id: UUID) -> WorkOrderResponse:
+    """Fetch a work order by id."""
+    async with SessionLocal() as session:
+        work_order = await work_orders_repo.get_work_order(session, work_order_id)
+    if work_order is None:
+        raise ToolError(f"work order not found for id: {work_order_id}")
+    return WorkOrderResponse.model_validate(work_order)
+
+
+@mcp.tool()
+async def work_order_list(
+    status: WorkOrderStatus | None = None,
+) -> WorkOrderListResponse:
+    """List work orders, optionally filtered by status."""
+    async with SessionLocal() as session:
+        items = await work_orders_repo.list_work_orders(session, status=status)
+    return WorkOrderListResponse(
+        items=[WorkOrderResponse.model_validate(item) for item in items]
+    )
+
+
+@mcp.tool()
+async def work_order_update(
+    work_order_id: UUID,
+    unit: str | None = None,
+    issue: str | None = None,
+    status: WorkOrderStatus | None = None,
+) -> WorkOrderResponse:
+    """Update fields on an existing work order."""
+    changes = {
+        key: value
+        for key, value in (("unit", unit), ("issue", issue), ("status", status))
+        if value is not None
+    }
+    if not changes:
+        raise ToolError("work_order_update requires at least one field to change")
+    payload = WorkOrderUpdate.model_validate(changes)
+
+    async with SessionLocal() as session:
+        work_order = await work_orders_repo.get_work_order(session, work_order_id)
+        if work_order is None:
+            raise ToolError(f"work order not found for id: {work_order_id}")
+        updated = await work_orders_repo.update_work_order(session, work_order, payload)
+    return WorkOrderResponse.model_validate(updated)
 
 
 if __name__ == "__main__":
