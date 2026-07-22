@@ -9,14 +9,17 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from leaseops.core.config import settings
 from leaseops.db.base import Base
-from leaseops.db.models import Email, Tenant
+from leaseops.db.models import AuditLog, Email, Outbox, Run, Step, Tenant, WorkOrder
 
 MAX_ROWS = 4
 MAX_CELL_WIDTH = 48
 SEPARATOR = " | "
 
 MODELS: Sequence[type[Base]] = tuple(
-    sorted((Email, Tenant), key=lambda model: model.__tablename__)
+    sorted(
+        (AuditLog, Email, Outbox, Run, Step, Tenant, WorkOrder),
+        key=lambda model: model.__tablename__,
+    )
 )
 
 

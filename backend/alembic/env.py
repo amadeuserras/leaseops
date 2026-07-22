@@ -9,7 +9,15 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 from leaseops.core.config import settings
 from leaseops.db.base import Base
-from leaseops.db.models import Email, Tenant  # noqa: F401
+from leaseops.db.models import (  # noqa: F401
+    AuditLog,
+    Email,
+    Outbox,
+    Run,
+    Step,
+    Tenant,
+    WorkOrder,
+)
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.database_url)
