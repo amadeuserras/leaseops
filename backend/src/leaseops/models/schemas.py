@@ -65,3 +65,12 @@ class WorkOrderResponse(LeaseOpsModel):
 
 class WorkOrderListResponse(LeaseOpsModel):
     items: list[WorkOrderResponse]
+
+
+class TenantResponse(LeaseOpsModel):
+    id: UUID
+    email: str
+    name: str
+    document_id: UUID
+    address: str
+    unit: str | None
