@@ -5,10 +5,14 @@ from uuid import UUID
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 
+from leaseops.db import emails as emails_repo
+from leaseops.db import outbox as outbox_repo
 from leaseops.db import tenants as tenants_repo
 from leaseops.db import work_orders as work_orders_repo
 from leaseops.db.session import SessionLocal
 from leaseops.models.schemas import (
+    OutboxCreate,
+    OutboxResponse,
     TenantResponse,
     WorkOrderCreate,
     WorkOrderListResponse,
@@ -99,6 +103,24 @@ async def work_order_update(
             raise ToolError(f"work order not found for id: {work_order_id}")
         updated = await work_orders_repo.update_work_order(session, work_order, payload)
     return WorkOrderResponse.model_validate(updated)
+
+
+@mcp.tool()
+async def send_reply(email_id: UUID, draft_text: str) -> OutboxResponse:
+    """Write a reply draft to the outbox (never sends real email)."""
+    text = draft_text.strip()
+    if not text:
+        raise ToolError("draft_text must not be empty")
+
+    async with SessionLocal() as session:
+        email = await emails_repo.get_email_by_id(session, email_id)
+        if email is None:
+            raise ToolError(f"email not found for id: {email_id}")
+        entry = await outbox_repo.create_outbox_entry(
+            session,
+            OutboxCreate(email_id=email_id, draft_text=text),
+        )
+    return OutboxResponse.model_validate(entry)
 
 
 if __name__ == "__main__":

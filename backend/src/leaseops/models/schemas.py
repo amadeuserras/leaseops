@@ -74,3 +74,17 @@ class TenantResponse(LeaseOpsModel):
     document_id: UUID
     address: str
     unit: str | None
+
+
+class OutboxCreate(LeaseOpsModel):
+    email_id: UUID
+    draft_text: str
+    status: OutboxStatus = OutboxStatus.DRAFT
+
+
+class OutboxResponse(LeaseOpsModel):
+    id: UUID
+    email_id: UUID
+    draft_text: str
+    status: OutboxStatus
+    created_at: datetime
