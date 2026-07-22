@@ -2,15 +2,19 @@ from __future__ import annotations
 
 from uuid import UUID
 
+import httpx
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 
+from leaseops.clients import leaseclear
+from leaseops.clients.leaseclear import LeaseClearError
 from leaseops.db import emails as emails_repo
 from leaseops.db import outbox as outbox_repo
 from leaseops.db import tenants as tenants_repo
 from leaseops.db import work_orders as work_orders_repo
 from leaseops.db.session import SessionLocal
 from leaseops.models.schemas import (
+    LeaseQAResponse,
     OutboxCreate,
     OutboxResponse,
     TenantResponse,
@@ -121,6 +125,20 @@ async def send_reply(email_id: UUID, draft_text: str) -> OutboxResponse:
             OutboxCreate(email_id=email_id, draft_text=text),
         )
     return OutboxResponse.model_validate(entry)
+
+
+@mcp.tool()
+async def lease_qa(question: str, document_id: UUID) -> LeaseQAResponse:
+    """Ask LeaseClear a lease question for a document."""
+    text = question.strip()
+    if not text:
+        raise ToolError("question must not be empty")
+    try:
+        return await leaseclear.ask(text, document_id)
+    except LeaseClearError as exc:
+        raise ToolError(str(exc)) from exc
+    except httpx.RequestError as exc:
+        raise ToolError(f"LeaseClear unreachable: {exc}") from exc
 
 
 if __name__ == "__main__":

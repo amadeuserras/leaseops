@@ -88,3 +88,7 @@ class OutboxResponse(LeaseOpsModel):
     draft_text: str
     status: OutboxStatus
     created_at: datetime
+
+
+class LeaseQAResponse(LeaseOpsModel):
+    answer: str
