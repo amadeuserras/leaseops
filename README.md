@@ -21,8 +21,8 @@ API: http://localhost:8000
 ## Tests
 
 ```bash
+docker compose up -d
 cd backend
-docker compose -f ../docker-compose.yml up -d
 uv sync
 uv run pytest
 ```
