@@ -27,6 +27,18 @@ uv sync
 uv run pytest
 ```
 
+## Database migrations (Alembic)
+
+Postgres must be running (`docker compose up -d` or `./dev.sh`). From `backend/`:
+
+1. Edit the SQLAlchemy model in `src/leaseops/db/models.py` (new table = new class; also import it in `alembic/env.py`).
+2. Generate a migration: `uv run alembic revision --autogenerate -m "short description"`
+3. Review the file under `alembic/versions/` (autogenerate is a draft — fix it if needed).
+4. Apply: `uv run alembic upgrade head`
+5. Check: `uv run python scripts/preview.py`
+
+Useful: `uv run alembic current` · `uv run alembic history` · `uv run alembic downgrade -1`
+
 ## Repo layout
 
 ```
