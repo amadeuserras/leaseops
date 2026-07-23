@@ -51,6 +51,11 @@ class Status(StrEnum):
     DONE = "done"
 
 
+class QAResultSchema(LeaseOpsModel):
+    question: str
+    answer: str
+
+
 class AgentState(LeaseOpsModel):
     # ingest
     email_id: UUID
@@ -68,12 +73,13 @@ class AgentState(LeaseOpsModel):
     issue_category: IssueCategory | None = None
     urgency: Urgency | None = None
     appliance_or_system: str | None = None
+    issue_summary: str | None = None
     document_id: UUID | None = None
 
     # lease_check
     responsibility: Responsibility | None = None
-    question_asked: str | None = None
-    answer: str | None = None
+    qa_results: list[QAResultSchema] = []
+    lease_addresses_issue: bool
 
     # decide
     action_type: ActionType | None = None

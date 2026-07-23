@@ -23,6 +23,11 @@ Fill these fields from the subject and body only:
 - urgency: low | medium | high | emergency
 - appliance_or_system: the specific appliance or system named (e.g. "dishwasher",
   "furnace", "front door lock"); otherwise null
+- issue_summary: a neutral factual restatement of the reported problem,
+  including, if stated: what is affected, duration, suspected cause, and any
+  circumstances bearing on responsibility (damage, misuse, prior repairs,
+  previous reports of the same issue). Do not include the tenant's wording,
+  emotions, or accusations.
 
 Rules:
 - Do not invent details that are not in the email.
@@ -39,6 +44,7 @@ class _Extraction(BaseModel):
     issue_category: IssueCategory
     urgency: Urgency
     appliance_or_system: str | None = None
+    issue_summary: str
 
 
 def _content_message(state: AgentState) -> str:
@@ -68,6 +74,7 @@ async def _extract_fields(
         "issue_category": result.issue_category,
         "urgency": result.urgency,
         "appliance_or_system": result.appliance_or_system,
+        "issue_summary": result.issue_summary,
     }
 
 
