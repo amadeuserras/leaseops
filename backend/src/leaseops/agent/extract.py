@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+from uuid import UUID
+
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 
 from leaseops.agent.state import AgentState, IssueCategory, Urgency
 from leaseops.core.config import settings
+from leaseops.db import tenants as tenants_repo
+from leaseops.db.session import SessionLocal
 
 _SYSTEM_PROMPT = """\
 You extract structured fields from a residential property-manager email.
@@ -41,7 +45,9 @@ def _content_message(state: AgentState) -> str:
     return f"Subject: {state.subject}\n\nBody:\n{state.body}"
 
 
-async def extract(state: AgentState) -> dict[str, str | IssueCategory | Urgency | None]:
+async def _extract_fields(
+    state: AgentState,
+) -> dict[str, str | IssueCategory | Urgency | None]:
     client = AsyncOpenAI(api_key=settings.openai_api_key)
     completion = await client.chat.completions.parse(
         model="gpt-4o-mini",
@@ -63,3 +69,16 @@ async def extract(state: AgentState) -> dict[str, str | IssueCategory | Urgency 
         "urgency": result.urgency,
         "appliance_or_system": result.appliance_or_system,
     }
+
+
+async def _resolve_document_id(state: AgentState) -> UUID | None:
+    async with SessionLocal() as session:
+        return await tenants_repo.get_document_id_by_email(session, state.sender)
+
+
+async def extract(
+    state: AgentState,
+) -> dict[str, str | UUID | IssueCategory | Urgency | None]:
+    fields = await _extract_fields(state)
+    document_id = await _resolve_document_id(state)
+    return {**fields, "document_id": document_id}

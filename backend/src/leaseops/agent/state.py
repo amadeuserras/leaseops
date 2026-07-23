@@ -68,6 +68,7 @@ class AgentState(LeaseOpsModel):
     issue_category: IssueCategory | None = None
     urgency: Urgency | None = None
     appliance_or_system: str | None = None
+    document_id: UUID | None = None
 
     # lease_check
     responsibility: Responsibility | None = None

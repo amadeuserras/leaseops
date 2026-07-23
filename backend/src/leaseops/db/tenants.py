@@ -14,5 +14,11 @@ async def get_tenant_by_email(session: AsyncSession, email: str) -> Tenant | Non
     return await session.scalar(stmt)
 
 
+async def get_document_id_by_email(session: AsyncSession, email: str) -> UUID | None:
+    normalized = email.strip().lower()
+    stmt = select(Tenant.document_id).where(Tenant.email == normalized)
+    return await session.scalar(stmt)
+
+
 async def get_tenant_by_id(session: AsyncSession, tenant_id: UUID) -> Tenant | None:
     return await session.get(Tenant, tenant_id)
