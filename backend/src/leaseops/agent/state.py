@@ -64,6 +64,7 @@ class AgentState(LeaseOpsModel):
     # extract
     tenant_name: str | None = None
     unit: str | None = None
+    address: str | None = None
     issue_category: IssueCategory | None = None
     urgency: Urgency | None = None
     appliance_or_system: str | None = None
