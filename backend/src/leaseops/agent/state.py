@@ -78,8 +78,8 @@ class AgentState(LeaseOpsModel):
 
     # lease_check
     responsibility: Responsibility | None = None
-    qa_results: list[QAResultSchema] = []
     lease_addresses_issue: bool
+    qa_results: list[QAResultSchema] = []
 
     # decide
     action_type: ActionType | None = None
