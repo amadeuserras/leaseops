@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import json
+from dataclasses import asdict
 from uuid import UUID, uuid4
 
 from leaseops.agent.lease_check import lease_check
@@ -37,7 +39,9 @@ MOCK_STATE = AgentState(
 
 async def main() -> None:
     result = await lease_check(MOCK_STATE)
-    print(result.model_dump_json(indent=2))
+    payload = asdict(result)
+    payload["qa_results"] = [qa.model_dump() for qa in result.qa_results]
+    print(json.dumps(payload, indent=2, default=str))
 
 
 if __name__ == "__main__":

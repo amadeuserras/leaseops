@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from uuid import UUID
 
 from openai import AsyncOpenAI
@@ -37,7 +38,7 @@ Rules:
 """
 
 
-class _Extraction(BaseModel):
+class _ExtractFormat(BaseModel):
     tenant_name: str | None = None
     unit: str | None = None
     address: str | None = None
@@ -47,13 +48,23 @@ class _Extraction(BaseModel):
     issue_summary: str
 
 
+@dataclass(frozen=True)
+class _ExtractResult:
+    tenant_name: str | None
+    unit: str | None
+    address: str | None
+    issue_category: IssueCategory
+    urgency: Urgency
+    appliance_or_system: str | None
+    issue_summary: str
+    document_id: UUID | None
+
+
 def _content_message(state: AgentState) -> str:
     return f"Subject: {state.subject}\n\nBody:\n{state.body}"
 
 
-async def _extract_fields(
-    state: AgentState,
-) -> dict[str, str | IssueCategory | Urgency | None]:
+async def _extract_fields(state: AgentState) -> _ExtractFormat:
     client = AsyncOpenAI(api_key=settings.openai_api_key)
     completion = await client.chat.completions.parse(
         model="gpt-4o-mini",
@@ -62,20 +73,12 @@ async def _extract_fields(
             {"role": "system", "content": _SYSTEM_PROMPT},
             {"role": "user", "content": _content_message(state)},
         ],
-        response_format=_Extraction,
+        response_format=_ExtractFormat,
     )
     result = completion.choices[0].message.parsed
     if result is None:
         raise RuntimeError("extract: model returned no parsed output")
-    return {
-        "tenant_name": result.tenant_name,
-        "unit": result.unit,
-        "address": result.address,
-        "issue_category": result.issue_category,
-        "urgency": result.urgency,
-        "appliance_or_system": result.appliance_or_system,
-        "issue_summary": result.issue_summary,
-    }
+    return result
 
 
 async def _resolve_document_id(state: AgentState) -> UUID | None:
@@ -83,9 +86,16 @@ async def _resolve_document_id(state: AgentState) -> UUID | None:
         return await tenants_repo.get_document_id_by_email(session, state.sender)
 
 
-async def extract(
-    state: AgentState,
-) -> dict[str, str | UUID | IssueCategory | Urgency | None]:
+async def extract(state: AgentState) -> _ExtractResult:
     fields = await _extract_fields(state)
     document_id = await _resolve_document_id(state)
-    return {**fields, "document_id": document_id}
+    return _ExtractResult(
+        tenant_name=fields.tenant_name,
+        unit=fields.unit,
+        address=fields.address,
+        issue_category=fields.issue_category,
+        urgency=fields.urgency,
+        appliance_or_system=fields.appliance_or_system,
+        issue_summary=fields.issue_summary,
+        document_id=document_id,
+    )

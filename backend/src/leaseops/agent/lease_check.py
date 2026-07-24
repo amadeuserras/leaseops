@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
 from typing import cast
 
 from anthropic import AsyncAnthropic, transform_schema
@@ -63,17 +64,26 @@ have → lease_addresses_issue: true, responsibility: unclear
 """
 
 
-class _Verdict(BaseModel):
+class _LeaseQaFormat(BaseModel):
+    question: str = Field(
+        description="A single neutral question about lease terms.",
+    )
+
+
+class _SubmitVerdictFormat(BaseModel):
     lease_addresses_issue: bool = Field(
-        description="True if the lease speaks to this issue at all."
+        description="True if the lease speaks to this issue at all.",
     )
     responsibility: Responsibility = Field(
-        description="Who the lease assigns responsibility to."
+        description="Who the lease assigns responsibility to.",
     )
 
 
-class _LeaseCheckResult(_Verdict):
-    qa_results: list[QAResultSchema] = []
+@dataclass(frozen=True)
+class _LeaseCheckResult:
+    lease_addresses_issue: bool
+    responsibility: Responsibility
+    qa_results: list[QAResultSchema]
 
 
 LEASE_QA_TOOL: ToolParam = {
@@ -84,24 +94,14 @@ LEASE_QA_TOOL: ToolParam = {
         "does not address the question."
     ),
     "strict": True,
-    "input_schema": {
-        "type": "object",
-        "properties": {
-            "question": {
-                "type": "string",
-                "description": "A single neutral question about lease terms.",
-            }
-        },
-        "required": ["question"],
-        "additionalProperties": False,
-    },
+    "input_schema": transform_schema(_LeaseQaFormat.model_json_schema()),
 }
 
 SUBMIT_VERDICT_TOOL: ToolParam = {
     "name": "submit_verdict",
     "description": "Record the final determination and end the analysis.",
     "strict": True,
-    "input_schema": transform_schema(_Verdict.model_json_schema()),
+    "input_schema": transform_schema(_SubmitVerdictFormat.model_json_schema()),
 }
 
 
@@ -131,6 +131,7 @@ async def lease_check(state: AgentState) -> _LeaseCheckResult:
         return _LeaseCheckResult(
             responsibility=Responsibility.UNCLEAR,
             lease_addresses_issue=False,
+            qa_results=[],
         )
 
     system_prompt = _LEASE_CHECK_SYSTEM.format(max_calls=_MAX_QA_CALLS)
