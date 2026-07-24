@@ -9,6 +9,7 @@ alwaysApply: false
 ## General
 
 - Comments should be rare and intentional: non-obvious business rules, external constraints, API quirks, or non-intuitive edge cases. Do not default to docstrings.
+- Don't defend against inputs you control: skip null checks, type coercion, and try/excepts for data whose shape is already guaranteed by your own types or API boundary.
 
 ## Package Init Files
 
