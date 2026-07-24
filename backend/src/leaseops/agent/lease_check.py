@@ -1,20 +1,23 @@
 from __future__ import annotations
 
 import json
+from typing import cast
 
-from anthropic import AsyncAnthropic
+from anthropic import AsyncAnthropic, transform_schema
 from anthropic.types import (
     Message,
     MessageParam,
     ToolChoiceParam,
     ToolParam,
+    ToolResultBlockParam,
     ToolUseBlock,
 )
 from pydantic import BaseModel, Field
 
 from leaseops.agent.state import AgentState, QAResultSchema, Responsibility
 from leaseops.core.config import settings
-from leaseops.mcp.client import call_tool, mcp_session
+from leaseops.mcp.client import McpToolError, call_tool, mcp_session
+from leaseops.models.schemas import LeaseQAResponse
 
 _ACTOR_MODEL = "claude-sonnet-4-5"
 _MAX_QA_CALLS = 3
@@ -59,6 +62,20 @@ stretch a tangentially related clause to force an answer.
 have → lease_addresses_issue: true, responsibility: unclear
 """
 
+
+class _Verdict(BaseModel):
+    lease_addresses_issue: bool = Field(
+        description="True if the lease speaks to this issue at all."
+    )
+    responsibility: Responsibility = Field(
+        description="Who the lease assigns responsibility to."
+    )
+
+
+class _LeaseCheckResult(_Verdict):
+    qa_results: list[QAResultSchema] = []
+
+
 LEASE_QA_TOOL: ToolParam = {
     "name": "lease_qa",
     "description": (
@@ -66,6 +83,7 @@ LEASE_QA_TOOL: ToolParam = {
         "Returns an answer grounded in the lease, or states that the lease "
         "does not address the question."
     ),
+    "strict": True,
     "input_schema": {
         "type": "object",
         "properties": {
@@ -75,23 +93,15 @@ LEASE_QA_TOOL: ToolParam = {
             }
         },
         "required": ["question"],
+        "additionalProperties": False,
     },
 }
-
-
-class Verdict(BaseModel):
-    lease_addresses_issue: bool = Field(
-        description="True if the lease speaks to this issue at all."
-    )
-    responsibility: Responsibility = Field(
-        description="Who the lease assigns responsibility to."
-    )
-
 
 SUBMIT_VERDICT_TOOL: ToolParam = {
     "name": "submit_verdict",
     "description": "Record the final determination and end the analysis.",
-    "input_schema": Verdict.model_json_schema(),
+    "strict": True,
+    "input_schema": transform_schema(_Verdict.model_json_schema()),
 }
 
 
@@ -116,23 +126,12 @@ def _find_tool_use(response: Message, name: str) -> ToolUseBlock | None:
     return None
 
 
-def _result(
-    responsibility: Responsibility,
-    lease_addresses_issue: bool,
-    qa_results: list[QAResultSchema],
-) -> dict[str, Responsibility | bool | list[QAResultSchema]]:
-    return {
-        "responsibility": responsibility,
-        "lease_addresses_issue": lease_addresses_issue,
-        "qa_results": qa_results,
-    }
-
-
-async def lease_check(
-    state: AgentState,
-) -> dict[str, Responsibility | bool | list[QAResultSchema]]:
+async def lease_check(state: AgentState) -> _LeaseCheckResult:
     if state.document_id is None:
-        return _result(Responsibility.UNCLEAR, False, [])
+        return _LeaseCheckResult(
+            responsibility=Responsibility.UNCLEAR,
+            lease_addresses_issue=False,
+        )
 
     system_prompt = _LEASE_CHECK_SYSTEM.format(max_calls=_MAX_QA_CALLS)
     messages: list[MessageParam] = [{"role": "user", "content": _task_message(state)}]
@@ -161,32 +160,41 @@ async def lease_check(
 
             verdict_use = _find_tool_use(response, "submit_verdict")
             if verdict_use is not None:
-                verdict = Verdict.model_validate(verdict_use.input)
-                return _result(
-                    verdict.responsibility, verdict.lease_addresses_issue, qa_results
+                return _LeaseCheckResult(
+                    responsibility=Responsibility(verdict_use.input["responsibility"]),
+                    lease_addresses_issue=bool(
+                        verdict_use.input["lease_addresses_issue"]
+                    ),
+                    qa_results=qa_results,
                 )
 
             qa_use = _find_tool_use(response, "lease_qa")
             if qa_use is None:
-                return _result(Responsibility.UNCLEAR, False, qa_results)
+                return _LeaseCheckResult(
+                    responsibility=Responsibility.UNCLEAR,
+                    lease_addresses_issue=False,
+                    qa_results=qa_results,
+                )
 
-            question = str(qa_use.input.get("question", "")).strip()
-            qa_result = await call_tool(
-                session,
-                "lease_qa",
-                {"question": question, "document_id": str(state.document_id)},
-            )
-            answer = str(qa_result.get("answer", "")).strip()
+            question = cast(str, qa_use.input["question"])
+            try:
+                qa_result = await call_tool(
+                    session,
+                    "lease_qa",
+                    {"question": question, "document_id": str(state.document_id)},
+                )
+                answer = LeaseQAResponse.model_validate(qa_result).answer
+                is_error = False
+            except McpToolError as exc:
+                answer = str(exc)
+                is_error = True
+
             qa_results.append(QAResultSchema(question=question, answer=answer))
-            messages.append(
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "tool_result",
-                            "tool_use_id": qa_use.id,
-                            "content": answer or "(no answer returned)",
-                        }
-                    ],
-                }
-            )
+            tool_result: ToolResultBlockParam = {
+                "type": "tool_result",
+                "tool_use_id": qa_use.id,
+                "content": answer,
+            }
+            if is_error:
+                tool_result["is_error"] = True
+            messages.append({"role": "user", "content": [tool_result]})
