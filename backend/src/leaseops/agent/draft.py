@@ -32,8 +32,8 @@ what you are doing.
     scheduled.
   - send_reply: answer the question or explain tenant responsibility,
     citing the lease when available. Do not promise a work order.
-  - escalate / no_action: brief holding reply — someone will follow up;
-    do not invent next steps or lease conclusions.
+  - no_action: brief holding reply — someone will follow up; do not invent
+    next steps or lease conclusions.
 - Do not mention internal systems, agents, confidence, or escalation
   machinery.
 """

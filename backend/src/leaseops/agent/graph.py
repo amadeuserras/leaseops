@@ -16,7 +16,8 @@ from leaseops.agent.extract import extract
 from leaseops.agent.lease_check import lease_check
 from leaseops.agent.state import ActionType, AgentState, EmailCategory, Status
 
-_Route = Literal["extract", "escalate"]
+_AfterClassify = Literal["extract", "escalate"]
+_AfterDecide = Literal["draft", "end"]
 
 
 async def _classify_node(state: AgentState) -> dict[str, Any]:
@@ -48,10 +49,16 @@ def _escalate_node(state: AgentState) -> dict[str, Any]:
     }
 
 
-def _after_classify(state: AgentState) -> _Route:
+def _after_classify(state: AgentState) -> _AfterClassify:
     if state.category == EmailCategory.EMERGENCY:
         return "escalate"
     return "extract"
+
+
+def _after_decide(state: AgentState) -> _AfterDecide:
+    if state.action_type == ActionType.ESCALATE:
+        return "end"
+    return "draft"
 
 
 def build_graph() -> Any:
@@ -71,7 +78,11 @@ def build_graph() -> Any:
     )
     graph.add_edge("extract", "lease_check")
     graph.add_edge("lease_check", "decide")
-    graph.add_edge("decide", "draft")
+    graph.add_conditional_edges(
+        "decide",
+        _after_decide,
+        {"draft": "draft", "end": END},
+    )
     graph.add_edge("draft", END)
     graph.add_edge("escalate", END)
     return graph.compile()
