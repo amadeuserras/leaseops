@@ -13,7 +13,7 @@ class _DecideResult:
     status: Status
 
 
-async def decide(state: AgentState) -> _DecideResult:
+def decide(state: AgentState) -> _DecideResult:
     decision = policy_decide(state)
     status = (
         Status.ESCALATED
