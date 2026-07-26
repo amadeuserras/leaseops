@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
 from typing import cast
 
@@ -157,7 +156,6 @@ async def lease_check(state: AgentState) -> _LeaseCheckResult:
                 tool_choice=tool_choice,
             )
             messages.append({"role": "assistant", "content": response.content})
-            print(json.dumps(messages, indent=2, default=str))
 
             verdict_use = _find_tool_use(response, "submit_verdict")
             if verdict_use is not None:
