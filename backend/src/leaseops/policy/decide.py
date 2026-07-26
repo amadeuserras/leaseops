@@ -47,10 +47,10 @@ def _decide(state: AgentState) -> _Decision:
         )
 
     # maintenance (and any unexpected category): require identity + a clear lease call
-    if state.document_id is None or state.unit is None:
+    if state.document_id is None:
         return _Decision(
             ActionType.ESCALATE,
-            "Tenant or unit identity is missing or unresolved.",
+            "Tenant identity is missing or unresolved.",
         )
 
     if state.lease_addresses_issue is not True:

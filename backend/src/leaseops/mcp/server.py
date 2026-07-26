@@ -41,8 +41,8 @@ async def tenant_lookup(email: str) -> TenantResponse:
 @mcp.tool()
 async def work_order_create(
     tenant_id: UUID,
-    unit: str,
     issue: str,
+    unit: str | None = None,
     status: WorkOrderStatus = WorkOrderStatus.OPEN,
 ) -> WorkOrderResponse:
     """Create a maintenance work order for a tenant."""

@@ -81,7 +81,7 @@ class WorkOrder(Base):
         ForeignKey("tenants.id", ondelete="RESTRICT"),
         nullable=False,
     )
-    unit: Mapped[str] = mapped_column(Text, nullable=False)
+    unit: Mapped[str | None] = mapped_column(Text, nullable=True)
     issue: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[WorkOrderStatus] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(

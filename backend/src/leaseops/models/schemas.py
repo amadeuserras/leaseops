@@ -43,7 +43,7 @@ class HealthResponse(LeaseOpsModel):
 
 class WorkOrderCreate(LeaseOpsModel):
     tenant_id: UUID
-    unit: str
+    unit: str | None = None
     issue: str
     status: WorkOrderStatus = WorkOrderStatus.OPEN
 
@@ -57,7 +57,7 @@ class WorkOrderUpdate(LeaseOpsModel):
 class WorkOrderResponse(LeaseOpsModel):
     id: UUID
     tenant_id: UUID
-    unit: str
+    unit: str | None
     issue: str
     status: WorkOrderStatus
     created_at: datetime
