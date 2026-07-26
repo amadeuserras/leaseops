@@ -4,19 +4,25 @@ An AI agent that runs a property manager's maintenance inbox — reads tenant em
 
 ## Local setup
 
+LeaseClear must sit next to this repo (`../leaseclear`).
+
 ```bash
-# Backend
-cd backend
-cp .env.example .env
+# Clone both next to each other
+git clone https://github.com/amadeuserras/leaseclear.git
+git clone https://github.com/amadeuserras/leaseops.git
+cd leaseops
+
+# From backend 
+cp .env.example .env   # fill API keys
 uv sync
 
-# Start
-cd ..
-./dev.sh
+# From root
+./dev.sh      
 ```
 
-Frontend: http://localhost:3000  
-API: http://localhost:8000
+- LeaseOps: http://localhost:8000  
+- LeaseClear: http://localhost:8001  
+- Frontend: http://localhost:3000  
 
 ## MCP Inspector
 
