@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from leaseops.agent.state import AgentState, IssueCategory, Urgency
 from leaseops.core.config import settings
 from leaseops.db import tenants as tenants_repo
+from leaseops.db.models import Tenant
 from leaseops.db.session import SessionLocal
 
 _SYSTEM_PROMPT = """\
@@ -81,21 +82,21 @@ async def _extract_fields(state: AgentState) -> _ExtractFormat:
     return result
 
 
-async def _resolve_document_id(state: AgentState) -> UUID | None:
+async def _lookup_tenant(sender: str) -> Tenant | None:
     async with SessionLocal() as session:
-        return await tenants_repo.get_document_id_by_email(session, state.sender)
+        return await tenants_repo.get_tenant_by_email(session, sender)
 
 
 async def extract(state: AgentState) -> _ExtractResult:
     fields = await _extract_fields(state)
-    document_id = await _resolve_document_id(state)
+    tenant = await _lookup_tenant(state.sender)
     return _ExtractResult(
-        tenant_name=fields.tenant_name,
-        unit=fields.unit,
-        address=fields.address,
+        tenant_name=fields.tenant_name or (tenant.name if tenant else None),
+        unit=fields.unit or (tenant.unit if tenant else None),
+        address=fields.address or (tenant.address if tenant else None),
         issue_category=fields.issue_category,
         urgency=fields.urgency,
         appliance_or_system=fields.appliance_or_system,
         issue_summary=fields.issue_summary,
-        document_id=document_id,
+        document_id=tenant.document_id if tenant else None,
     )
