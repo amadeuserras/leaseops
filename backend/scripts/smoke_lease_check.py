@@ -33,7 +33,6 @@ MOCK_STATE = AgentState(
         "approximately one day; no cause stated."
     ),
     document_id=UUID("c20c63ab-9330-40ce-af05-8dd84c545803"),
-    lease_addresses_issue=False,
 )
 
 

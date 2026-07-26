@@ -33,7 +33,7 @@ def _decide(state: AgentState) -> _Decision:
 
     if state.category == EmailCategory.LEASE_QUESTION:
         lease_clear = (
-            state.lease_addresses_issue
+            state.lease_addresses_issue is True
             and state.responsibility != Responsibility.UNCLEAR
         )
         if lease_clear:
@@ -53,7 +53,7 @@ def _decide(state: AgentState) -> _Decision:
             "Tenant or unit identity is missing or unresolved.",
         )
 
-    if not state.lease_addresses_issue:
+    if state.lease_addresses_issue is not True:
         return _Decision(
             ActionType.ESCALATE,
             "Lease does not address the reported issue.",
