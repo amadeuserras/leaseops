@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from enum import StrEnum
 from uuid import UUID
 
@@ -51,7 +52,8 @@ class Status(StrEnum):
     DONE = "done"
 
 
-class QAResultSchema(LeaseOpsModel):
+@dataclass(frozen=True)
+class QAResultSchema:
     question: str
     answer: str
 

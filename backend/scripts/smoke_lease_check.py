@@ -38,9 +38,7 @@ MOCK_STATE = AgentState(
 
 async def main() -> None:
     result = await lease_check(MOCK_STATE)
-    payload = asdict(result)
-    payload["qa_results"] = [qa.model_dump() for qa in result.qa_results]
-    print(json.dumps(payload, indent=2, default=str))
+    print(json.dumps(asdict(result), indent=2, default=str))
 
 
 if __name__ == "__main__":
