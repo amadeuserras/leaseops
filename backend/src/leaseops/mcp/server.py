@@ -8,7 +8,7 @@ from mcp.server.fastmcp.exceptions import ToolError
 
 from leaseops.clients import leaseclear
 from leaseops.clients.leaseclear import LeaseClearError
-from leaseops.db import emails as emails_repo
+from leaseops.db import emails as repo
 from leaseops.db import outbox as outbox_repo
 from leaseops.db import tenants as tenants_repo
 from leaseops.db import work_orders as work_orders_repo
@@ -117,7 +117,7 @@ async def send_reply(email_id: UUID, draft_text: str) -> OutboxResponse:
         raise ToolError("draft_text must not be empty")
 
     async with SessionLocal() as session:
-        email = await emails_repo.get_email_by_id(session, email_id)
+        email = await repo.get_email_by_id(session, email_id)
         if email is None:
             raise ToolError(f"email not found for id: {email_id}")
         entry = await outbox_repo.create_outbox_entry(
