@@ -6,7 +6,6 @@ from typing import Any, cast
 from langgraph.types import interrupt
 
 from leaseops.agent.state import AgentState, Status
-from leaseops.policy.approval import requires_approval
 
 
 @dataclass(frozen=True)
@@ -32,7 +31,7 @@ class ApprovalDecision:
 
 @dataclass(frozen=True)
 class _ApprovalResult:
-    approved: bool | None
+    approved: bool
     rejection_reason: str | None
     status: Status
 
@@ -52,13 +51,6 @@ def _approval_request(state: AgentState) -> ApprovalRequest:
 
 
 def approval_gate(state: AgentState) -> _ApprovalResult:
-    if not requires_approval(state.action_type):
-        return _ApprovalResult(
-            approved=None,
-            rejection_reason=None,
-            status=Status.IN_PROGRESS,
-        )
-
     # Pauses the run here. On resume the node re-runs and interrupt() returns
     # the approver's decision.
     raw = cast(dict[str, Any], interrupt(asdict(_approval_request(state))))
