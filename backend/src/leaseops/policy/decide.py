@@ -25,12 +25,6 @@ def _decide(state: AgentState) -> _Decision:
             "Emergency safety risk — escalate to a human immediately.",
         )
 
-    if state.category == EmailCategory.NOT_OUR_PROBLEM:
-        return _Decision(
-            ActionType.NO_ACTION,
-            "Email is outside property-management scope.",
-        )
-
     if state.category == EmailCategory.LEASE_QUESTION:
         lease_clear = (
             state.lease_addresses_issue is True

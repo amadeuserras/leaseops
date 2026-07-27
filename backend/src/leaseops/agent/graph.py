@@ -17,7 +17,7 @@ from leaseops.agent.extract import extract
 from leaseops.agent.lease_check import lease_check
 from leaseops.agent.state import ActionType, AgentState, EmailCategory, Status
 
-_AfterClassify = Literal["extract", "escalate"]
+_AfterClassify = Literal["extract", "escalate", "no_action"]
 _AfterDecide = Literal["draft", "end"]
 
 
@@ -54,9 +54,20 @@ def _escalate_node(state: AgentState) -> dict[str, Any]:
     }
 
 
+def _no_action_node(state: AgentState) -> dict[str, Any]:
+    _ = state
+    return {
+        "action_type": ActionType.NO_ACTION,
+        "summary": "Email is outside property-management scope.",
+        "status": Status.DONE,
+    }
+
+
 def _after_classify(state: AgentState) -> _AfterClassify:
     if state.category == EmailCategory.EMERGENCY:
         return "escalate"
+    if state.category == EmailCategory.NOT_OUR_PROBLEM:
+        return "no_action"
     return "extract"
 
 
@@ -75,12 +86,17 @@ def build_graph(checkpointer: Any = None) -> Any:
     graph.add_node("draft", _draft_node)
     graph.add_node("approval_gate", _approval_gate_node)
     graph.add_node("escalate", _escalate_node)
+    graph.add_node("no_action", _no_action_node)
 
     graph.add_edge(START, "classify")
     graph.add_conditional_edges(
         "classify",
         _after_classify,
-        {"extract": "extract", "escalate": "escalate"},
+        {
+            "extract": "extract",
+            "escalate": "escalate",
+            "no_action": "no_action",
+        },
     )
     graph.add_edge("extract", "lease_check")
     graph.add_edge("lease_check", "decide")
@@ -92,4 +108,5 @@ def build_graph(checkpointer: Any = None) -> Any:
     graph.add_edge("draft", "approval_gate")
     graph.add_edge("approval_gate", END)
     graph.add_edge("escalate", END)
+    graph.add_edge("no_action", END)
     return graph.compile(checkpointer=checkpointer)
