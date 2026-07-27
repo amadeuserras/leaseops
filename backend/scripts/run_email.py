@@ -9,6 +9,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
 
 from leaseops.agent.approval import ApprovalDecision, ApprovalRequest
+from leaseops.agent.checkpoint import CHECKPOINT_SERDE
 from leaseops.agent.graph import build_graph
 from leaseops.agent.state import AgentState
 from leaseops.db import emails as repo
@@ -55,7 +56,7 @@ async def _run(email: Email) -> None:
     print(f"From: {email.sender}")
     print(f"Subject: {email.subject}")
 
-    graph = build_graph(InMemorySaver())
+    graph = build_graph(InMemorySaver(serde=CHECKPOINT_SERDE))
     config: dict[str, Any] = {"configurable": {"thread_id": str(email.id)}}
     inputs: Any = initial
     while True:
