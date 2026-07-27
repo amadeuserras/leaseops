@@ -9,6 +9,7 @@ from langgraph.graph import (  # pyright: ignore[reportMissingTypeStubs]
     StateGraph,
 )
 
+from leaseops.agent.approval import approval_gate
 from leaseops.agent.classify import classify
 from leaseops.agent.decide import decide
 from leaseops.agent.draft import draft
@@ -40,6 +41,10 @@ async def _draft_node(state: AgentState) -> dict[str, Any]:
     return asdict(await draft(state))
 
 
+def _approval_gate_node(state: AgentState) -> dict[str, Any]:
+    return asdict(approval_gate(state))
+
+
 def _escalate_node(state: AgentState) -> dict[str, Any]:
     _ = state
     return {
@@ -61,13 +66,14 @@ def _after_decide(state: AgentState) -> _AfterDecide:
     return "draft"
 
 
-def build_graph() -> Any:
+def build_graph(checkpointer: Any = None) -> Any:
     graph: Any = StateGraph(AgentState)
     graph.add_node("classify", _classify_node)
     graph.add_node("extract", _extract_node)
     graph.add_node("lease_check", _lease_check_node)
     graph.add_node("decide", _decide_node)
     graph.add_node("draft", _draft_node)
+    graph.add_node("approval_gate", _approval_gate_node)
     graph.add_node("escalate", _escalate_node)
 
     graph.add_edge(START, "classify")
@@ -83,6 +89,7 @@ def build_graph() -> Any:
         _after_decide,
         {"draft": "draft", "end": END},
     )
-    graph.add_edge("draft", END)
+    graph.add_edge("draft", "approval_gate")
+    graph.add_edge("approval_gate", END)
     graph.add_edge("escalate", END)
-    return graph.compile()
+    return graph.compile(checkpointer=checkpointer)

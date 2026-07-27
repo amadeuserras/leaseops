@@ -49,6 +49,7 @@ class ActionType(StrEnum):
 class Status(StrEnum):
     IN_PROGRESS = "in_progress"
     ESCALATED = "escalated"
+    REJECTED = "rejected"
     DONE = "done"
 
 
@@ -89,6 +90,10 @@ class AgentState(LeaseOpsModel):
 
     # draft
     draft: str | None = None
+
+    # approval_gate — approved stays None when the action needed no human decision
+    approved: bool | None = None
+    rejection_reason: str | None = None
 
     # bookkeeping
     status: Status = Status.IN_PROGRESS
