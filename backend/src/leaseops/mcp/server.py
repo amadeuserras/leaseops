@@ -25,7 +25,7 @@ from leaseops.models.schemas import (
     WorkOrderUpdate,
 )
 
-mcp = FastMCP("leaseops")
+mcp = FastMCP("leaseops", log_level="WARNING")
 
 
 @mcp.tool()

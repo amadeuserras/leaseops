@@ -91,7 +91,7 @@ class AgentState(LeaseOpsModel):
     # draft
     draft: str | None = None
 
-    # approval_gate — approved stays None when the action needed no human decision
+    # approval_gate
     approved: bool | None = None
     rejection_reason: str | None = None
 
