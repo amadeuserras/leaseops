@@ -18,6 +18,14 @@ _BOLD = "\033[1m"
 _DIM = "\033[2m"
 _RESET = "\033[0m"
 
+_LLM_NODES = frozenset({"classify", "extract", "lease_check", "draft"})
+
+
+def _node_title(node: str) -> str:
+    if node in _LLM_NODES:
+        return f"{node} (LLM)"
+    return node
+
 
 def _qa_pair(item: Any) -> tuple[str, str] | None:
     if isinstance(item, dict):
@@ -72,7 +80,7 @@ def _print_fields(delta: dict[str, Any]) -> None:
 
 def _print_delta(node: str, delta: dict[str, Any], *, header: bool = True) -> None:
     if header:
-        print(f"\n{_BOLD}── {node} ──{_RESET}")
+        print(f"\n{_BOLD}── {_node_title(node)} ──{_RESET}")
     elif delta:
         print()
     _print_fields(delta)
@@ -80,7 +88,7 @@ def _print_delta(node: str, delta: dict[str, Any], *, header: bool = True) -> No
 
 def _prompt_for_decision(request: dict[str, Any]) -> dict[str, Any]:
     fields = ", ".join(request)
-    print(f"\n{_BOLD}── approval_gate ──{_RESET}")
+    print(f"\n{_BOLD}── {_node_title('approval_gate')} ──{_RESET}")
     print(f"  {_DIM}Fields shown to the human:{_RESET} {fields}")
     if input("\nApprove this action? [y/N] ").strip().lower() in {"y", "yes"}:
         return {"approved": True}
