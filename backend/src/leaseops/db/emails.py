@@ -12,12 +12,10 @@ async def get_email_by_id(session: AsyncSession, email_id: UUID) -> Email | None
     return await session.get(Email, email_id)
 
 
-async def get_latest_email_by_sender(
-    session: AsyncSession, sender: str
-) -> Email | None:
+async def get_email_by_subject(session: AsyncSession, subject: str) -> Email | None:
     result = await session.scalars(
         select(Email)
-        .where(Email.sender == sender)
+        .where(Email.subject == subject)
         .order_by(Email.received_at.desc())
         .limit(1)
     )
