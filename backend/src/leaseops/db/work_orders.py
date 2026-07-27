@@ -14,7 +14,6 @@ async def create_work_order(
 ) -> WorkOrder:
     work_order = WorkOrder(
         tenant_id=payload.tenant_id,
-        unit=payload.unit,
         issue=payload.issue,
         status=payload.status,
     )

@@ -42,7 +42,6 @@ async def tenant_lookup(email: str) -> TenantResponse:
 async def work_order_create(
     tenant_id: UUID,
     issue: str,
-    unit: str | None = None,
     status: WorkOrderStatus = WorkOrderStatus.OPEN,
 ) -> WorkOrderResponse:
     """Create a maintenance work order for a tenant."""
@@ -54,7 +53,6 @@ async def work_order_create(
             session,
             WorkOrderCreate(
                 tenant_id=tenant_id,
-                unit=unit,
                 issue=issue,
                 status=status,
             ),
@@ -87,14 +85,13 @@ async def work_order_list(
 @mcp.tool()
 async def work_order_update(
     work_order_id: UUID,
-    unit: str | None = None,
     issue: str | None = None,
     status: WorkOrderStatus | None = None,
 ) -> WorkOrderResponse:
     """Update fields on an existing work order."""
     changes = {
         key: value
-        for key, value in (("unit", unit), ("issue", issue), ("status", status))
+        for key, value in (("issue", issue), ("status", status))
         if value is not None
     }
     if not changes:

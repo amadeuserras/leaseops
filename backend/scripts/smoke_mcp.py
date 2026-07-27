@@ -95,7 +95,6 @@ async def run(*, skip_lease_qa: bool) -> None:
                 "work_order_create",
                 {
                     "tenant_id": str(tenant.id),
-                    "unit": tenant.unit,
                     "issue": "MCP smoke test — kitchen sink drip",
                 },
             )
