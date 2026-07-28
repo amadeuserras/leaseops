@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 
 from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
@@ -10,7 +11,16 @@ from sqlalchemy.ext.asyncio import (
 
 from leaseops.core.config import settings
 
-engine = create_async_engine(settings.database_url)
+
+def make_engine(database_url: str) -> AsyncEngine:
+    return create_async_engine(database_url)
+
+
+def make_session_factory(database_url: str) -> async_sessionmaker[AsyncSession]:
+    return async_sessionmaker(make_engine(database_url), expire_on_commit=False)
+
+
+engine = make_engine(settings.database_url)
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 
