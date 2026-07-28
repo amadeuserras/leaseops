@@ -41,6 +41,37 @@ class HealthResponse(LeaseOpsModel):
     service: str = "leaseops"
 
 
+class RunCreate(LeaseOpsModel):
+    email_id: UUID
+
+
+class RunResponse(LeaseOpsModel):
+    id: UUID
+    email_id: UUID
+    status: RunStatus
+    started_at: datetime
+    ended_at: datetime | None
+
+
+class ApprovalRequestResponse(LeaseOpsModel):
+    run_id: UUID
+    email_id: UUID
+    action_type: str
+    summary: str | None
+    draft: str | None
+    tenant_name: str | None
+    unit: str | None
+    issue_summary: str | None
+
+
+class ApprovalListResponse(LeaseOpsModel):
+    items: list[ApprovalRequestResponse]
+
+
+class ApprovalRejectRequest(LeaseOpsModel):
+    rejection_reason: str | None = None
+
+
 class WorkOrderCreate(LeaseOpsModel):
     email_id: UUID
     tenant_id: UUID
