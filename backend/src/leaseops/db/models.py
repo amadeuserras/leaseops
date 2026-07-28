@@ -104,6 +104,7 @@ class Outbox(Base):
         PGUUID(as_uuid=True),
         ForeignKey("emails.id", ondelete="RESTRICT"),
         nullable=False,
+        unique=True,
     )
     draft_text: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[OutboxStatus] = mapped_column(Text, nullable=False)

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from leaseops.db.models import Outbox
@@ -7,12 +9,17 @@ from leaseops.models.schemas import OutboxCreate
 
 
 async def create_outbox_entry(session: AsyncSession, payload: OutboxCreate) -> Outbox:
-    entry = Outbox(
-        email_id=payload.email_id,
-        draft_text=payload.draft_text,
-        status=payload.status,
+    await session.execute(
+        insert(Outbox)
+        .values(
+            email_id=payload.email_id,
+            draft_text=payload.draft_text,
+            status=payload.status,
+        )
+        .on_conflict_do_nothing(index_elements=["email_id"])
     )
-    session.add(entry)
     await session.commit()
-    await session.refresh(entry)
-    return entry
+    result = await session.scalars(
+        select(Outbox).where(Outbox.email_id == payload.email_id)
+    )
+    return result.one()
