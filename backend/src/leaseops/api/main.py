@@ -7,6 +7,7 @@ from fastapi import FastAPI
 
 from leaseops.agent.runtime import graph_runner
 from leaseops.api.approvals import router as approvals_router
+from leaseops.api.inbox import router as inbox_router
 from leaseops.api.runs import router as runs_router
 from leaseops.api.work_orders import router as work_orders_router
 from leaseops.core.logging import configure_logging
@@ -22,6 +23,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
 
 
 app = FastAPI(title="LeaseOps", version="0.1.0", lifespan=lifespan)
+app.include_router(inbox_router)
 app.include_router(work_orders_router)
 app.include_router(runs_router)
 app.include_router(approvals_router)

@@ -41,6 +41,27 @@ class HealthResponse(LeaseOpsModel):
     service: str = "leaseops"
 
 
+class EmailCreate(LeaseOpsModel):
+    sender: str
+    subject: str
+    body: str
+    received_at: datetime
+    status: EmailStatus = EmailStatus.PENDING
+
+
+class EmailResponse(LeaseOpsModel):
+    id: UUID
+    sender: str
+    subject: str
+    body: str
+    received_at: datetime
+    status: EmailStatus
+
+
+class EmailListResponse(LeaseOpsModel):
+    items: list[EmailResponse]
+
+
 class RunCreate(LeaseOpsModel):
     email_id: UUID
 

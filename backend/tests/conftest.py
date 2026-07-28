@@ -6,7 +6,9 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
 import leaseops.db.models  # noqa: F401
+from leaseops.agent.runner import GraphRunner
 from leaseops.api.approvals import router as approvals_router
+from leaseops.api.inbox import router as inbox_router
 from leaseops.api.runs import router as runs_router
 from leaseops.api.work_orders import router as work_orders_router
 from leaseops.core.config import settings
@@ -33,9 +35,15 @@ async def db_session(test_engine):
 
 
 @pytest_asyncio.fixture
+async def runner() -> GraphRunner:
+    return GraphRunner(graph=None)
+
+
+@pytest_asyncio.fixture
 async def api_client(db_session, runner):
     app = FastAPI()
     app.state.runner = runner
+    app.include_router(inbox_router)
     app.include_router(work_orders_router)
     app.include_router(runs_router)
     app.include_router(approvals_router)
