@@ -22,6 +22,7 @@ async def execute(state: AgentState) -> _ExecuteResult:
                 session,
                 "work_order_create",
                 {
+                    "email_id": str(state.email_id),
                     "tenant_id": str(tenant["id"]),
                     "issue": state.issue_summary,
                 },

@@ -76,6 +76,12 @@ class WorkOrder(Base):
     id: Mapped[UUID] = mapped_column(
         PGUUID(as_uuid=True), primary_key=True, default=uuid4
     )
+    email_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("emails.id", ondelete="RESTRICT"),
+        nullable=False,
+        unique=True,
+    )
     tenant_id: Mapped[UUID] = mapped_column(
         PGUUID(as_uuid=True),
         ForeignKey("tenants.id", ondelete="RESTRICT"),

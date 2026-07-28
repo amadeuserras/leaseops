@@ -94,6 +94,7 @@ async def run(*, skip_lease_qa: bool) -> None:
                 session,
                 "work_order_create",
                 {
+                    "email_id": str(email_id),
                     "tenant_id": str(tenant.id),
                     "issue": "MCP smoke test — kitchen sink drip",
                 },

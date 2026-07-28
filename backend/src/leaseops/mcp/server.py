@@ -40,18 +40,23 @@ async def tenant_lookup(email: str) -> TenantResponse:
 
 @mcp.tool()
 async def work_order_create(
+    email_id: UUID,
     tenant_id: UUID,
     issue: str,
     status: WorkOrderStatus = WorkOrderStatus.OPEN,
 ) -> WorkOrderResponse:
     """Create a maintenance work order for a tenant."""
     async with SessionLocal() as session:
+        email = await repo.get_email_by_id(session, email_id)
+        if email is None:
+            raise ToolError(f"email not found for id: {email_id}")
         tenant = await tenants_repo.get_tenant_by_id(session, tenant_id)
         if tenant is None:
             raise ToolError(f"tenant not found for id: {tenant_id}")
         work_order = await work_orders_repo.create_work_order(
             session,
             WorkOrderCreate(
+                email_id=email_id,
                 tenant_id=tenant_id,
                 issue=issue,
                 status=status,
