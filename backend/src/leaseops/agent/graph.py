@@ -13,12 +13,14 @@ from leaseops.agent.approval import approval_gate
 from leaseops.agent.classify import classify
 from leaseops.agent.decide import decide
 from leaseops.agent.draft import draft
+from leaseops.agent.execute import execute
 from leaseops.agent.extract import extract
 from leaseops.agent.lease_check import lease_check
 from leaseops.agent.state import ActionType, AgentState, EmailCategory, Status
 
 _AfterClassify = Literal["extract", "escalate", "no_action"]
 _AfterDecide = Literal["draft", "end"]
+_AfterApproval = Literal["execute", "end"]
 
 
 async def _classify_node(state: AgentState) -> dict[str, Any]:
@@ -43,6 +45,10 @@ async def _draft_node(state: AgentState) -> dict[str, Any]:
 
 def _approval_gate_node(state: AgentState) -> dict[str, Any]:
     return asdict(approval_gate(state))
+
+
+async def _execute_node(state: AgentState) -> dict[str, Any]:
+    return asdict(await execute(state))
 
 
 def _escalate_node(state: AgentState) -> dict[str, Any]:
@@ -77,6 +83,12 @@ def _after_decide(state: AgentState) -> _AfterDecide:
     return "draft"
 
 
+def _after_approval(state: AgentState) -> _AfterApproval:
+    if state.approved:
+        return "execute"
+    return "end"
+
+
 def build_graph(checkpointer: Any = None) -> Any:
     graph: Any = StateGraph(AgentState)
     graph.add_node("classify", _classify_node)
@@ -85,6 +97,7 @@ def build_graph(checkpointer: Any = None) -> Any:
     graph.add_node("decide", _decide_node)
     graph.add_node("draft", _draft_node)
     graph.add_node("approval_gate", _approval_gate_node)
+    graph.add_node("execute", _execute_node)
     graph.add_node("escalate", _escalate_node)
     graph.add_node("no_action", _no_action_node)
 
@@ -106,7 +119,12 @@ def build_graph(checkpointer: Any = None) -> Any:
         {"draft": "draft", "end": END},
     )
     graph.add_edge("draft", "approval_gate")
-    graph.add_edge("approval_gate", END)
+    graph.add_conditional_edges(
+        "approval_gate",
+        _after_approval,
+        {"execute": "execute", "end": END},
+    )
+    graph.add_edge("execute", END)
     graph.add_edge("escalate", END)
     graph.add_edge("no_action", END)
     return graph.compile(checkpointer=checkpointer)
