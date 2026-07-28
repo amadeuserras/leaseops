@@ -19,6 +19,7 @@ _DIM = "\033[2m"
 _RESET = "\033[0m"
 
 _LLM_NODES = frozenset({"classify", "extract", "lease_check", "draft"})
+DEFAULT_EMAIL = "Can we paint the living room?"
 
 
 def _node_title(node: str) -> str:
@@ -147,6 +148,8 @@ async def main() -> None:
     )
     parser.add_argument(
         "subject",
+        nargs="?",
+        default=DEFAULT_EMAIL,
         help="Exact email subject line (from the seeded inbox)",
     )
     args = parser.parse_args()
