@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 from typing import Any, cast
+from uuid import UUID
 
 from langgraph.types import interrupt
 
@@ -12,7 +13,7 @@ from leaseops.agent.state import AgentState, Status
 class ApprovalRequest:
     """What a human approver is shown while the run is paused."""
 
-    email_id: str
+    email_id: UUID
     action_type: str
     summary: str | None
     draft: str | None
@@ -40,7 +41,7 @@ def _approval_request(state: AgentState) -> ApprovalRequest:
     action = state.action_type
     assert action is not None
     return ApprovalRequest(
-        email_id=str(state.email_id),
+        email_id=state.email_id,
         action_type=action.value,
         summary=state.summary,
         draft=state.draft,
