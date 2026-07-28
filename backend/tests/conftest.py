@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 import pytest_asyncio
+from fastapi import FastAPI
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
 import leaseops.db.models  # noqa: F401
+from leaseops.api.approvals import router as approvals_router
+from leaseops.api.runs import router as runs_router
+from leaseops.api.work_orders import router as work_orders_router
 from leaseops.core.config import settings
 from leaseops.db.base import Base
-from leaseops.db.session import make_engine
+from leaseops.db.session import get_session, make_engine
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -25,3 +30,21 @@ async def db_session(test_engine):
     session_factory = async_sessionmaker(test_engine, expire_on_commit=False)
     async with session_factory() as session:
         yield session
+
+
+@pytest_asyncio.fixture
+async def api_client(db_session, runner):
+    app = FastAPI()
+    app.state.runner = runner
+    app.include_router(work_orders_router)
+    app.include_router(runs_router)
+    app.include_router(approvals_router)
+
+    async def override_session():
+        yield db_session
+
+    app.dependency_overrides[get_session] = override_session
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        yield client
