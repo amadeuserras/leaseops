@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from leaseops.core.config import settings
 from leaseops.db.models import AuditLog, Email, Outbox, Run, Step, Tenant, WorkOrder
-from leaseops.models.schemas import EmailStatus
+from leaseops.models.enums import EmailStatus
 
 SEED_DIR = Path(__file__).resolve().parent.parent / "seed_data"
 

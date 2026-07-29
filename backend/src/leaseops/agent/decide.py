@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from leaseops.agent.state import ActionType, AgentState, Status
+from leaseops.agent.state import AgentState
+from leaseops.agent.types import ActionType, Status
 from leaseops.policy.decide import decide as policy_decide
 
 

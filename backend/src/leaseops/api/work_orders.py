@@ -9,11 +9,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from leaseops.db import work_orders as repo
 from leaseops.db.session import get_session
+from leaseops.models.enums import WorkOrderStatus
 from leaseops.models.schemas import (
     WorkOrderCreate,
     WorkOrderListResponse,
     WorkOrderResponse,
-    WorkOrderStatus,
     WorkOrderUpdate,
 )
 

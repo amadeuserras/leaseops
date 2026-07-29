@@ -6,12 +6,8 @@ from dataclasses import asdict
 from uuid import UUID, uuid4
 
 from leaseops.agent.lease_check import lease_check
-from leaseops.agent.state import (
-    AgentState,
-    EmailCategory,
-    IssueCategory,
-    Urgency,
-)
+from leaseops.agent.state import AgentState
+from leaseops.agent.types import EmailCategory, IssueCategory, Urgency
 
 MOCK_STATE = AgentState(
     email_id=uuid4(),

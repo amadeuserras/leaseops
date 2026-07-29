@@ -2,13 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from leaseops.agent.state import (
-    ActionType,
-    AgentState,
-    EmailCategory,
-    Responsibility,
-    Urgency,
-)
+from leaseops.agent.state import AgentState
+from leaseops.agent.types import ActionType, EmailCategory, Responsibility, Urgency
 from leaseops.policy.whitelist import clamp_action
 
 

@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from leaseops.db.models import Run
-from leaseops.models.schemas import RunStatus
+from leaseops.models.enums import RunStatus
 
 
 def _utcnow() -> datetime:

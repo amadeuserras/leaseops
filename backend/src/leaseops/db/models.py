@@ -18,12 +18,7 @@ from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from leaseops.db.base import Base
-from leaseops.models.schemas import (
-    EmailStatus,
-    OutboxStatus,
-    RunStatus,
-    WorkOrderStatus,
-)
+from leaseops.models.enums import EmailStatus, OutboxStatus, RunStatus, WorkOrderStatus
 
 
 def _utcnow() -> datetime:

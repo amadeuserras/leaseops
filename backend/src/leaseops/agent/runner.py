@@ -20,7 +20,7 @@ from leaseops.agent.events import (
 from leaseops.agent.state import AgentState
 from leaseops.db import runs as runs_repo
 from leaseops.db.models import Email, Run
-from leaseops.models.schemas import RunStatus
+from leaseops.models.enums import RunStatus
 
 
 @dataclass(frozen=True)

@@ -13,6 +13,7 @@ from leaseops.db import outbox as outbox_repo
 from leaseops.db import tenants as tenants_repo
 from leaseops.db import work_orders as work_orders_repo
 from leaseops.db.session import SessionLocal
+from leaseops.models.enums import WorkOrderStatus
 from leaseops.models.schemas import (
     LeaseQAResponse,
     OutboxCreate,
@@ -21,7 +22,6 @@ from leaseops.models.schemas import (
     WorkOrderCreate,
     WorkOrderListResponse,
     WorkOrderResponse,
-    WorkOrderStatus,
     WorkOrderUpdate,
 )
 

@@ -6,7 +6,8 @@ from uuid import UUID
 
 from langgraph.types import interrupt
 
-from leaseops.agent.state import AgentState, Status
+from leaseops.agent.state import AgentState
+from leaseops.agent.types import Status
 
 
 @dataclass(frozen=True)

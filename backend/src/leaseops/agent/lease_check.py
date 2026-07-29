@@ -15,7 +15,8 @@ from anthropic.types import (
 from pydantic import BaseModel, Field
 
 from leaseops.agent.events import emit_cost, emit_tool_call, emit_tool_result
-from leaseops.agent.state import AgentState, QAResultSchema, Responsibility
+from leaseops.agent.state import AgentState
+from leaseops.agent.types import QAResultSchema, Responsibility
 from leaseops.core.config import settings
 from leaseops.mcp.client import McpToolError, call_tool, mcp_session
 from leaseops.models.schemas import LeaseQAResponse

@@ -6,9 +6,9 @@ from dataclasses import asdict
 from uuid import UUID, uuid4
 
 from leaseops.agent.draft import draft
-from leaseops.agent.state import (
+from leaseops.agent.state import AgentState
+from leaseops.agent.types import (
     ActionType,
-    AgentState,
     EmailCategory,
     IssueCategory,
     QAResultSchema,

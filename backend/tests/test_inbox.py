@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from leaseops.models.schemas import EmailStatus
+from leaseops.models.enums import EmailStatus
 
 
 def _email_payload(**overrides: object) -> dict[str, object]:

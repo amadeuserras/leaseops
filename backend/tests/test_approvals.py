@@ -12,9 +12,10 @@ from langgraph.graph import END, START, StateGraph
 from leaseops.agent.approval import approval_gate
 from leaseops.agent.checkpoint import CHECKPOINT_SERDE
 from leaseops.agent.runner import GraphRunner
-from leaseops.agent.state import ActionType, AgentState, Status
+from leaseops.agent.state import AgentState
+from leaseops.agent.types import ActionType, Status
 from leaseops.db.models import Email
-from leaseops.models.schemas import EmailStatus, RunStatus
+from leaseops.models.enums import EmailStatus, RunStatus
 
 
 def _after_approval(state: AgentState) -> str:

@@ -16,7 +16,8 @@ from leaseops.agent.draft import draft
 from leaseops.agent.execute import execute
 from leaseops.agent.extract import extract
 from leaseops.agent.lease_check import lease_check
-from leaseops.agent.state import ActionType, AgentState, EmailCategory, Status
+from leaseops.agent.state import AgentState
+from leaseops.agent.types import ActionType, EmailCategory, Status
 
 _AfterClassify = Literal["extract", "escalate", "no_action"]
 _AfterDecide = Literal["draft", "end"]

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from leaseops.agent.state import ActionType
+from leaseops.agent.types import ActionType
 
 ALLOWED_ACTIONS: frozenset[ActionType] = frozenset(ActionType)
 

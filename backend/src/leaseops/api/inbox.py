@@ -8,12 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from leaseops.db import emails as repo
 from leaseops.db.session import get_session
-from leaseops.models.schemas import (
-    EmailCreate,
-    EmailListResponse,
-    EmailResponse,
-    EmailStatus,
-)
+from leaseops.models.enums import EmailStatus
+from leaseops.models.schemas import EmailCreate, EmailListResponse, EmailResponse
 
 router = APIRouter(prefix="/inbox", tags=["inbox"])
 

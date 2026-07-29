@@ -6,7 +6,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from leaseops.db.models import Email
-from leaseops.models.schemas import EmailCreate, EmailStatus
+from leaseops.models.enums import EmailStatus
+from leaseops.models.schemas import EmailCreate
 
 
 async def create_email(session: AsyncSession, payload: EmailCreate) -> Email:
