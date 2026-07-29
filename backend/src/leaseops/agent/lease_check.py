@@ -14,6 +14,7 @@ from anthropic.types import (
 )
 from pydantic import BaseModel, Field
 
+from leaseops.agent.events import emit_cost, emit_tool_call, emit_tool_result
 from leaseops.agent.state import AgentState, QAResultSchema, Responsibility
 from leaseops.core.config import settings
 from leaseops.mcp.client import McpToolError, call_tool, mcp_session
@@ -155,6 +156,12 @@ async def lease_check(state: AgentState) -> _LeaseCheckResult:
                 tools=[LEASE_QA_TOOL, SUBMIT_VERDICT_TOOL],
                 tool_choice=tool_choice,
             )
+            emit_cost(
+                "lease_check",
+                _ACTOR_MODEL,
+                response.usage.input_tokens,
+                response.usage.output_tokens,
+            )
             messages.append({"role": "assistant", "content": response.content})
 
             verdict_use = _find_tool_use(response, "submit_verdict")
@@ -176,17 +183,19 @@ async def lease_check(state: AgentState) -> _LeaseCheckResult:
                 )
 
             question = cast(str, qa_use.input["question"])
+            tool_args: dict[str, object] = {
+                "question": question,
+                "document_id": str(state.document_id),
+            }
+            emit_tool_call("lease_check", "lease_qa", tool_args)
             try:
-                qa_result = await call_tool(
-                    session,
-                    "lease_qa",
-                    {"question": question, "document_id": str(state.document_id)},
-                )
+                qa_result = await call_tool(session, "lease_qa", tool_args)
                 answer = LeaseQAResponse.model_validate(qa_result).answer
                 is_error = False
             except McpToolError as exc:
                 answer = str(exc)
                 is_error = True
+            emit_tool_result("lease_check", "lease_qa", answer, is_error=is_error)
 
             qa_results.append(QAResultSchema(question=question, answer=answer))
             tool_result: ToolResultBlockParam = {

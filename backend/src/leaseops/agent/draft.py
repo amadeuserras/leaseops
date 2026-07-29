@@ -5,8 +5,11 @@ from dataclasses import dataclass
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 
+from leaseops.agent.events import emit_cost
 from leaseops.agent.state import AgentState, QAResultSchema
 from leaseops.core.config import settings
+
+_MODEL = "gpt-4o-mini"
 
 _SYSTEM_PROMPT = """\
 You draft a reply email from a residential property manager to a tenant.
@@ -82,7 +85,7 @@ def _content_message(state: AgentState) -> str:
 async def draft(state: AgentState) -> _DraftResult:
     client = AsyncOpenAI(api_key=settings.openai_api_key)
     completion = await client.chat.completions.parse(
-        model="gpt-4o-mini",
+        model=_MODEL,
         temperature=0,
         messages=[
             {"role": "system", "content": _SYSTEM_PROMPT},
@@ -90,6 +93,13 @@ async def draft(state: AgentState) -> _DraftResult:
         ],
         response_format=_DraftFormat,
     )
+    if completion.usage is not None:
+        emit_cost(
+            "draft",
+            _MODEL,
+            completion.usage.prompt_tokens,
+            completion.usage.completion_tokens,
+        )
     result = completion.choices[0].message.parsed
     if result is None:
         raise RuntimeError("draft: model returned no parsed output")

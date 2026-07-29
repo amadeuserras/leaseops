@@ -6,11 +6,14 @@ from uuid import UUID
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 
+from leaseops.agent.events import emit_cost
 from leaseops.agent.state import AgentState, IssueCategory, Urgency
 from leaseops.core.config import settings
 from leaseops.db import tenants as tenants_repo
 from leaseops.db.models import Tenant
 from leaseops.db.session import SessionLocal
+
+_MODEL = "gpt-4o-mini"
 
 _SYSTEM_PROMPT = """\
 You extract structured fields from a residential property-manager email.
@@ -68,7 +71,7 @@ def _content_message(state: AgentState) -> str:
 async def _extract_fields(state: AgentState) -> _ExtractFormat:
     client = AsyncOpenAI(api_key=settings.openai_api_key)
     completion = await client.chat.completions.parse(
-        model="gpt-4o-mini",
+        model=_MODEL,
         temperature=0,
         messages=[
             {"role": "system", "content": _SYSTEM_PROMPT},
@@ -76,6 +79,13 @@ async def _extract_fields(state: AgentState) -> _ExtractFormat:
         ],
         response_format=_ExtractFormat,
     )
+    if completion.usage is not None:
+        emit_cost(
+            "extract",
+            _MODEL,
+            completion.usage.prompt_tokens,
+            completion.usage.completion_tokens,
+        )
     result = completion.choices[0].message.parsed
     if result is None:
         raise RuntimeError("extract: model returned no parsed output")

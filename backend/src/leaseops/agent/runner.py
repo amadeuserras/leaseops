@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import AsyncGenerator
 from dataclasses import asdict, dataclass
 from typing import Any, cast
 from uuid import UUID
@@ -38,6 +39,48 @@ class GraphRunner:
         if snapshot.interrupts:
             return await runs_repo.set_run_status(session, run, RunStatus.PAUSED)
         return await runs_repo.set_run_status(session, run, RunStatus.DONE, ended=True)
+
+    async def stream(
+        self, session: AsyncSession, email: Email
+    ) -> AsyncGenerator[dict[str, Any]]:
+        run = await runs_repo.create_run(session, email.id)
+        config = self._thread_config(run.id)
+        initial = AgentState(
+            email_id=email.id,
+            sender=email.sender,
+            subject=email.subject,
+            body=email.body,
+        )
+        yield {"type": "run_started", "run_id": str(run.id)}
+
+        paused = False
+        try:
+            async for mode, chunk in self.graph.astream(
+                initial, config, stream_mode=["tasks", "custom"]
+            ):
+                if mode == "custom":
+                    yield cast(dict[str, Any], chunk)
+                    continue
+                task = cast(dict[str, Any], chunk)
+                node = cast(str, task["name"])
+                if "result" not in task:
+                    yield {"type": "node_started", "node": node}
+                    continue
+                interrupts = cast(list[dict[str, Any]], task["interrupts"])
+                if interrupts:
+                    paused = True
+                    request = ApprovalRequest(**interrupts[0]["value"])
+                    yield {"type": "paused", "request": asdict(request)}
+                    continue
+                yield {"type": "node_finished", "node": node, "output": task["result"]}
+        except Exception as exc:
+            await runs_repo.set_run_status(session, run, RunStatus.FAILED, ended=True)
+            yield {"type": "error", "message": str(exc)}
+            return
+
+        status = RunStatus.PAUSED if paused else RunStatus.DONE
+        run = await runs_repo.set_run_status(session, run, status, ended=not paused)
+        yield {"type": "run_finished", "status": status.value}
 
     async def list_pending(self, session: AsyncSession) -> list[PendingApproval]:
         paused = await runs_repo.list_runs(session, status=RunStatus.PAUSED)
