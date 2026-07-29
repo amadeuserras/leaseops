@@ -6,11 +6,13 @@ LEASECLEAR_ROOT="$(cd "$ROOT/../leaseclear" && pwd)"
 
 API_PID=""
 LEASECLEAR_PID=""
+FRONTEND_PID=""
 cleanup() {
   echo ""
   echo "🛑  Shutting down…"
   kill "$API_PID" 2>/dev/null || true
   kill "$LEASECLEAR_PID" 2>/dev/null || true
+  kill "$FRONTEND_PID" 2>/dev/null || true
   docker compose -f "$ROOT/docker-compose.yml" stop
   docker compose -f "$LEASECLEAR_ROOT/docker-compose.yml" stop
 }
@@ -55,9 +57,17 @@ uv run uvicorn leaseops.api.main:app --reload --port 8000 &
 API_PID=$!
 wait_for_health "http://127.0.0.1:8000/health" "LeaseOps healthy"
 
-# 4. Frontend - not implemented yet
+# 4. Frontend (:3000)
+echo ""
+echo "🖥️   LeaseOps Frontend  →  :3000"
+cd "$ROOT/frontend"
+npm run dev &
+FRONTEND_PID=$!
+wait_for_health "http://127.0.0.1:3000" "Frontend healthy"
+
+open "http://localhost:3000"
 
 echo ""
-echo "🚀  All set   LeaseOps :8000  ·  LeaseClear :8001"
+echo "🚀  All set   LeaseOps :8000  ·  LeaseClear :8001  ·  Frontend :3000"
 echo "   Press Ctrl-C to stop."
-wait "$API_PID" "$LEASECLEAR_PID"
+wait "$API_PID" "$LEASECLEAR_PID" "$FRONTEND_PID"

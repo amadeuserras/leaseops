@@ -12,17 +12,20 @@ git clone https://github.com/amadeuserras/leaseclear.git
 git clone https://github.com/amadeuserras/leaseops.git
 cd leaseops
 
-# From backend 
+# From backend
 cp .env.example .env   # fill API keys
 uv sync
 
+# From frontend
+npm install
+
 # From root
-./dev.sh      
+./dev.sh
 ```
 
-- LeaseOps: http://localhost:8000  
-- LeaseClear: http://localhost:8001  
-- Frontend: http://localhost:3000  
+- LeaseOps API: http://localhost:8000
+- LeaseClear API: http://localhost:8001
+- Frontend: http://localhost:3000
 
 ## MCP Inspector
 
@@ -79,7 +82,7 @@ leaseops/
 │       ├── db/                   # SQLAlchemy 2.0 async
 │       ├── models/               # Pydantic boundary schemas
 │       └── evals/                # golden set, trajectory harness
-├── frontend/                     # Next.js (Ch. 9)
+├── frontend/                     # Next.js + TS + Tailwind
 ├── METRICS.md
 ├── SPEC.md
 └── README.md
