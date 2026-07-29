@@ -9,6 +9,14 @@ from langgraph.types import Command
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from leaseops.agent.approval import ApprovalDecision, ApprovalRequest
+from leaseops.agent.events import (
+    ErrorEvent,
+    NodeFinishedEvent,
+    NodeStartedEvent,
+    PausedEvent,
+    RunFinishedEvent,
+    RunStartedEvent,
+)
 from leaseops.agent.state import AgentState
 from leaseops.db import runs as runs_repo
 from leaseops.db.models import Email, Run
@@ -51,7 +59,7 @@ class GraphRunner:
             subject=email.subject,
             body=email.body,
         )
-        yield {"type": "run_started", "run_id": str(run.id)}
+        yield asdict(RunStartedEvent(run_id=str(run.id)))
 
         paused = False
         try:
@@ -64,23 +72,23 @@ class GraphRunner:
                 task = cast(dict[str, Any], chunk)
                 node = cast(str, task["name"])
                 if "result" not in task:
-                    yield {"type": "node_started", "node": node}
+                    yield asdict(NodeStartedEvent(node=node))
                     continue
                 interrupts = cast(list[dict[str, Any]], task["interrupts"])
                 if interrupts:
                     paused = True
                     request = ApprovalRequest(**interrupts[0]["value"])
-                    yield {"type": "paused", "request": asdict(request)}
+                    yield asdict(PausedEvent(request=request))
                     continue
-                yield {"type": "node_finished", "node": node, "output": task["result"]}
+                yield asdict(NodeFinishedEvent(node=node, output=task["result"]))
         except Exception as exc:
             await runs_repo.set_run_status(session, run, RunStatus.FAILED, ended=True)
-            yield {"type": "error", "message": str(exc)}
+            yield asdict(ErrorEvent(message=str(exc)))
             return
 
         status = RunStatus.PAUSED if paused else RunStatus.DONE
         run = await runs_repo.set_run_status(session, run, status, ended=not paused)
-        yield {"type": "run_finished", "status": status.value}
+        yield asdict(RunFinishedEvent(status=status.value))
 
     async def list_pending(self, session: AsyncSession) -> list[PendingApproval]:
         paused = await runs_repo.list_runs(session, status=RunStatus.PAUSED)
