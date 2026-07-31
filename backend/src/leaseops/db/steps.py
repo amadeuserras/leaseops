@@ -8,7 +8,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from leaseops.db.models import Run, Step
+from leaseops.db.models import Step
 
 
 def _jsonable(value: Any) -> Any:
@@ -39,17 +39,3 @@ async def create_step(
 async def list_steps_for_run(session: AsyncSession, run_id: UUID) -> list[Step]:
     stmt = select(Step).where(Step.run_id == run_id).order_by(Step.created_at)
     return list((await session.scalars(stmt)).all())
-
-
-async def list_steps_by_email(session: AsyncSession, email_id: UUID) -> list[Step]:
-    run = (
-        await session.scalars(
-            select(Run)
-            .where(Run.email_id == email_id)
-            .order_by(Run.started_at.desc())
-            .limit(1)
-        )
-    ).first()
-    if run is None:
-        return []
-    return await list_steps_for_run(session, run.id)

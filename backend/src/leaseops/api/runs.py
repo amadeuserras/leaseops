@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from leaseops.agent.runner import GraphRunner
 from leaseops.db import emails as emails_repo
+from leaseops.db import runs as runs_repo
 from leaseops.db import steps as steps_repo
 from leaseops.db.session import SessionLocal, get_session
 from leaseops.models.schemas import (
@@ -73,5 +74,8 @@ async def stream_run(
 
 @router.get("/{email_id}/steps", response_model=StepListResponse)
 async def list_steps(email_id: UUID, session: SessionDep) -> StepListResponse:
-    steps = await steps_repo.list_steps_by_email(session, email_id)
+    run = await runs_repo.get_latest_run_for_email(session, email_id)
+    if run is None:
+        return StepListResponse(items=[])
+    steps = await steps_repo.list_steps_for_run(session, run.id)
     return StepListResponse(items=[StepResponse.model_validate(s) for s in steps])
