@@ -10,7 +10,6 @@ from leaseops.agent.runtime import graph_runner
 from leaseops.api.approvals import router as approvals_router
 from leaseops.api.inbox import router as inbox_router
 from leaseops.api.runs import router as runs_router
-from leaseops.api.steps import router as steps_router
 from leaseops.api.work_orders import router as work_orders_router
 from leaseops.core.config import settings
 from leaseops.core.logging import configure_logging
@@ -36,7 +35,6 @@ app.add_middleware(
 app.include_router(inbox_router)
 app.include_router(work_orders_router)
 app.include_router(runs_router)
-app.include_router(steps_router)
 app.include_router(approvals_router)
 
 

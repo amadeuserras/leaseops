@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from collections.abc import AsyncGenerator
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
@@ -10,8 +11,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from leaseops.agent.runner import GraphRunner
 from leaseops.db import emails as emails_repo
+from leaseops.db import steps as steps_repo
 from leaseops.db.session import SessionLocal, get_session
-from leaseops.models.schemas import RunCreate, RunResponse
+from leaseops.models.schemas import (
+    RunCreate,
+    RunResponse,
+    StepListResponse,
+    StepResponse,
+)
 
 router = APIRouter(prefix="/runs", tags=["runs"])
 
@@ -62,3 +69,9 @@ async def stream_run(
                 yield _sse(event)
 
     return StreamingResponse(event_source(), media_type="text/event-stream")
+
+
+@router.get("/{email_id}/steps", response_model=StepListResponse)
+async def list_steps(email_id: UUID, session: SessionDep) -> StepListResponse:
+    steps = await steps_repo.list_steps_by_email(session, email_id)
+    return StepListResponse(items=[StepResponse.model_validate(s) for s in steps])

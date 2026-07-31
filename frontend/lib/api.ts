@@ -155,6 +155,21 @@ export const streamRun = async ({ emailId, onEvent, signal }: StreamRunOptions):
   if (buffer.trim() !== '') emit(buffer);
 };
 
+export type StepRecord = {
+  id: string;
+  run_id: string;
+  node_name: string;
+  output: Record<string, unknown> | null;
+  tokens: number | null;
+  cost_usd: number | null;
+  created_at: string;
+};
+
+export const listEmailSteps = async (emailId: string): Promise<StepRecord[]> => {
+  const data = await request<{ items: StepRecord[] }>(`/runs/${emailId}/steps`);
+  return data.items;
+};
+
 export const listApprovals = async (): Promise<PendingApproval[]> => {
   const data = await request<{ items: PendingApproval[] }>('/approvals');
   return data.items;
