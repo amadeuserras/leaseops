@@ -12,8 +12,6 @@ from leaseops.agent.types import Status
 
 @dataclass(frozen=True)
 class ApprovalRequest:
-    """What a human approver is shown while the run is paused."""
-
     email_id: UUID
     action_type: str
     summary: str | None
@@ -25,8 +23,6 @@ class ApprovalRequest:
 
 @dataclass(frozen=True)
 class ApprovalDecision:
-    """What the approver sends back to resume the run."""
-
     approved: bool
     rejection_reason: str | None = None
 
@@ -53,8 +49,6 @@ def _approval_request(state: AgentState) -> ApprovalRequest:
 
 
 def approval_gate(state: AgentState) -> _ApprovalResult:
-    # Pauses the run here. On resume the node re-runs and interrupt() returns
-    # the approver's decision.
     raw = cast(dict[str, Any], interrupt(asdict(_approval_request(state))))
     decision = ApprovalDecision(**raw)
     if decision.approved:
