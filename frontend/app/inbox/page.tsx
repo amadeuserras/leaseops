@@ -1,7 +1,6 @@
 'use client';
 
 import { Pill } from '@/components/pill';
-import { useRuns } from '@/components/runs-provider';
 import { useTenants } from '@/components/tenants-provider';
 import { listEmails } from '@/lib/api';
 import type { Email, EmailStatus } from '@/lib/api';
@@ -40,7 +39,6 @@ function FilterChip({ label, active, onSelect }: FilterChipProps) {
 
 export default function InboxPage() {
   const router = useRouter();
-  const { setActiveEmailId } = useRuns();
   const { profileOf } = useTenants();
 
   const [emails, setEmails] = useState<Email[]>([]);
@@ -69,7 +67,6 @@ export default function InboxPage() {
   const visibleRows = filter === 'all' ? rows : rows.filter((row) => row.email.status === filter);
 
   const openRun = (emailId: string) => {
-    setActiveEmailId(emailId);
     router.push(`/runs/${emailId}`);
   };
 

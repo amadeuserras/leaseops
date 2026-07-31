@@ -1,9 +1,4 @@
-'use client';
-
-import { ApiError, streamRun } from '@/lib/api';
-import type { ApprovalRequest, StreamEvent } from '@/lib/api';
-import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { ApprovalRequest, StepRecord, StreamEvent } from '@/lib/api';
 
 export type ToolCallRecord = {
   tool: string;
@@ -31,6 +26,7 @@ export type RunState = {
   emailId: string;
   runId: string | null;
   status: 'streaming' | 'paused' | 'done' | 'failed';
+  source: 'live' | 'db';
   steps: TraceStep[];
   pausedRequest: ApprovalRequest | null;
   error: string | null;
@@ -40,20 +36,6 @@ export type RunState = {
   startedAt: number;
   endedAt: number | null;
 };
-
-const newRun = (emailId: string): RunState => ({
-  emailId,
-  runId: null,
-  status: 'streaming',
-  steps: [],
-  pausedRequest: null,
-  error: null,
-  inputTokens: 0,
-  outputTokens: 0,
-  costUsd: 0,
-  startedAt: Date.now(),
-  endedAt: null,
-});
 
 const patchStep = (
   run: RunState,
@@ -65,7 +47,7 @@ const patchStep = (
   return run.steps.map((step, i) => (i === index ? update(step) : step));
 };
 
-const applyEvent = (run: RunState, event: StreamEvent): RunState => {
+export const applyEvent = (run: RunState, event: StreamEvent): RunState => {
   switch (event.type) {
     case 'run_started':
       return { ...run, runId: event.run_id };
@@ -179,86 +161,28 @@ const applyEvent = (run: RunState, event: StreamEvent): RunState => {
   }
 };
 
-type RunsContextValue = {
-  runs: Record<string, RunState>;
-  activeEmailId: string | null;
-  setActiveEmailId: (emailId: string) => void;
-  startRun: (emailId: string, options?: { force?: boolean }) => void;
-};
-
-const RunsContext = createContext<RunsContextValue | null>(null);
-
-type RunsProviderProps = { children: ReactNode };
-
-export function RunsProvider({ children }: RunsProviderProps) {
-  const [runs, setRuns] = useState<Record<string, RunState>>({});
-  const [activeEmailId, setActiveEmailId] = useState<string | null>(null);
-  const controllers = useRef(new Map<string, AbortController>());
-
-  const startRun = useCallback((emailId: string, options?: { force?: boolean }) => {
-    let started = false;
-
-    setRuns((previous) => {
-      if (previous[emailId] !== undefined && options?.force !== true) return previous;
-      started = true;
-      return { ...previous, [emailId]: newRun(emailId) };
-    });
-
-    if (!started) return;
-
-    controllers.current.get(emailId)?.abort();
-    const controller = new AbortController();
-    controllers.current.set(emailId, controller);
-
-    const onEvent = (event: StreamEvent) =>
-      setRuns((previous) => {
-        const current = previous[emailId];
-        if (current === undefined) return previous;
-        return { ...previous, [emailId]: applyEvent(current, event) };
-      });
-
-    void streamRun({ emailId, onEvent, signal: controller.signal })
-      .catch((cause: unknown) => {
-        if (controller.signal.aborted) return;
-        const message =
-          cause instanceof ApiError || cause instanceof Error
-            ? cause.message
-            : 'the trace stream failed';
-        setRuns((previous) => {
-          const current = previous[emailId];
-          if (current === undefined) return previous;
-          return {
-            ...previous,
-            [emailId]: { ...current, status: 'failed', error: message, endedAt: Date.now() },
-          };
-        });
-      })
-      .finally(() => {
-        setRuns((previous) => {
-          const current = previous[emailId];
-          if (current === undefined || current.status !== 'streaming') return previous;
-          return {
-            ...previous,
-            [emailId]: {
-              ...current,
-              status: current.pausedRequest !== null ? 'paused' : 'done',
-              endedAt: Date.now(),
-            },
-          };
-        });
-      });
-  }, []);
-
-  const value = useMemo<RunsContextValue>(
-    () => ({ runs, activeEmailId, setActiveEmailId, startRun }),
-    [runs, activeEmailId, startRun],
-  );
-
-  return <RunsContext.Provider value={value}>{children}</RunsContext.Provider>;
-}
-
-export const useRuns = (): RunsContextValue => {
-  const context = useContext(RunsContext);
-  if (context === null) throw new Error('useRuns must be used inside <RunsProvider>');
-  return context;
-};
+export const buildRunFromSteps = (emailId: string, dbSteps: StepRecord[]): RunState => ({
+  emailId,
+  runId: dbSteps[0].run_id,
+  status: 'done',
+  source: 'db',
+  steps: dbSteps.map((s) => ({
+    node: s.node_name,
+    status: 'completed' as const,
+    output: s.output,
+    calls: [],
+    model: null,
+    inputTokens: s.tokens ?? 0,
+    outputTokens: 0,
+    costUsd: s.cost_usd ?? 0,
+    startedAt: Date.parse(s.created_at),
+    endedAt: Date.parse(s.created_at),
+  })),
+  pausedRequest: null,
+  error: null,
+  inputTokens: dbSteps.reduce((sum, s) => sum + (s.tokens ?? 0), 0),
+  outputTokens: 0,
+  costUsd: dbSteps.reduce((sum, s) => sum + (s.cost_usd ?? 0), 0),
+  startedAt: Date.parse(dbSteps[0].created_at),
+  endedAt: Date.parse(dbSteps[dbSteps.length - 1].created_at),
+});

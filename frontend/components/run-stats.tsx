@@ -1,6 +1,6 @@
 'use client';
 
-import type { RunState } from '@/components/runs-provider';
+import type { RunState } from '@/lib/run-reducer';
 import { formatCost, formatDuration, formatTokens } from '@/lib/format';
 import { useEffect, useState } from 'react';
 

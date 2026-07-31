@@ -30,18 +30,17 @@ Flagged inline in `lib/api.ts` under the `MOCKED DATA` banner:
 
 ## API gaps worked around in the UI (not mocked — no data was invented)
 
-- **No run history.** `POST /runs/stream` is the only way to get a trace; there is no
-  `GET /runs` or `GET /runs/{id}`. A trace is therefore only visible while its run streams
-  in the current session. Opening a message with no session run shows an empty state with a
-  **Run agent** button rather than fabricated history.
 - **Email urgency is not persisted.** It only exists in the `extract` node's output, so the
   inbox shows `—` until that message has been run.
 - **`EmailStatus` has three values** (`pending`/`processed`/`escalated`) but the design
   needs five. _Running_ and _Awaiting approval_ are derived from live run state and the
   `/approvals` list; the rest map straight from the API.
-- **Auto-run guard.** A message runs automatically only when its status is `pending` and no
-  run exists for it this session; anything else needs an explicit **Run agent** / **Replay**
-  click, so the agent is never fired twice by accident.
+- **Auto-run guard.** On open, the page loads steps from the DB first. It auto-streams only
+  when status is `pending` *and* no steps exist yet; anything else needs an explicit
+  **Run agent** / **Replay** click, so the agent is never fired twice by accident.
 - **Resuming after approval is not streamed.** Approving from the queue calls
   `POST /approvals/{run_id}/approve`, but that run's SSE stream has already closed, so the
   outcome is reflected from the approvals state rather than from new trace events.
+- **Hydrated runs show no tool-call cards.** `GET /steps?email_id=` returns the step rows (node
+  name, output, cost) but the `audit_log` tool-call detail is not fetched, so nodes like
+  `lease_check` and `execute` show no expandable call/result cards in the trace.

@@ -2,7 +2,7 @@
 
 import type { ApprovalDecision } from '@/components/approvals-provider';
 import { Pill } from '@/components/pill';
-import type { TraceStep as TraceStepData } from '@/components/runs-provider';
+import type { TraceStep as TraceStepData } from '@/lib/run-reducer';
 import { ToolCallRow } from '@/components/tool-call-row';
 import type { ApprovalRequest } from '@/lib/api';
 import { formatCost, formatDuration, formatTokens, humanize } from '@/lib/format';

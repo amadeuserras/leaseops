@@ -1,7 +1,6 @@
 'use client';
 
 import { useApprovals } from '@/components/approvals-provider';
-import { useRuns } from '@/components/runs-provider';
 import { getBuildInfo } from '@/lib/api';
 import type { BuildInfo } from '@/lib/api';
 import Link from 'next/link';
@@ -42,14 +41,13 @@ function NavItem({ href, label, active, badge }: NavItemProps) {
 export function Sidebar() {
   const pathname = usePathname();
   const { pendingCount } = useApprovals();
-  const { activeEmailId } = useRuns();
   const [build, setBuild] = useState<BuildInfo | null>(null);
 
   useEffect(() => {
     void getBuildInfo().then(setBuild);
   }, []);
 
-  const runsHref = activeEmailId === null ? '/runs' : `/runs/${activeEmailId}`;
+  const runsHref = pathname.startsWith('/runs/') ? pathname : '/runs';
 
   return (
     <aside className="bg-surface flex w-60 shrink-0 flex-col border-r border-black/8 px-4 py-5">

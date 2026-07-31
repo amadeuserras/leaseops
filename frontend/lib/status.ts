@@ -26,16 +26,6 @@ export const stepDot: Record<StepStatus, string> = {
   failed: 'bg-danger',
 };
 
-export type RunUiStatus = 'streaming' | 'paused' | 'done' | 'failed' | 'idle';
-
-export const runStatusPill: Record<RunUiStatus, string> = {
-  streaming: 'bg-info-bg text-info border-info-line',
-  paused: 'bg-warn-bg text-warn border-warn-line',
-  done: 'bg-success-bg text-success border-success-line',
-  failed: 'bg-danger-bg text-danger border-danger-line',
-  idle: 'bg-muted text-ink/60 border-black/8',
-};
-
 export const actionPill: Record<ActionType, string> = {
   send_reply: 'bg-info-bg text-info border-info/25',
   create_work_order: 'bg-warn-bg text-warn border-warn/25',

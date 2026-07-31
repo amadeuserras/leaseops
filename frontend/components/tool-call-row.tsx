@@ -1,6 +1,6 @@
 'use client';
 
-import type { ToolCallRecord } from '@/components/runs-provider';
+import type { ToolCallRecord } from '@/lib/run-reducer';
 import { splitCitations } from '@/lib/format';
 import { useState } from 'react';
 
