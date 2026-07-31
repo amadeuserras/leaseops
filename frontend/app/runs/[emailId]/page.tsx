@@ -11,7 +11,7 @@ import { TraceStep } from '@/components/trace-step';
 import { getEmail } from '@/lib/api';
 import type { Email } from '@/lib/api';
 import { shortId } from '@/lib/format';
-import { inboxStatusPill } from '@/lib/status';
+import { runStatusPill } from '@/lib/status';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -19,15 +19,15 @@ import { useEffect, useRef, useState } from 'react';
 const runPill = (run: RunState | undefined): { label: string; className: string } => {
   switch (run?.status) {
     case 'streaming':
-      return { label: 'running', className: inboxStatusPill.Running };
+      return { label: 'running', className: runStatusPill.streaming };
     case 'paused':
-      return { label: 'awaiting approval', className: inboxStatusPill['Awaiting approval'] };
+      return { label: 'awaiting approval', className: runStatusPill.paused };
     case 'done':
-      return { label: 'completed', className: inboxStatusPill.Completed };
+      return { label: 'completed', className: runStatusPill.done };
     case 'failed':
-      return { label: 'failed', className: inboxStatusPill.Failed };
+      return { label: 'failed', className: runStatusPill.failed };
     default:
-      return { label: 'not started', className: inboxStatusPill.Unprocessed };
+      return { label: 'not started', className: runStatusPill.idle };
   }
 };
 

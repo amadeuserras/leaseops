@@ -1,14 +1,3 @@
-/**
- * Every call to the LeaseOps API lives here.
- *
- * The browser talks to the FastAPI service directly (CORS is enabled on the
- * backend). Point `NEXT_PUBLIC_LEASEOPS_API_URL` at the API when it is not on
- * the default host.
- *
- * Anything the API does not expose yet is mocked at the bottom of this file
- * under the MOCKED DATA banner, and listed in `frontend/README.md`.
- */
-
 const BASE_PATH = process.env.NEXT_PUBLIC_LEASEOPS_API_URL;
 
 export class ApiError extends Error {

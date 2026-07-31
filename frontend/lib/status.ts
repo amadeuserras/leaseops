@@ -1,24 +1,11 @@
-import type { ActionType } from '@/lib/api';
+import type { ActionType, EmailStatus } from '@/lib/api';
 
-export type InboxStatus =
-  'Unprocessed' | 'Running' | 'Awaiting approval' | 'Completed' | 'Escalated' | 'Failed';
+export const EMAIL_STATUSES: EmailStatus[] = ['pending', 'processed', 'escalated'];
 
-export const INBOX_STATUSES: InboxStatus[] = [
-  'Unprocessed',
-  'Running',
-  'Awaiting approval',
-  'Completed',
-  'Escalated',
-  'Failed',
-];
-
-export const inboxStatusPill: Record<InboxStatus, string> = {
-  Unprocessed: 'bg-muted text-ink/60 border-black/8',
-  Running: 'bg-info-bg text-info border-info-line',
-  'Awaiting approval': 'bg-warn-bg text-warn border-warn-line',
-  Completed: 'bg-success-bg text-success border-success-line',
-  Escalated: 'bg-danger-bg text-danger border-danger-line',
-  Failed: 'bg-danger-bg text-danger border-danger-line',
+export const emailStatusPill: Record<EmailStatus, string> = {
+  pending: 'bg-muted text-ink/60 border-black/8',
+  processed: 'bg-success-bg text-success border-success-line',
+  escalated: 'bg-danger-bg text-danger border-danger-line',
 };
 
 export type StepStatus = 'running' | 'completed' | 'paused' | 'pending' | 'failed';
@@ -39,20 +26,14 @@ export const stepDot: Record<StepStatus, string> = {
   failed: 'bg-danger',
 };
 
-export type Urgency = 'low' | 'medium' | 'high' | 'emergency';
+export type RunUiStatus = 'streaming' | 'paused' | 'done' | 'failed' | 'idle';
 
-export const urgencyText: Record<Urgency, string> = {
-  low: 'text-ink/40',
-  medium: 'text-ink/60',
-  high: 'text-warn',
-  emergency: 'text-danger',
-};
-
-export const urgencyDot: Record<Urgency, string> = {
-  low: 'bg-ink/40',
-  medium: 'bg-ink/60',
-  high: 'bg-warn',
-  emergency: 'bg-danger',
+export const runStatusPill: Record<RunUiStatus, string> = {
+  streaming: 'bg-info-bg text-info border-info-line',
+  paused: 'bg-warn-bg text-warn border-warn-line',
+  done: 'bg-success-bg text-success border-success-line',
+  failed: 'bg-danger-bg text-danger border-danger-line',
+  idle: 'bg-muted text-ink/60 border-black/8',
 };
 
 export const actionPill: Record<ActionType, string> = {
@@ -61,6 +42,3 @@ export const actionPill: Record<ActionType, string> = {
   escalate: 'bg-danger-bg text-danger border-danger/25',
   no_action: 'bg-muted text-ink/60 border-black/10',
 };
-
-export const isUrgency = (value: unknown): value is Urgency =>
-  value === 'low' || value === 'medium' || value === 'high' || value === 'emergency';

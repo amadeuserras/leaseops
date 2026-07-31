@@ -1,43 +1,20 @@
 'use client';
 
-import { useApprovals } from '@/components/approvals-provider';
 import { Pill } from '@/components/pill';
 import { useRuns } from '@/components/runs-provider';
-import type { RunState } from '@/components/runs-provider';
 import { useTenants } from '@/components/tenants-provider';
 import { listEmails } from '@/lib/api';
-import type { Email } from '@/lib/api';
+import type { Email, EmailStatus } from '@/lib/api';
 import { formatReceived, previewOf } from '@/lib/format';
-import { INBOX_STATUSES, inboxStatusPill, isUrgency, urgencyDot, urgencyText } from '@/lib/status';
-import type { InboxStatus, Urgency } from '@/lib/status';
+import { EMAIL_STATUSES, emailStatusPill } from '@/lib/status';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
-const GRID = 'grid grid-cols-[180px_1fr_110px_90px_150px] gap-4 min-w-[780px]';
+const GRID = 'grid grid-cols-[180px_1fr_110px_150px] gap-4 min-w-[680px]';
 
-const deriveStatus = (
-  email: Email,
-  run: RunState | undefined,
-  awaitingApproval: boolean,
-): InboxStatus => {
-  if (run?.status === 'streaming') return 'Running';
-  if (awaitingApproval) return 'Awaiting approval';
-  if (run?.status === 'failed') return 'Failed';
-  if (run?.status === 'done' || run?.status === 'paused') return 'Completed';
-  if (email.status === 'escalated') return 'Escalated';
-  if (email.status === 'processed') return 'Completed';
-  return 'Unprocessed';
-};
+type FilterValue = EmailStatus | 'all';
 
-const deriveUrgency = (run: RunState | undefined): Urgency | null => {
-  const extract = run?.steps.find((step) => step.node === 'extract');
-  const urgency = extract?.output?.urgency;
-  return isUrgency(urgency) ? urgency : null;
-};
-
-type FilterValue = InboxStatus | 'all';
-
-const FILTERS: FilterValue[] = ['all', ...INBOX_STATUSES];
+const FILTERS: FilterValue[] = ['all', ...EMAIL_STATUSES];
 
 type FilterChipProps = {
   label: string;
@@ -63,8 +40,7 @@ function FilterChip({ label, active, onSelect }: FilterChipProps) {
 
 export default function InboxPage() {
   const router = useRouter();
-  const { runs, setActiveEmailId } = useRuns();
-  const { items: approvals, decisions } = useApprovals();
+  const { setActiveEmailId } = useRuns();
   const { profileOf } = useTenants();
 
   const [emails, setEmails] = useState<Email[]>([]);
@@ -81,33 +57,16 @@ export default function InboxPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const awaitingApprovalIds = useMemo(
-    () =>
-      new Set(
-        approvals
-          .filter((item) => decisions[item.run_id] === undefined)
-          .map((item) => item.email_id),
-      ),
-    [approvals, decisions],
-  );
-
   const rows = useMemo(
     () =>
-      emails.map((email) => {
-        const run = runs[email.id];
-        const profile = profileOf(email.sender);
-        return {
-          email,
-          profile,
-          run,
-          status: deriveStatus(email, run, awaitingApprovalIds.has(email.id)),
-          urgency: deriveUrgency(run),
-        };
-      }),
-    [emails, runs, profileOf, awaitingApprovalIds],
+      emails.map((email) => ({
+        email,
+        profile: profileOf(email.sender),
+      })),
+    [emails, profileOf],
   );
 
-  const visibleRows = filter === 'all' ? rows : rows.filter((row) => row.status === filter);
+  const visibleRows = filter === 'all' ? rows : rows.filter((row) => row.email.status === filter);
 
   const openRun = (emailId: string) => {
     setActiveEmailId(emailId);
@@ -158,7 +117,6 @@ export default function InboxPage() {
           <div>Sender</div>
           <div>Subject</div>
           <div>Received</div>
-          <div>Urgency</div>
           <div>Status</div>
         </div>
 
@@ -170,7 +128,7 @@ export default function InboxPage() {
           </div>
         )}
 
-        {visibleRows.map(({ email, profile, status, urgency }) => (
+        {visibleRows.map(({ email, profile }) => (
           <button
             key={email.id}
             type="button"
@@ -190,21 +148,8 @@ export default function InboxPage() {
             <div className="text-ink/55 font-mono text-[12px]">
               {formatReceived(email.received_at)}
             </div>
-            <div
-              className={`flex items-center gap-1.5 text-[12px] font-medium ${
-                urgency === null ? 'text-ink/30' : urgencyText[urgency]
-              }`}
-            >
-              {urgency !== null && (
-                <span
-                  className={`size-1.5 shrink-0 rounded-full ${urgencyDot[urgency]}`}
-                  aria-hidden
-                />
-              )}
-              {urgency === null ? '—' : urgency[0].toUpperCase() + urgency.slice(1)}
-            </div>
             <div>
-              <Pill className={inboxStatusPill[status]}>{status}</Pill>
+              <Pill className={emailStatusPill[email.status]}>{email.status}</Pill>
             </div>
           </button>
         ))}
