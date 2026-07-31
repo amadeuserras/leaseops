@@ -157,6 +157,9 @@ class Step(Base):
     tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
     latency_ms: Mapped[Decimal | None] = mapped_column(Numeric(12, 3), nullable=True)
     cost_usd: Mapped[Decimal | None] = mapped_column(Numeric(12, 6), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_utcnow
+    )
 
 
 class AuditLog(Base):

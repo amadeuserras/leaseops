@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
@@ -48,6 +49,20 @@ class RunResponse(LeaseOpsModel):
     status: RunStatus
     started_at: datetime
     ended_at: datetime | None
+
+
+class StepResponse(LeaseOpsModel):
+    id: UUID
+    run_id: UUID
+    node_name: str
+    output: dict[str, Any] | None
+    tokens: int | None
+    cost_usd: float | None
+    created_at: datetime
+
+
+class StepListResponse(LeaseOpsModel):
+    items: list[StepResponse]
 
 
 class ApprovalRequestResponse(LeaseOpsModel):
