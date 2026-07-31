@@ -19,6 +19,7 @@ from leaseops.agent.events import (
 )
 from leaseops.agent.state import AgentState
 from leaseops.db import runs as runs_repo
+from leaseops.db import steps as steps_repo
 from leaseops.db.models import Email, Run
 from leaseops.models.enums import RunStatus
 
@@ -62,12 +63,16 @@ class GraphRunner:
         yield asdict(RunStartedEvent(run_id=str(run.id)))
 
         paused = False
+        cost_by_node: dict[str, dict[str, Any]] = {}
         try:
             async for mode, chunk in self.graph.astream(
                 initial, config, stream_mode=["tasks", "custom"]
             ):
                 if mode == "custom":
-                    yield cast(dict[str, Any], chunk)
+                    chunk = cast(dict[str, Any], chunk)
+                    if chunk.get("type") == "cost":
+                        cost_by_node[chunk["node"]] = chunk
+                    yield chunk
                     continue
                 task = cast(dict[str, Any], chunk)
                 node = cast(str, task["name"])
@@ -80,6 +85,19 @@ class GraphRunner:
                     request = ApprovalRequest(**interrupts[0]["value"])
                     yield asdict(PausedEvent(request=request))
                     continue
+                cost = cost_by_node.pop(node, None)
+                await steps_repo.create_step(
+                    session,
+                    run_id=run.id,
+                    node_name=node,
+                    output=task["result"],
+                    tokens=(
+                        cost["input_tokens"] + cost["output_tokens"]
+                        if cost is not None
+                        else None
+                    ),
+                    cost_usd=cost["cost_usd"] if cost is not None else None,
+                )
                 yield asdict(NodeFinishedEvent(node=node, output=task["result"]))
         except Exception as exc:
             await runs_repo.set_run_status(session, run, RunStatus.FAILED, ended=True)
