@@ -17,7 +17,9 @@ from leaseops.agent.extract import extract
 from leaseops.agent.lease_check import lease_check
 from leaseops.agent.plan import plan
 from leaseops.agent.state import AgentState
+from leaseops.agent.types import EmailCategory
 
+_AfterExtract = Literal["lease_check", "draft"]
 _AfterApproval = Literal["execute", "end"]
 
 
@@ -50,6 +52,12 @@ async def _execute_node(state: AgentState) -> dict[str, Any]:
     return {}
 
 
+def _after_extract(state: AgentState) -> _AfterExtract:
+    if state.category == EmailCategory.EMERGENCY:
+        return "draft"
+    return "lease_check"
+
+
 def _after_approval(state: AgentState) -> _AfterApproval:
     if state.approved:
         return "execute"
@@ -68,7 +76,11 @@ def build_graph(checkpointer: Any = None) -> Any:
 
     graph.add_edge(START, "classify")
     graph.add_edge("classify", "extract")
-    graph.add_edge("extract", "lease_check")
+    graph.add_conditional_edges(
+        "extract",
+        _after_extract,
+        {"lease_check": "lease_check", "draft": "draft"},
+    )
     graph.add_edge("lease_check", "draft")
     graph.add_edge("draft", "plan")
     graph.add_edge("plan", "approval")
