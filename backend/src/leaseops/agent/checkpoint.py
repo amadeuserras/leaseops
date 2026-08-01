@@ -6,12 +6,10 @@ from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
 # JsonPlusSerializer will (eventually) refuse to deserialize them from msgpack.
 CHECKPOINT_SERDE = JsonPlusSerializer(
     allowed_msgpack_modules=[
-        ("leaseops.agent.types", "Status"),
         ("leaseops.agent.types", "EmailCategory"),
-        ("leaseops.agent.types", "IssueCategory"),
-        ("leaseops.agent.types", "Urgency"),
+        ("leaseops.agent.types", "Severity"),
         ("leaseops.agent.types", "Responsibility"),
-        ("leaseops.agent.types", "ActionType"),
+        ("leaseops.agent.types", "PlanAction"),
         ("asyncpg.pgproto.pgproto", "UUID"),
     ]
 )

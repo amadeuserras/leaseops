@@ -32,9 +32,9 @@ determine what the lease says about it, using the lease_qa tool, and then \
 submit a structured verdict.
 
 ## Your tools
-- lease_qa: asks a question about the tenant's lease. Returns an answer, or \
-states that the lease does not address the question. This tool queries only \
-the relevant tenant's lease — you do not choose the document.
+- lease_qa: asks a question about the tenant's lease, identified by tenant \
+name, address, and unit. Returns an answer, or states that the lease does \
+not address the question. You do not choose a document id.
 - submit_verdict: ends your work by recording your determination. You must \
 always finish by calling this, and only once.
 
@@ -91,8 +91,9 @@ LEASE_QA_TOOL: ToolParam = {
     "name": "lease_qa",
     "description": (
         "Ask one neutral, precise question about the tenant's lease. "
-        "Returns an answer grounded in the lease, or states that the lease "
-        "does not address the question."
+        "The lease is resolved from the tenant name, address, and unit "
+        "already known for this email. Returns an answer grounded in the "
+        "lease, or states that the lease does not address the question."
     ),
     "strict": True,
     "input_schema": transform_schema(_LeaseQaFormat.model_json_schema()),
@@ -107,15 +108,20 @@ SUBMIT_VERDICT_TOOL: ToolParam = {
 
 
 def _task_message(state: AgentState) -> str:
-    category = state.issue_category.value if state.issue_category else "not specified"
-    urgency = state.urgency.value if state.urgency else "not specified"
+    tenant = state.tenant_name or "not specified"
+    unit = state.unit or "not specified"
+    address = state.address or "not specified"
     system = state.appliance_or_system or "not specified"
+    severity = state.severity.value if state.severity else "not specified"
     summary = state.issue_summary or "not specified"
     return (
+        "Tenant lease identity (pass these through lease_qa as given):\n"
+        f"- Tenant name: {tenant}\n"
+        f"- Address: {address}\n"
+        f"- Unit: {unit}\n\n"
         "Reported issue:\n"
-        f"- Category: {category}\n"
         f"- System/appliance involved: {system}\n"
-        f"- Urgency: {urgency}\n"
+        f"- Severity: {severity}\n"
         f"- Summary: {summary}\n\n"
     )
 
@@ -128,7 +134,7 @@ def _find_tool_use(response: Message, name: str) -> ToolUseBlock | None:
 
 
 async def lease_check(state: AgentState) -> _LeaseCheckResult:
-    if state.document_id is None:
+    if state.tenant_name is None or state.address is None:
         return _LeaseCheckResult(
             responsibility=Responsibility.UNCLEAR,
             lease_addresses_issue=False,
@@ -186,7 +192,9 @@ async def lease_check(state: AgentState) -> _LeaseCheckResult:
             question = cast(str, qa_use.input["question"])
             tool_args: dict[str, object] = {
                 "question": question,
-                "document_id": str(state.document_id),
+                "tenant_name": state.tenant_name,
+                "address": state.address,
+                "unit": state.unit,
             }
             emit_tool_call("lease_check", "lease_qa", tool_args)
             try:

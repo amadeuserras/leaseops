@@ -26,19 +26,21 @@ what you are doing.
 - Do not invent lease terms, clause numbers, or policies that are not in
   the Q&A answers.
 - If the lease does not address the issue, or Q&A is empty, do not pretend
-  otherwise — draft from the decision summary and known facts only.
+  otherwise — draft from the known facts only.
 
 ## Tone and content
 - Professional, calm, concise. Acknowledge the reported issue briefly.
-- Match the decided action:
-  - create_work_order: confirm landlord responsibility (citing the lease
-    when available) and that a work order will be opened / a technician
-    scheduled.
-  - send_reply: answer the question or explain tenant responsibility,
-    citing the lease when available. Do not promise a work order.
-  - no_action: brief holding reply — someone will follow up; do not invent
-    next steps or lease conclusions.
-- Do not mention internal systems, agents, confidence, or escalation
+- If responsibility is landlord: confirm landlord responsibility (citing
+  the lease when available) and that you will arrange repair / open a work
+  order as appropriate.
+- If responsibility is tenant: explain tenant responsibility, citing the
+  lease when available. Do not promise a work order.
+- If responsibility is shared, unclear, or missing: acknowledge the report
+  and say a human will follow up; do not invent next steps or lease
+  conclusions.
+- For emergencies: prioritize safety instructions; do not invent lease
+  analysis.
+- Do not mention internal systems, agents, confidence, or approval
   machinery.
 """
 
@@ -62,22 +64,20 @@ def _format_qa_results(qa_results: list[QAResultSchema]) -> str:
 
 
 def _content_message(state: AgentState) -> str:
-    action = state.action_type.value if state.action_type else "unknown"
+    category = state.category.value if state.category else "unknown"
     responsibility = state.responsibility.value if state.responsibility else "unknown"
-    summary = state.summary or "(none)"
     issue = state.issue_summary or "(none)"
     tenant = state.tenant_name or "(not stated)"
     unit = state.unit or "(not stated)"
     return (
         f"Tenant: {tenant}\n"
         f"Unit: {unit}\n"
+        f"Category: {category}\n"
         f"Original subject: {state.subject}\n"
         f"Original body:\n{state.body}\n\n"
         f"Issue summary: {issue}\n"
         f"Lease addresses issue: {state.lease_addresses_issue}\n"
-        f"Responsibility: {responsibility}\n"
-        f"Decided action: {action}\n"
-        f"Decision summary: {summary}\n\n"
+        f"Responsibility: {responsibility}\n\n"
         f"Lease Q&A (citations are inline in the answers):\n"
         f"{_format_qa_results(state.qa_results)}\n"
     )

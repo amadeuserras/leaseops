@@ -9,11 +9,11 @@ import pytest
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import END, START, StateGraph
 
-from leaseops.agent.approval import approval_gate
+from leaseops.agent.approval import approval
 from leaseops.agent.checkpoint import CHECKPOINT_SERDE
 from leaseops.agent.runner import GraphRunner
 from leaseops.agent.state import AgentState
-from leaseops.agent.types import ActionType, Status
+from leaseops.agent.types import PlanAction
 from leaseops.db.models import Email
 from leaseops.models.enums import EmailStatus, RunStatus
 
@@ -27,8 +27,7 @@ def _after_approval(state: AgentState) -> str:
 def _seed_node(state: AgentState) -> dict[str, Any]:
     _ = state
     return {
-        "action_type": ActionType.CREATE_WORK_ORDER,
-        "summary": "Create a work order for a leaky faucet",
+        "actions": [PlanAction.CREATE_WORK_ORDER, PlanAction.SEND_REPLY],
         "draft": "We'll send someone out tomorrow.",
         "tenant_name": "Ada Tenant",
         "unit": "2A",
@@ -36,24 +35,24 @@ def _seed_node(state: AgentState) -> dict[str, Any]:
     }
 
 
-def _approval_gate_node(state: AgentState) -> dict[str, Any]:
-    return asdict(approval_gate(state))
+def _approval_node(state: AgentState) -> dict[str, Any]:
+    return asdict(approval(state))
 
 
 def _execute_node(state: AgentState) -> dict[str, Any]:
     _ = state
-    return {"status": Status.DONE}
+    return {}
 
 
 def build_test_graph(checkpointer: Any) -> Any:
     graph: Any = StateGraph(AgentState)
     graph.add_node("seed", _seed_node)
-    graph.add_node("approval_gate", _approval_gate_node)
+    graph.add_node("approval", _approval_node)
     graph.add_node("execute", _execute_node)
     graph.add_edge(START, "seed")
-    graph.add_edge("seed", "approval_gate")
+    graph.add_edge("seed", "approval")
     graph.add_conditional_edges(
-        "approval_gate",
+        "approval",
         _after_approval,
         {"execute": "execute", "end": END},
     )
@@ -93,7 +92,10 @@ async def test_list_approve_flow(api_client, db_session) -> None:
     items = approvals_response.json()["items"]
     assert len(items) == 1
     assert items[0]["run_id"] == run["id"]
-    assert items[0]["action_type"] == ActionType.CREATE_WORK_ORDER
+    assert items[0]["actions"] == [
+        PlanAction.CREATE_WORK_ORDER,
+        PlanAction.SEND_REPLY,
+    ]
     assert items[0]["issue_summary"] == "leaky faucet"
 
     approve_response = await api_client.post(f"/approvals/{run['id']}/approve")

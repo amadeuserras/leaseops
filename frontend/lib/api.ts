@@ -31,12 +31,11 @@ export type Run = {
   ended_at: string | null;
 };
 
-export type ActionType = 'create_work_order' | 'send_reply' | 'escalate' | 'no_action';
+export type PlanAction = 'create_work_order' | 'send_reply' | 'call_tenant';
 
 export type ApprovalRequest = {
   email_id: string;
-  action_type: ActionType;
-  summary: string | null;
+  actions: PlanAction[];
   draft: string | null;
   tenant_name: string | null;
   unit: string | null;

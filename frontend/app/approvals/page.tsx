@@ -248,9 +248,6 @@ export default function ApprovalsPage() {
         <div className="flex items-baseline justify-between gap-4">
           <div>
             <h1 className="m-0 text-[18px] font-bold tracking-[-0.01em]">Approvals</h1>
-            <p className="text-ink/45 mt-[3px] text-[12.5px]">
-              Triaged tenant email, drafted reply, waiting on your sign-off
-            </p>
           </div>
           <span className="text-ink/38 text-[12.5px] whitespace-nowrap">
             {shown.length} of {items.length} pending · {clearedToday} cleared today

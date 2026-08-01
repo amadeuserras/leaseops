@@ -35,17 +35,6 @@ From `backend/`, run the MCP server with the Inspector (opens in the browser):
 uv run mcp dev src/leaseops/mcp/server.py
 ```
 
-## MCP smoke test
-
-Calls every tool through a bare MCP stdio client (Postgres must be seeded):
-
-```bash
-cd backend
-uv run python scripts/smoke_mcp.py
-# if LeaseClear is not up on LEASECLEAR_BASE_URL:
-uv run python scripts/smoke_mcp.py --skip-lease-qa
-```
-
 ## Tests
 
 ```bash
@@ -76,7 +65,6 @@ leaseops/
 │   ├── alembic/                  # SQLAlchemy migrations
 │   └── src/leaseops/
 │       ├── agent/                # LangGraph graph, nodes, state
-│       ├── policy/               # decide rules, whitelist, caps
 │       ├── mcp/                  # MCP server + tool implementations
 │       ├── api/                  # FastAPI, SSE trace streaming
 │       ├── db/                   # SQLAlchemy 2.0 async

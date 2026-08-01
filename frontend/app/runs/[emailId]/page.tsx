@@ -188,7 +188,7 @@ export default function RunTracePage() {
                 step={step}
                 isLast={index === run.steps.length - 1}
                 pausedRequest={run.pausedRequest}
-                decision={step.node === 'approval_gate' ? decision : null}
+                decision={step.node === 'approval' ? decision : null}
               />
             ))}
           </div>

@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from uuid import UUID
 
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 
 from leaseops.agent.events import emit_cost
 from leaseops.agent.state import AgentState
-from leaseops.agent.types import IssueCategory, Urgency
+from leaseops.agent.types import Severity
 from leaseops.core.config import settings
 from leaseops.db import tenants as tenants_repo
 from leaseops.db.models import Tenant
@@ -21,12 +20,7 @@ You extract structured fields from a residential property-manager email.
 
 Fill these fields from the subject and body only:
 
-- tenant_name: the tenant's name if stated; otherwise null
-- unit: unit / apartment number if stated; otherwise null
-- address: street address / building if stated; otherwise null
-- issue_category: plumbing | electrical | hvac | appliance | structural |
-  pest | access | other
-- urgency: low | medium | high | emergency
+- severity: high | medium | low
 - appliance_or_system: the specific appliance or system named (e.g. "dishwasher",
   "furnace", "front door lock"); otherwise null
 - issue_summary: a neutral factual restatement of the reported problem,
@@ -37,18 +31,11 @@ Fill these fields from the subject and body only:
 
 Rules:
 - Do not invent details that are not in the email.
-- If the unit, address, or tenant name is missing or ambiguous, use null.
-- Prefer emergency urgency only for immediate safety risks (gas, active flooding,
-  fire, sparking electrical, CO, collapse risk).
 """
 
 
 class _ExtractFormat(BaseModel):
-    tenant_name: str | None = None
-    unit: str | None = None
-    address: str | None = None
-    issue_category: IssueCategory
-    urgency: Urgency
+    severity: Severity
     appliance_or_system: str | None = None
     issue_summary: str
 
@@ -58,11 +45,9 @@ class _ExtractResult:
     tenant_name: str | None
     unit: str | None
     address: str | None
-    issue_category: IssueCategory
-    urgency: Urgency
-    appliance_or_system: str | None
     issue_summary: str
-    document_id: UUID | None
+    severity: Severity
+    appliance_or_system: str | None
 
 
 def _content_message(state: AgentState) -> str:
@@ -102,12 +87,10 @@ async def extract(state: AgentState) -> _ExtractResult:
     fields = await _extract_fields(state)
     tenant = await _lookup_tenant(state.sender)
     return _ExtractResult(
-        tenant_name=fields.tenant_name or (tenant.name if tenant else None),
-        unit=fields.unit or (tenant.unit if tenant else None),
-        address=fields.address or (tenant.address if tenant else None),
-        issue_category=fields.issue_category,
-        urgency=fields.urgency,
-        appliance_or_system=fields.appliance_or_system,
+        tenant_name=tenant.name if tenant else None,
+        unit=tenant.unit if tenant else None,
+        address=tenant.address if tenant else None,
         issue_summary=fields.issue_summary,
-        document_id=tenant.document_id if tenant else None,
+        severity=fields.severity,
+        appliance_or_system=fields.appliance_or_system,
     )

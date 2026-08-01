@@ -38,8 +38,7 @@ async def list_pending_approvals(
             ApprovalRequestResponse(
                 run_id=item.run_id,
                 email_id=item.request.email_id,
-                action_type=item.request.action_type,
-                summary=item.request.summary,
+                actions=item.request.actions,
                 draft=item.request.draft,
                 tenant_name=item.request.tenant_name,
                 unit=item.request.unit,

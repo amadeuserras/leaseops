@@ -68,8 +68,7 @@ class StepListResponse(LeaseOpsModel):
 class ApprovalRequestResponse(LeaseOpsModel):
     run_id: UUID
     email_id: UUID
-    action_type: str
-    summary: str | None
+    actions: list[str]
     draft: str | None
     tenant_name: str | None
     unit: str | None

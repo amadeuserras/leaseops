@@ -11,7 +11,7 @@ import type { StepStatus } from '@/lib/status';
 import { useState } from 'react';
 
 const EXTRACT_LEFT = ['tenant_name', 'address', 'unit', 'appliance_or_system'];
-const EXTRACT_RIGHT = ['urgency', 'issue_category', 'issue_summary'];
+const EXTRACT_RIGHT = ['severity', 'issue_summary'];
 
 const readField = (output: Record<string, unknown> | null, key: string): string | null => {
   const value = output?.[key];
@@ -108,12 +108,13 @@ function StepBody({ step, pausedRequest, decision }: StepBodyProps) {
     );
   }
 
-  if (node === 'decide' || node === 'escalate' || node === 'no_action') {
+  if (node === 'plan') {
     if (output === null) return <Skeleton />;
-    const fields = ['action_type', 'summary']
-      .map((key) => ({ key, value: readField(output, key) }))
-      .filter((field): field is { key: string; value: string } => field.value !== null);
-    return <FieldGrid fields={fields} />;
+    const actions = output.actions;
+    const value =
+      Array.isArray(actions) ? actions.map(String).join(', ') : readField(output, 'actions');
+    if (value === null) return <Skeleton />;
+    return <FieldGrid fields={[{ key: 'actions', value }]} />;
   }
 
   if (node === 'draft') {
@@ -122,7 +123,7 @@ function StepBody({ step, pausedRequest, decision }: StepBodyProps) {
     return <p className="text-ink-soft text-[13px] leading-relaxed whitespace-pre-line">{draft}</p>;
   }
 
-  if (node === 'approval_gate') {
+  if (node === 'approval' || node === 'approval_gate') {
     if (decision !== null) {
       const approved = decision.outcome === 'approved';
       return (
@@ -141,11 +142,13 @@ function StepBody({ step, pausedRequest, decision }: StepBodyProps) {
     }
 
     if (step.status === 'paused') {
+      const planned =
+        pausedRequest?.actions?.length ? pausedRequest.actions.join(', ') : 'planned';
       return (
         <div className="animate-pulse-amber border-warn-line bg-warn-bg text-warn rounded-[7px] border px-3.5 py-3 text-[13px] leading-normal">
           Waiting for human approval — every{' '}
-          <span className="font-mono">{pausedRequest?.action_type ?? 'agent'}</span> action is
-          routed for review before it executes.
+          <span className="font-mono">{planned}</span> action is routed for review before it
+          executes.
         </div>
       );
     }

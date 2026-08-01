@@ -130,13 +130,27 @@ async def send_reply(email_id: UUID, draft_text: str) -> OutboxResponse:
 
 
 @mcp.tool()
-async def lease_qa(question: str, document_id: UUID) -> LeaseQAResponse:
-    """Ask LeaseClear a lease question for a document."""
+async def lease_qa(
+    question: str,
+    tenant_name: str,
+    address: str,
+    unit: str | None = None,
+) -> LeaseQAResponse:
+    """Ask LeaseClear a lease question for a tenant identified by name/address/unit."""
     text = question.strip()
     if not text:
         raise ToolError("question must not be empty")
+    async with SessionLocal() as session:
+        tenant = await tenants_repo.get_tenant_by_identity(
+            session, tenant_name, address, unit
+        )
+    if tenant is None:
+        raise ToolError(
+            "tenant not found for "
+            f"name={tenant_name!r} address={address!r} unit={unit!r}"
+        )
     try:
-        return await leaseclear.ask(text, document_id)
+        return await leaseclear.ask(text, tenant.document_id)
     except LeaseClearError as exc:
         raise ToolError(str(exc)) from exc
     except httpx.RequestError as exc:
