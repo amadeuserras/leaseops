@@ -6,6 +6,7 @@ from uuid import UUID
 
 from langgraph.types import interrupt
 
+from leaseops.agent.citations import first_citation
 from leaseops.agent.state import AgentState
 from leaseops.agent.types import EmailCategory
 
@@ -52,7 +53,7 @@ def _approval_request(state: AgentState) -> ApprovalRequest:
         address=state.address,
         issue_summary=state.issue_summary,
         responsibility=responsibility,
-        citation=state.citation,
+        citation=first_citation(state.qa_results),
         original_email=state.body,
         draft=state.draft,
     )

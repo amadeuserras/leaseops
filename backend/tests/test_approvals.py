@@ -13,7 +13,13 @@ from leaseops.agent.approval import approval
 from leaseops.agent.checkpoint import CHECKPOINT_SERDE
 from leaseops.agent.runner import GraphRunner
 from leaseops.agent.state import AgentState
-from leaseops.agent.types import EmailCategory, PlanAction, Responsibility, Severity
+from leaseops.agent.types import (
+    EmailCategory,
+    PlanAction,
+    QAResultSchema,
+    Responsibility,
+    Severity,
+)
 from leaseops.db.models import Email
 from leaseops.models.enums import EmailStatus, RunStatus
 
@@ -36,7 +42,13 @@ def _seed_node(state: AgentState) -> dict[str, Any]:
         "address": "12 Example Street",
         "issue_summary": "leaky faucet",
         "responsibility": Responsibility.LANDLORD,
-        "citation": "hardcoded-lease §7.2",
+        "qa_results": [
+            QAResultSchema(
+                question="Who is responsible for faucet repairs?",
+                answer="Landlord. [hardcoded-lease §7.2]",
+                citations=["[hardcoded-lease §7.2]"],
+            )
+        ],
     }
 
 
@@ -106,7 +118,7 @@ async def test_list_approve_flow(api_client, db_session) -> None:
     assert item["address"] == "12 Example Street"
     assert item["issue_summary"] == "leaky faucet"
     assert item["responsibility"] == Responsibility.LANDLORD
-    assert item["citation"] == "hardcoded-lease §7.2"
+    assert item["citation"] == "[hardcoded-lease §7.2]"
     assert item["original_email"] == "Kitchen sink is dripping."
     assert item["draft"] == "We'll send someone out tomorrow."
 

@@ -34,3 +34,4 @@ class PlanAction(StrEnum):
 class QAResultSchema:
     question: str
     answer: str
+    citations: list[str]

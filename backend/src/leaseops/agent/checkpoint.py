@@ -10,6 +10,7 @@ CHECKPOINT_SERDE = JsonPlusSerializer(
         ("leaseops.agent.types", "Severity"),
         ("leaseops.agent.types", "Responsibility"),
         ("leaseops.agent.types", "PlanAction"),
+        ("leaseops.agent.types", "QAResultSchema"),
         ("asyncpg.pgproto.pgproto", "UUID"),
     ]
 )
