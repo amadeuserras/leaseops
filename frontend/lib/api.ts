@@ -316,6 +316,161 @@ export const listTenants = async (): Promise<Tenant[]> =>
     },
   ]);
 
+export type ApprovalCategory = 'emergency' | 'maintenance' | 'lease_question';
+export type ApprovalSeverity = 'critical' | 'high' | 'medium' | 'low';
+export type ApprovalResponsibility = 'landlord' | 'tenant';
+export type ApprovalAction = 'call_tenant' | 'send_reply' | 'create_work_order' | 'mark_complete';
+
+export type ApprovalQueueItem = {
+  run_id: string;
+  email_id: string;
+  category: ApprovalCategory;
+  severity: ApprovalSeverity;
+  received_at: string;
+  tenant_name: string;
+  unit: string | null;
+  address: string;
+  issue_summary: string;
+  issue_category: string;
+  responsibility: ApprovalResponsibility | null;
+  lease_citation: string | null;
+  original_email: string;
+  draft: string;
+  actions: ApprovalAction[];
+};
+
+export type ApprovalQueueResponse = {
+  items: ApprovalQueueItem[];
+  cleared_today: number;
+};
+
+/**
+ * MOCK — no endpoint exposes the triage queue the Approvals page needs
+ * (category/severity/responsibility, the original email, and which actions
+ * apply to each item). Replace with a real `GET /approvals/queue` once it
+ * exists; the shape above (`ApprovalQueueResponse`) is the intended contract.
+ */
+export const listApprovalQueue = async (): Promise<ApprovalQueueResponse> =>
+  Promise.resolve({
+    cleared_today: 9,
+    items: [
+      {
+        run_id: 'a1b2c3d4-0001-4a00-9c00-000000000001',
+        email_id: 'e1b2c3d4-0001-4a00-9c00-000000000001',
+        category: 'emergency',
+        severity: 'critical',
+        received_at: new Date(Date.now() - 4 * 60_000).toISOString(),
+        tenant_name: 'DeShawn Johnson',
+        unit: '5',
+        address: '1142 Sunset Ridge Drive, Los Angeles, CA 90026',
+        issue_summary: 'Gas smell in the kitchen, worsening since this morning',
+        issue_category: 'Gas / utilities',
+        responsibility: null,
+        lease_citation: null,
+        original_email:
+          "There's a strong smell of gas in the kitchen — it was faint when I woke up and it's much worse now. I've opened the windows but it isn't clearing. What should I do?",
+        draft:
+          "DeShawn — please leave the building immediately and do not switch anything electrical on or off on your way out. Once you're outside, call the gas emergency line on 0800 111 999.\n\nI'm contacting our on-call engineer now and will call you within the next few minutes.",
+        actions: ['call_tenant', 'send_reply'],
+      },
+      {
+        run_id: 'a1b2c3d4-0002-4a00-9c00-000000000002',
+        email_id: 'e1b2c3d4-0002-4a00-9c00-000000000002',
+        category: 'maintenance',
+        severity: 'medium',
+        received_at: new Date(Date.now() - 22 * 60_000).toISOString(),
+        tenant_name: 'Astrid Lindqvist',
+        unit: '2B',
+        address: '3712 Lake Harriet Pkwy, Minneapolis, Minnesota',
+        issue_summary: 'Blocked kitchen sink after tenant used drain cleaner',
+        issue_category: 'Plumbing',
+        responsibility: 'landlord',
+        lease_citation: 'lake-harriet-lindqvist §7.2',
+        original_email:
+          "The kitchen sink has been draining slowly for a few days and now it's completely blocked. I tried a bottle of drain cleaner last night and it didn't help. Can someone come look at it?",
+        draft:
+          "Hi Astrid, thanks for flagging this. Clearing a blocked drain falls to us as landlord under §7.2 of your lease, so we'll cover the callout. One note for next time — pouring drain cleaner can damage the trap, so please hold off on that and let us handle it.\n\nI can get a plumber out tomorrow between 10am and 2pm. Does that window work for you?",
+        actions: ['send_reply', 'create_work_order', 'mark_complete'],
+      },
+      {
+        run_id: 'a1b2c3d4-0003-4a00-9c00-000000000003',
+        email_id: 'e1b2c3d4-0003-4a00-9c00-000000000003',
+        category: 'maintenance',
+        severity: 'high',
+        received_at: new Date(Date.now() - 60 * 60_000).toISOString(),
+        tenant_name: 'Darnell Washington',
+        unit: '14C',
+        address: '5522 Westheimer Road, Houston, TX 77056',
+        issue_summary: 'Water through bedroom ceiling when the flat above runs a bath',
+        issue_category: 'Plumbing / structural',
+        responsibility: 'landlord',
+        lease_citation: 'westheimer-washington §7.1',
+        original_email:
+          "Every time the flat above runs a bath, water comes through my bedroom ceiling. There's a brown stain spreading and it dripped onto the bed last night.",
+        draft:
+          "Hi Darnell, this is a structural plumbing issue and sits with us under §7.1. I've flagged it as urgent and we'll have someone inspect both units today — we may need brief access to the flat above as well.\n\nPlease move anything valuable out from under the affected area in the meantime.",
+        actions: ['send_reply', 'create_work_order', 'mark_complete'],
+      },
+      {
+        run_id: 'a1b2c3d4-0004-4a00-9c00-000000000004',
+        email_id: 'e1b2c3d4-0004-4a00-9c00-000000000004',
+        category: 'maintenance',
+        severity: 'low',
+        received_at: new Date(Date.now() - 2 * 60 * 60_000).toISOString(),
+        tenant_name: 'Soo-Jin Park',
+        unit: '8B',
+        address: '302 Fern Valley Road, Ashford Heights, OR 97201',
+        issue_summary: 'Cracked toilet seat, believes it broke from normal use',
+        issue_category: 'Fixtures',
+        responsibility: 'tenant',
+        lease_citation: 'fern-valley-park §7.4',
+        original_email:
+          'The toilet seat in the main bathroom has cracked right along the hinge. Nothing unusual happened, it just went. Is that something you replace?',
+        draft:
+          "Hi Soo-Jin, this one falls to you under the lease (§7.4 covers tenant fixtures), but we can arrange it through our handyman and bill it at cost — around $60 including fitting — if that's easier than sourcing it yourself. Just let me know which you'd prefer.",
+        actions: ['send_reply', 'mark_complete'],
+      },
+      {
+        run_id: 'a1b2c3d4-0005-4a00-9c00-000000000005',
+        email_id: 'e1b2c3d4-0005-4a00-9c00-000000000005',
+        category: 'lease_question',
+        severity: 'low',
+        received_at: new Date(Date.now() - 3 * 60 * 60_000).toISOString(),
+        tenant_name: 'Priya Nadkarni',
+        unit: '3C',
+        address: '77 Larkspur Lane, Port Marlow, CA 94066',
+        issue_summary: 'Asking whether she can repaint the living room light blue',
+        issue_category: 'Alterations',
+        responsibility: 'tenant',
+        lease_citation: 'larkspur-nadkarni §6.1',
+        original_email:
+          "Quick question — am I allowed to repaint the living room? I was thinking a light blue. Happy to paint it back before I move out if that's needed.",
+        draft:
+          "Hi Priya, the lease requires the landlord's prior written consent before painting (§6.1), so we'd need to approve the colour before you start. Happy to put that request in for you — just confirm the exact shade and whether you'll restore the original on move-out.",
+        actions: ['send_reply', 'mark_complete'],
+      },
+      {
+        run_id: 'a1b2c3d4-0006-4a00-9c00-000000000006',
+        email_id: 'e1b2c3d4-0006-4a00-9c00-000000000006',
+        category: 'maintenance',
+        severity: 'low',
+        received_at: new Date(Date.now() - 5 * 60 * 60_000).toISOString(),
+        tenant_name: 'Maria Elena Vega',
+        unit: null,
+        address: '884 Pelican Court, Oxnard, CA 93035',
+        issue_summary: 'Porch light has been flickering for a week',
+        issue_category: 'Electrical',
+        responsibility: 'landlord',
+        lease_citation: 'pelican-vega §7.2',
+        original_email:
+          "The porch light outside my door has been flickering on and off for about a week. It's not urgent but it's getting annoying — could someone take a look?",
+        draft:
+          "Hi Maria, thanks for the heads up — exterior lighting is on us under §7.2, so I'll get an electrician scheduled. It's not urgent so I've queued it for our next routine visit, but let me know if it starts acting up more and I'll move it up.",
+        actions: ['send_reply', 'create_work_order', 'mark_complete'],
+      },
+    ],
+  });
+
 export type BuildInfo = {
   evalsPassing: number;
   evalsTotal: number;
