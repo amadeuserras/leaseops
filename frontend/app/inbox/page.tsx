@@ -5,7 +5,7 @@ import { useTenants } from '@/components/tenants-provider';
 import { listEmails } from '@/lib/api';
 import type { Email, EmailStatus } from '@/lib/api';
 import { formatReceived, previewOf } from '@/lib/format';
-import { EMAIL_STATUSES, emailStatusPill } from '@/lib/status';
+import { EMAIL_STATUSES, emailStatusLabel, emailStatusPill } from '@/lib/status';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -89,7 +89,7 @@ export default function InboxPage() {
           {FILTERS.map((value) => (
             <FilterChip
               key={value}
-              label={value === 'all' ? 'All' : value}
+              label={value === 'all' ? 'All' : emailStatusLabel[value]}
               active={filter === value}
               onSelect={() => setFilter(value)}
             />
@@ -146,7 +146,9 @@ export default function InboxPage() {
               {formatReceived(email.received_at)}
             </div>
             <div>
-              <Pill className={emailStatusPill[email.status]}>{email.status}</Pill>
+              <Pill className={emailStatusPill[email.status]}>
+                {emailStatusLabel[email.status]}
+              </Pill>
             </div>
           </button>
         ))}

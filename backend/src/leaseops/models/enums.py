@@ -5,8 +5,9 @@ from enum import StrEnum
 
 class EmailStatus(StrEnum):
     PENDING = "pending"
+    PROCESSING = "processing"
+    AWAITING_APPROVAL = "awaiting_approval"
     PROCESSED = "processed"
-    ESCALATED = "escalated"
 
 
 class WorkOrderStatus(StrEnum):

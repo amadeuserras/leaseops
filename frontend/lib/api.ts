@@ -10,7 +10,7 @@ export class ApiError extends Error {
   }
 }
 
-export type EmailStatus = 'pending' | 'processed' | 'escalated';
+export type EmailStatus = 'pending' | 'processing' | 'awaiting_approval' | 'processed';
 
 export type Email = {
   id: string;

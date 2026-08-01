@@ -42,7 +42,7 @@ class Email(Base):
     __tablename__ = "emails"
     __table_args__ = (
         CheckConstraint(
-            "status IN ('pending', 'processed', 'escalated')",
+            "status IN ('pending', 'processing', 'awaiting_approval', 'processed')",
             name="emails_status_check",
         ),
     )

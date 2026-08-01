@@ -105,6 +105,9 @@ async def test_list_approve_flow(api_client, db_session) -> None:
     run = run_response.json()
     assert run["status"] == RunStatus.PAUSED
 
+    await db_session.refresh(email)
+    assert email.status == EmailStatus.AWAITING_APPROVAL
+
     approvals_response = await api_client.get("/approvals")
     assert approvals_response.status_code == 200
     items = approvals_response.json()["items"]
@@ -132,6 +135,9 @@ async def test_list_approve_flow(api_client, db_session) -> None:
     assert approve_response.status_code == 200
     assert approve_response.json()["status"] == RunStatus.DONE
 
+    await db_session.refresh(email)
+    assert email.status == EmailStatus.PROCESSING
+
     approvals_response = await api_client.get("/approvals")
     assert approvals_response.json()["items"] == []
 
@@ -142,10 +148,16 @@ async def test_reject_completes(api_client, db_session) -> None:
     run_response = await api_client.post("/runs", json={"email_id": str(email.id)})
     run_id = run_response.json()["id"]
 
+    await db_session.refresh(email)
+    assert email.status == EmailStatus.AWAITING_APPROVAL
+
     reject_response = await api_client.post(f"/approvals/{run_id}/reject")
 
     assert reject_response.status_code == 200
     assert reject_response.json()["status"] == RunStatus.DONE
+
+    await db_session.refresh(email)
+    assert email.status == EmailStatus.PENDING
 
 
 async def test_approve_unknown_run_is_404(api_client) -> None:

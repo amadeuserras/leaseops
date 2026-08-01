@@ -18,10 +18,11 @@ from leaseops.agent.events import (
     RunStartedEvent,
 )
 from leaseops.agent.state import AgentState
+from leaseops.db import emails as emails_repo
 from leaseops.db import runs as runs_repo
 from leaseops.db import steps as steps_repo
 from leaseops.db.models import Email, Run
-from leaseops.models.enums import RunStatus
+from leaseops.models.enums import EmailStatus, RunStatus
 
 
 @dataclass(frozen=True)
@@ -36,6 +37,7 @@ class GraphRunner:
 
     async def start(self, session: AsyncSession, email: Email) -> Run:
         run = await runs_repo.create_run(session, email.id)
+        await emails_repo.set_email_status(session, email.id, EmailStatus.PROCESSING)
         config = self._thread_config(run.id)
         initial = AgentState(
             email_id=email.id,
@@ -47,6 +49,9 @@ class GraphRunner:
         await self.graph.ainvoke(initial, config)
         snapshot = await self.graph.aget_state(config)
         if snapshot.interrupts:
+            await emails_repo.set_email_status(
+                session, email.id, EmailStatus.AWAITING_APPROVAL
+            )
             return await runs_repo.set_run_status(session, run, RunStatus.PAUSED)
         return await runs_repo.set_run_status(session, run, RunStatus.DONE, ended=True)
 
@@ -54,6 +59,7 @@ class GraphRunner:
         self, session: AsyncSession, email: Email
     ) -> AsyncGenerator[dict[str, Any]]:
         run = await runs_repo.create_run(session, email.id)
+        await emails_repo.set_email_status(session, email.id, EmailStatus.PROCESSING)
         config = self._thread_config(run.id)
         initial = AgentState(
             email_id=email.id,
@@ -84,6 +90,9 @@ class GraphRunner:
                 interrupts = cast(list[dict[str, Any]], task["interrupts"])
                 if interrupts:
                     paused = True
+                    await emails_repo.set_email_status(
+                        session, email.id, EmailStatus.AWAITING_APPROVAL
+                    )
                     request = ApprovalRequest(**interrupts[0]["value"])
                     yield asdict(PausedEvent(request=request))
                     continue
@@ -146,6 +155,11 @@ class GraphRunner:
         if run.status != RunStatus.PAUSED:
             raise RuntimeError("run is not waiting for approval")
 
+        if decision.approved:
+            await emails_repo.set_email_status(
+                session, run.email_id, EmailStatus.PROCESSING
+            )
+
         config = self._thread_config(run_id)
         try:
             await self.graph.ainvoke(
@@ -155,6 +169,11 @@ class GraphRunner:
         except Exception:
             await runs_repo.set_run_status(session, run, RunStatus.FAILED, ended=True)
             raise
+
+        if not decision.approved:
+            await emails_repo.set_email_status(
+                session, run.email_id, EmailStatus.PENDING
+            )
         return await runs_repo.set_run_status(session, run, RunStatus.DONE, ended=True)
 
     async def _pending_request(self, run_id: UUID) -> ApprovalRequest | None:

@@ -1,16 +1,24 @@
-import type {
-  ApprovalCategory,
-  ApprovalSeverity,
-  PlanAction,
-  EmailStatus,
-} from '@/lib/api';
+import type { ApprovalCategory, ApprovalSeverity, PlanAction, EmailStatus } from '@/lib/api';
 
-export const EMAIL_STATUSES: EmailStatus[] = ['pending', 'processed', 'escalated'];
+export const EMAIL_STATUSES: EmailStatus[] = [
+  'pending',
+  'processing',
+  'awaiting_approval',
+  'processed',
+];
+
+export const emailStatusLabel: Record<EmailStatus, string> = {
+  pending: 'pending',
+  processing: 'processing',
+  awaiting_approval: 'awaiting approval',
+  processed: 'processed',
+};
 
 export const emailStatusPill: Record<EmailStatus, string> = {
   pending: 'bg-muted text-ink/60 border-black/8',
+  processing: 'bg-info-bg text-info border-info-line',
+  awaiting_approval: 'bg-warn-bg text-warn border-warn-line',
   processed: 'bg-success-bg text-success border-success-line',
-  escalated: 'bg-danger-bg text-danger border-danger-line',
 };
 
 export type StepStatus = 'running' | 'completed' | 'paused' | 'pending' | 'failed';
