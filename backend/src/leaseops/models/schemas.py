@@ -75,10 +75,12 @@ class ApprovalRequestResponse(LeaseOpsModel):
     unit: str | None
     address: str | None
     issue_summary: str | None
+    appliance_or_system: str | None
     responsibility: str | None
     citation: str | None
     original_email: str
     draft: str | None
+    actions: list[str]
 
 
 class ApprovalListResponse(LeaseOpsModel):

@@ -20,10 +20,12 @@ class ApprovalRequest:
     unit: str | None
     address: str | None
     issue_summary: str | None
+    appliance_or_system: str | None
     responsibility: str | None
     citation: str | None
     original_email: str
     draft: str | None
+    actions: list[str]
 
 
 @dataclass(frozen=True)
@@ -51,10 +53,12 @@ def _approval_request(state: AgentState) -> ApprovalRequest:
         unit=state.unit,
         address=state.address,
         issue_summary=state.issue_summary,
+        appliance_or_system=state.appliance_or_system,
         responsibility=responsibility,
         citation=first_citation(state.qa_results),
         original_email=state.body,
         draft=state.draft,
+        actions=[action.value for action in state.actions],
     )
 
 

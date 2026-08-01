@@ -41,6 +41,7 @@ def _seed_node(state: AgentState) -> dict[str, Any]:
         "unit": "2A",
         "address": "12 Example Street",
         "issue_summary": "leaky faucet",
+        "appliance_or_system": "faucet",
         "responsibility": Responsibility.LANDLORD,
         "qa_results": [
             QAResultSchema(
@@ -117,10 +118,15 @@ async def test_list_approve_flow(api_client, db_session) -> None:
     assert item["unit"] == "2A"
     assert item["address"] == "12 Example Street"
     assert item["issue_summary"] == "leaky faucet"
+    assert item["appliance_or_system"] == "faucet"
     assert item["responsibility"] == Responsibility.LANDLORD
     assert item["citation"] == "[hardcoded-lease §7.2]"
     assert item["original_email"] == "Kitchen sink is dripping."
     assert item["draft"] == "We'll send someone out tomorrow."
+    assert item["actions"] == [
+        PlanAction.CREATE_WORK_ORDER,
+        PlanAction.SEND_REPLY,
+    ]
 
     approve_response = await api_client.post(f"/approvals/{run['id']}/approve")
     assert approve_response.status_code == 200

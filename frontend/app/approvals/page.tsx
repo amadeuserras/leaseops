@@ -1,30 +1,23 @@
 'use client';
 
-import type {
-  ApprovalAction,
-  ApprovalCategory,
-  ApprovalQueueItem,
-  ApprovalSeverity,
-} from '@/lib/api';
-import { listApprovalQueue } from '@/lib/api';
+import { useApprovals } from '@/components/approvals-provider';
+import type { ApprovalCategory, ApprovalSeverity, PendingApproval } from '@/lib/api';
 import { formatRelativeTime } from '@/lib/format';
 import {
-  approvalActionButton,
-  approvalActionDoneLabel,
   approvalActionLabel,
   approvalCategoryBadge,
   approvalCategoryLabel,
   approvalResponsibilityLabel,
   approvalSeverityDot,
 } from '@/lib/status';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 type CategoryFilter = ApprovalCategory | 'all';
 type SeverityFilter = ApprovalSeverity | 'all';
 type ResponsibilityFilter = 'landlord' | 'tenant' | 'all';
 
 const CATEGORY_OPTIONS: CategoryFilter[] = ['all', 'emergency', 'maintenance', 'lease_question'];
-const SEVERITY_OPTIONS: SeverityFilter[] = ['all', 'critical', 'high', 'medium', 'low'];
+const SEVERITY_OPTIONS: SeverityFilter[] = ['all', 'high', 'medium', 'low'];
 const RESPONSIBILITY_OPTIONS: ResponsibilityFilter[] = ['all', 'landlord', 'tenant'];
 
 const categoryOptionLabel = (value: CategoryFilter): string =>
@@ -32,6 +25,9 @@ const categoryOptionLabel = (value: CategoryFilter): string =>
 
 const responsibilityOptionLabel = (value: ResponsibilityFilter): string =>
   value === 'all' ? 'All' : approvalResponsibilityLabel[value];
+
+const displayCitation = (citation: string): string =>
+  citation.startsWith('[') && citation.endsWith(']') ? citation.slice(1, -1) : citation;
 
 type FilterChipProps = { label: string; active: boolean; onSelect: () => void };
 
@@ -84,17 +80,27 @@ function FilterGroup<T extends string>({
 }
 
 type ApprovalRowProps = {
-  item: ApprovalQueueItem;
+  item: PendingApproval;
   isOpen: boolean;
   onToggle: () => void;
-  resolvedAction: ApprovalAction | null;
-  onRunAction: (action: ApprovalAction) => void;
+  busy: boolean;
+  error: string | null;
+  onApprove: () => void;
+  onReject: () => void;
 };
 
-function ApprovalRow({ item, isOpen, onToggle, resolvedAction, onRunAction }: ApprovalRowProps) {
+function ApprovalRow({
+  item,
+  isOpen,
+  onToggle,
+  busy,
+  error,
+  onApprove,
+  onReject,
+}: ApprovalRowProps) {
   const isEmergency = item.category === 'emergency';
   const who = [item.tenant_name, item.unit === null ? null : `Unit ${item.unit}`, item.address]
-    .filter((part): part is string => part !== null)
+    .filter((part): part is string => Boolean(part))
     .join(' · ');
 
   return (
@@ -102,7 +108,7 @@ function ApprovalRow({ item, isOpen, onToggle, resolvedAction, onRunAction }: Ap
       onClick={onToggle}
       className={`bg-surface flex cursor-pointer flex-col gap-3.5 rounded-[14px] border p-[18px] shadow-[0_1px_2px_rgba(0,0,0,0.04)] ${
         isEmergency ? 'border-danger/30 animate-pulse-danger' : 'border-black/7'
-      } ${resolvedAction !== null ? 'opacity-60' : ''}`}
+      }`}
     >
       <div className="flex items-start gap-2.5">
         <span
@@ -111,18 +117,16 @@ function ApprovalRow({ item, isOpen, onToggle, resolvedAction, onRunAction }: Ap
           {approvalCategoryLabel[item.category]}
         </span>
         <div className="min-w-0 flex-1 text-[14.5px] leading-tight font-semibold tracking-[-0.01em] text-pretty">
-          {item.issue_summary}
+          {item.issue_summary ?? 'Untitled issue'}
         </div>
-        <div
-          className={`mt-0.5 flex items-center gap-1.5 text-[11.5px] whitespace-nowrap ${
-            item.severity === 'critical' ? 'text-danger font-semibold' : 'text-ink/40'
-          }`}
-        >
-          {!isEmergency && (
-            <span className={`size-1.5 rounded-full ${approvalSeverityDot[item.severity]}`} />
-          )}
-          {item.severity}
-        </div>
+        {item.severity !== null && (
+          <div className="text-ink/40 mt-0.5 flex items-center gap-1.5 text-[11.5px] whitespace-nowrap">
+            {!isEmergency && (
+              <span className={`size-1.5 rounded-full ${approvalSeverityDot[item.severity]}`} />
+            )}
+            {item.severity}
+          </div>
+        )}
         <div className="text-ink/32 mt-0.5 text-[11.5px] whitespace-nowrap">
           {formatRelativeTime(item.received_at)}
         </div>
@@ -145,22 +149,28 @@ function ApprovalRow({ item, isOpen, onToggle, resolvedAction, onRunAction }: Ap
 
       <div className="grid grid-cols-[96px_1fr] items-baseline gap-x-1.5 gap-y-2 text-[12.5px]">
         <div className="text-ink/40">Tenant</div>
-        <div>{who}</div>
+        <div>{who || '—'}</div>
         {!isEmergency && item.responsibility !== null && (
           <>
             <div className="text-ink/40">Responsibility</div>
             <div className="flex flex-wrap items-center gap-1.5">
               <span>{approvalResponsibilityLabel[item.responsibility]}</span>
-              {item.lease_citation !== null && (
+              {item.citation !== null && (
                 <span className="text-ink/50 rounded-full bg-black/6 px-2 py-px font-mono text-[10.5px] font-medium whitespace-nowrap">
-                  {item.lease_citation}
+                  {displayCitation(item.citation)}
                 </span>
               )}
             </div>
           </>
         )}
         <div className="text-ink/40">Category</div>
-        <div>{item.issue_category}</div>
+        <div>{item.appliance_or_system ?? '—'}</div>
+        {item.actions.length > 0 && (
+          <>
+            <div className="text-ink/40">Plan</div>
+            <div>{item.actions.map((action) => approvalActionLabel[action]).join(', ')}</div>
+          </>
+        )}
       </div>
 
       {isOpen && (
@@ -171,65 +181,61 @@ function ApprovalRow({ item, isOpen, onToggle, resolvedAction, onRunAction }: Ap
               {item.original_email}
             </div>
           </div>
-          <div className="flex flex-col gap-1.5">
-            <div className="text-ink/40 text-[12.5px]">Reply draft</div>
-            <div className="text-ink-soft bg-canvas rounded-[9px] p-3 text-[12.5px] leading-relaxed whitespace-pre-line">
-              {item.draft}
+          {item.draft !== null && (
+            <div className="flex flex-col gap-1.5">
+              <div className="text-ink/40 text-[12.5px]">Reply draft</div>
+              <div className="text-ink-soft bg-canvas rounded-[9px] p-3 text-[12.5px] leading-relaxed whitespace-pre-line">
+                {item.draft}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
-      {resolvedAction === null ? (
-        <div className="flex flex-wrap gap-2">
-          {item.actions.map((action) => (
-            <button
-              key={action}
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                onRunAction(action);
-              }}
-              className={`cursor-pointer rounded-[7px] border px-3.5 py-[7px] text-[12px] font-semibold transition-colors ${approvalActionButton[action]}`}
-            >
-              {approvalActionLabel[action]}
-            </button>
-          ))}
-        </div>
-      ) : (
-        <div className="border-success-line bg-success-bg text-success flex items-center gap-2 rounded-md border px-3 py-2.5 text-[12.5px] font-semibold">
-          <span className="bg-success-dot size-[7px] shrink-0 rounded-full" aria-hidden />
-          {approvalActionDoneLabel[resolvedAction]}
+      {error !== null && (
+        <div className="border-danger-line bg-danger-bg text-danger rounded-md border px-3 py-2 text-[12.5px]">
+          {error}
         </div>
       )}
+
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          disabled={busy}
+          onClick={(event) => {
+            event.stopPropagation();
+            onApprove();
+          }}
+          className="border-black/12 bg-surface text-info hover:bg-muted cursor-pointer rounded-[7px] border px-3.5 py-[7px] text-[12px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {busy ? 'Working…' : 'Approve'}
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={(event) => {
+            event.stopPropagation();
+            onReject();
+          }}
+          className="border-black/12 bg-surface text-ink/70 hover:bg-muted cursor-pointer rounded-[7px] border px-3.5 py-[7px] text-[12px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Reject
+        </button>
+      </div>
     </div>
   );
 }
 
 export default function ApprovalsPage() {
-  const [items, setItems] = useState<ApprovalQueueItem[]>([]);
-  const [clearedToday, setClearedToday] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { items, clearedToday, loading, error, approve, reject } = useApprovals();
 
   const [category, setCategory] = useState<CategoryFilter>('all');
   const [severity, setSeverity] = useState<SeverityFilter>('all');
   const [responsibility, setResponsibility] = useState<ResponsibilityFilter>('all');
 
   const [openId, setOpenId] = useState<string | null>(null);
-  const [resolved, setResolved] = useState<Record<string, ApprovalAction>>({});
-
-  useEffect(() => {
-    listApprovalQueue()
-      .then((response) => {
-        setItems(response.items);
-        setClearedToday(response.cleared_today);
-      })
-      .catch((cause: unknown) =>
-        setError(cause instanceof Error ? cause.message : 'could not load approvals'),
-      )
-      .finally(() => setLoading(false));
-  }, []);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [rowError, setRowError] = useState<Record<string, string>>({});
 
   const shown = useMemo(
     () =>
@@ -241,6 +247,27 @@ export default function ApprovalsPage() {
       ),
     [items, category, severity, responsibility],
   );
+
+  const decide = async (runId: string, outcome: 'approve' | 'reject') => {
+    setBusyId(runId);
+    setRowError((current) => {
+      const next = { ...current };
+      delete next[runId];
+      return next;
+    });
+    try {
+      if (outcome === 'approve') await approve(runId);
+      else await reject(runId);
+      setOpenId((current) => (current === runId ? null : current));
+    } catch (cause: unknown) {
+      setRowError((current) => ({
+        ...current,
+        [runId]: cause instanceof Error ? cause.message : 'Could not update approval',
+      }));
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -257,7 +284,7 @@ export default function ApprovalsPage() {
 
       <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 px-7 pt-1.5">
         <FilterGroup
-          label="Category"
+          label="Type"
           options={CATEGORY_OPTIONS}
           active={category}
           optionLabel={categoryOptionLabel}
@@ -281,7 +308,7 @@ export default function ApprovalsPage() {
 
       <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-7 pt-3.5 pb-6">
         {error !== null && (
-          <div className="border-danger-line bg-danger-bg text-danger rounded-[10px] border px-4 py-3 text-[13px]">
+          <div className="border-danger-line bg-danger-bg text-danger mb-3.5 rounded-[10px] border px-4 py-3 text-[13px]">
             {error}
           </div>
         )}
@@ -303,10 +330,10 @@ export default function ApprovalsPage() {
               onToggle={() =>
                 setOpenId((current) => (current === item.run_id ? null : item.run_id))
               }
-              resolvedAction={resolved[item.run_id] ?? null}
-              onRunAction={(action) =>
-                setResolved((current) => ({ ...current, [item.run_id]: action }))
-              }
+              busy={busyId === item.run_id}
+              error={rowError[item.run_id] ?? null}
+              onApprove={() => void decide(item.run_id, 'approve')}
+              onReject={() => void decide(item.run_id, 'reject')}
             />
           ))}
         </div>

@@ -1,4 +1,9 @@
-import type { ApprovalAction, ApprovalCategory, ApprovalSeverity, EmailStatus } from '@/lib/api';
+import type {
+  ApprovalCategory,
+  ApprovalSeverity,
+  PlanAction,
+  EmailStatus,
+} from '@/lib/api';
 
 export const EMAIL_STATUSES: EmailStatus[] = ['pending', 'processed', 'escalated'];
 
@@ -30,43 +35,34 @@ export const approvalCategoryLabel: Record<ApprovalCategory, string> = {
   emergency: 'Emergency',
   maintenance: 'Maintenance',
   lease_question: 'Lease question',
+  not_our_problem: 'Not our problem',
 };
 
 export const approvalCategoryBadge: Record<ApprovalCategory, string> = {
   emergency: 'bg-danger-bg text-danger border-danger/30',
   maintenance: 'bg-info-bg text-info border-info/28',
   lease_question: 'bg-muted text-ink/60 border-black/16',
+  not_our_problem: 'bg-muted text-ink/60 border-black/16',
 };
 
 export const approvalSeverityDot: Record<ApprovalSeverity, string> = {
-  critical: 'bg-danger',
   high: 'bg-danger-solid',
   medium: 'bg-warn-dot',
   low: 'bg-black/30',
 };
 
-export const approvalResponsibilityLabel: Record<'landlord' | 'tenant', string> = {
+export const approvalResponsibilityLabel: Record<
+  'landlord' | 'tenant' | 'shared' | 'unclear',
+  string
+> = {
   landlord: 'Landlord',
   tenant: 'Tenant',
+  shared: 'Shared',
+  unclear: 'Unclear',
 };
 
-export const approvalActionLabel: Record<ApprovalAction, string> = {
+export const approvalActionLabel: Record<PlanAction, string> = {
   call_tenant: 'Call tenant',
   send_reply: 'Send reply',
   create_work_order: 'Create work order',
-  mark_complete: 'Mark complete',
-};
-
-export const approvalActionButton: Record<ApprovalAction, string> = {
-  call_tenant: 'border-danger bg-danger text-white hover:opacity-90',
-  send_reply: 'border-black/12 bg-surface text-info hover:bg-muted',
-  create_work_order: 'border-black/12 bg-surface text-ink/70 hover:bg-muted',
-  mark_complete: 'border-black/12 bg-surface text-ink/70 hover:bg-muted',
-};
-
-export const approvalActionDoneLabel: Record<ApprovalAction, string> = {
-  call_tenant: 'Calling tenant — on-call engineer notified',
-  send_reply: 'Reply sent',
-  create_work_order: 'Work order created',
-  mark_complete: 'Marked complete',
 };

@@ -44,10 +44,12 @@ async def list_pending_approvals(
                 unit=item.request.unit,
                 address=item.request.address,
                 issue_summary=item.request.issue_summary,
+                appliance_or_system=item.request.appliance_or_system,
                 responsibility=item.request.responsibility,
                 citation=item.request.citation,
                 original_email=item.request.original_email,
                 draft=item.request.draft,
+                actions=item.request.actions,
             )
             for item in pending
         ]
