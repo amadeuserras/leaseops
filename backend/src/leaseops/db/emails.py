@@ -45,3 +45,15 @@ async def get_email_by_subject(session: AsyncSession, subject: str) -> Email | N
         .limit(1)
     )
     return result.first()
+
+
+async def set_email_status(
+    session: AsyncSession, email_id: UUID, status: EmailStatus
+) -> Email:
+    email = await session.get(Email, email_id)
+    if email is None:
+        raise LookupError(f"email not found: {email_id}")
+    email.status = status
+    await session.commit()
+    await session.refresh(email)
+    return email
