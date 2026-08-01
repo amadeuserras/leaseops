@@ -1,10 +1,4 @@
-import type {
-  ActionType,
-  ApprovalAction,
-  ApprovalCategory,
-  ApprovalSeverity,
-  EmailStatus,
-} from '@/lib/api';
+import type { ApprovalAction, ApprovalCategory, ApprovalSeverity, EmailStatus } from '@/lib/api';
 
 export const EMAIL_STATUSES: EmailStatus[] = ['pending', 'processed', 'escalated'];
 
@@ -30,13 +24,6 @@ export const stepDot: Record<StepStatus, string> = {
   paused: 'bg-warn-dot',
   pending: 'bg-black/12',
   failed: 'bg-danger',
-};
-
-export const actionPill: Record<ActionType, string> = {
-  send_reply: 'bg-info-bg text-info border-info/25',
-  create_work_order: 'bg-warn-bg text-warn border-warn/25',
-  escalate: 'bg-danger-bg text-danger border-danger/25',
-  no_action: 'bg-muted text-ink/60 border-black/10',
 };
 
 export const approvalCategoryLabel: Record<ApprovalCategory, string> = {
