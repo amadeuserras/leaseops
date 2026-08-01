@@ -108,7 +108,7 @@ export default function RunTracePage() {
 
     void listEmailSteps(emailId).then((dbSteps) => {
       if (dbSteps.length > 0) {
-        setRun(buildRunFromSteps(emailId, dbSteps));
+        setRun(buildRunFromSteps(emailId, dbSteps, email.status === 'awaiting_approval'));
         return;
       }
       if (email.status === 'pending') startStream();

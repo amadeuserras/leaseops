@@ -20,6 +20,8 @@ from leaseops.agent.state import (
     Responsibility,
     Severity,
 )
+from leaseops.db import runs as runs_repo
+from leaseops.db import steps as steps_repo
 from leaseops.db.models import Email
 from leaseops.models.enums import EmailStatus, RunStatus
 
@@ -158,6 +160,23 @@ async def test_reject_completes(api_client, db_session) -> None:
 
     await db_session.refresh(email)
     assert email.status == EmailStatus.PENDING
+
+
+async def test_stream_persists_approval_step(db_session, runner) -> None:
+    email = await _seed_email(db_session)
+    events = [event async for event in runner.stream(db_session, email)]
+
+    assert any(event.get("type") == "paused" for event in events)
+    assert events[-1] == {"type": "run_finished", "status": RunStatus.PAUSED}
+
+    run = await runs_repo.get_latest_run_for_email(db_session, email.id)
+    assert run is not None
+    assert run.status == RunStatus.PAUSED
+
+    steps = await steps_repo.list_steps_for_run(db_session, run.id)
+    assert [step.node_name for step in steps] == ["seed", "approval"]
+    assert steps[-1].output is not None
+    assert steps[-1].output["draft"] == "We'll send someone out tomorrow."
 
 
 async def test_approve_unknown_run_is_404(api_client) -> None:

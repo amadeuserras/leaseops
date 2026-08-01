@@ -161,28 +161,43 @@ export const applyEvent = (run: RunState, event: StreamEvent): RunState => {
   }
 };
 
-export const buildRunFromSteps = (emailId: string, dbSteps: StepRecord[]): RunState => ({
-  emailId,
-  runId: dbSteps[0].run_id,
-  status: 'done',
-  source: 'db',
-  steps: dbSteps.map((s) => ({
-    node: s.node_name,
-    status: 'completed' as const,
-    output: s.output,
-    calls: [],
-    model: null,
-    inputTokens: s.tokens ?? 0,
+export const buildRunFromSteps = (
+  emailId: string,
+  dbSteps: StepRecord[],
+  awaitingApproval = false,
+): RunState => {
+  const last = dbSteps[dbSteps.length - 1];
+  const pausedRequest =
+    awaitingApproval && last?.node_name === 'approval' && last.output !== null
+      ? (last.output as ApprovalRequest)
+      : null;
+
+  return {
+    emailId,
+    runId: dbSteps[0].run_id,
+    status: pausedRequest !== null ? 'paused' : 'done',
+    source: 'db',
+    steps: dbSteps.map((s) => ({
+      node: s.node_name,
+      status:
+        pausedRequest !== null && s.node_name === 'approval' && s.id === last.id
+          ? ('paused' as const)
+          : ('completed' as const),
+      output: s.output,
+      calls: [],
+      model: null,
+      inputTokens: s.tokens ?? 0,
+      outputTokens: 0,
+      costUsd: s.cost_usd ?? 0,
+      startedAt: Date.parse(s.created_at),
+      endedAt: Date.parse(s.created_at),
+    })),
+    pausedRequest,
+    error: null,
+    inputTokens: dbSteps.reduce((sum, s) => sum + (s.tokens ?? 0), 0),
     outputTokens: 0,
-    costUsd: s.cost_usd ?? 0,
-    startedAt: Date.parse(s.created_at),
-    endedAt: Date.parse(s.created_at),
-  })),
-  pausedRequest: null,
-  error: null,
-  inputTokens: dbSteps.reduce((sum, s) => sum + (s.tokens ?? 0), 0),
-  outputTokens: 0,
-  costUsd: dbSteps.reduce((sum, s) => sum + (s.cost_usd ?? 0), 0),
-  startedAt: Date.parse(dbSteps[0].created_at),
-  endedAt: Date.parse(dbSteps[dbSteps.length - 1].created_at),
-});
+    costUsd: dbSteps.reduce((sum, s) => sum + (s.cost_usd ?? 0), 0),
+    startedAt: Date.parse(dbSteps[0].created_at),
+    endedAt: Date.parse(dbSteps[dbSteps.length - 1].created_at),
+  };
+};

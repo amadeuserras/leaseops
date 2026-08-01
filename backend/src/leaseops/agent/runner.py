@@ -94,6 +94,12 @@ class GraphRunner:
                         session, email.id, EmailStatus.AWAITING_APPROVAL
                     )
                     request = ApprovalRequest(**interrupts[0]["value"])
+                    await steps_repo.create_step(
+                        session,
+                        run_id=run.id,
+                        node_name=node,
+                        output=asdict(request),
+                    )
                     yield asdict(PausedEvent(request=request))
                     continue
                 cost = cost_by_node.pop(node, None)
