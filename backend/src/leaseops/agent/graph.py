@@ -16,8 +16,7 @@ from leaseops.agent.execute import execute
 from leaseops.agent.extract import extract
 from leaseops.agent.lease_check import lease_check
 from leaseops.agent.plan import plan
-from leaseops.agent.state import AgentState
-from leaseops.agent.types import EmailCategory
+from leaseops.agent.state import AgentState, EmailCategory
 
 _AfterExtract = Literal["lease_check", "draft"]
 _AfterApproval = Literal["execute", "end"]

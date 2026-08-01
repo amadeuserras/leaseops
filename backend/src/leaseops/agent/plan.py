@@ -2,8 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from leaseops.agent.state import AgentState
-from leaseops.agent.types import EmailCategory, PlanAction, Responsibility
+from leaseops.agent.state import (
+    AgentState,
+    EmailCategory,
+    PlanAction,
+    Responsibility,
+)
 
 
 @dataclass(frozen=True)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from leaseops.agent.types import QAResultSchema
+from leaseops.agent.state import QAResultSchema
 
 # Matches inline citation ids as they appear in answers.
 # Copied from leaseclear.evals.generation.answer.

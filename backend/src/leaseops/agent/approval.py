@@ -7,8 +7,7 @@ from uuid import UUID
 from langgraph.types import interrupt
 
 from leaseops.agent.citations import first_citation
-from leaseops.agent.state import AgentState
-from leaseops.agent.types import EmailCategory
+from leaseops.agent.state import AgentState, EmailCategory
 
 
 @dataclass(frozen=True)

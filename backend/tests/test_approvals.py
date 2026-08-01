@@ -12,8 +12,8 @@ from langgraph.graph import END, START, StateGraph
 from leaseops.agent.approval import approval
 from leaseops.agent.checkpoint import CHECKPOINT_SERDE
 from leaseops.agent.runner import GraphRunner
-from leaseops.agent.state import AgentState
-from leaseops.agent.types import (
+from leaseops.agent.state import (
+    AgentState,
     EmailCategory,
     PlanAction,
     QAResultSchema,
