@@ -85,6 +85,7 @@ class _LeaseCheckResult:
     lease_addresses_issue: bool
     responsibility: Responsibility
     qa_results: list[QAResultSchema]
+    citation: str | None
 
 
 LEASE_QA_TOOL: ToolParam = {
@@ -133,12 +134,16 @@ def _find_tool_use(response: Message, name: str) -> ToolUseBlock | None:
     return None
 
 
+_HARDCODED_CITATION = "hardcoded-lease §7.2"
+
+
 async def lease_check(state: AgentState) -> _LeaseCheckResult:
     if state.tenant_name is None or state.address is None:
         return _LeaseCheckResult(
             responsibility=Responsibility.UNCLEAR,
             lease_addresses_issue=False,
             qa_results=[],
+            citation=None,
         )
 
     system_prompt = _LEASE_CHECK_SYSTEM.format(max_calls=_MAX_QA_CALLS)
@@ -179,6 +184,7 @@ async def lease_check(state: AgentState) -> _LeaseCheckResult:
                         verdict_use.input["lease_addresses_issue"]
                     ),
                     qa_results=qa_results,
+                    citation=_HARDCODED_CITATION,
                 )
 
             qa_use = _find_tool_use(response, "lease_qa")
@@ -187,6 +193,7 @@ async def lease_check(state: AgentState) -> _LeaseCheckResult:
                     responsibility=Responsibility.UNCLEAR,
                     lease_addresses_issue=False,
                     qa_results=qa_results,
+                    citation=_HARDCODED_CITATION,
                 )
 
             question = cast(str, qa_use.input["question"])

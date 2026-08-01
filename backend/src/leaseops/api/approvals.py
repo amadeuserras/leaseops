@@ -10,7 +10,6 @@ from leaseops.agent.runner import GraphRunner
 from leaseops.db.session import get_session
 from leaseops.models.schemas import (
     ApprovalListResponse,
-    ApprovalRejectRequest,
     ApprovalRequestResponse,
     RunResponse,
 )
@@ -38,11 +37,17 @@ async def list_pending_approvals(
             ApprovalRequestResponse(
                 run_id=item.run_id,
                 email_id=item.request.email_id,
-                actions=item.request.actions,
-                draft=item.request.draft,
+                category=item.request.category,
+                severity=item.request.severity,
+                received_at=item.request.received_at,
                 tenant_name=item.request.tenant_name,
                 unit=item.request.unit,
+                address=item.request.address,
                 issue_summary=item.request.issue_summary,
+                responsibility=item.request.responsibility,
+                citation=item.request.citation,
+                original_email=item.request.original_email,
+                draft=item.request.draft,
             )
             for item in pending
         ]
@@ -73,10 +78,9 @@ async def reject_run(
     run_id: UUID,
     session: SessionDep,
     runner: RunnerDep,
-    payload: ApprovalRejectRequest,
 ) -> RunResponse:
     try:
-        run = await runner.reject(session, run_id, payload.rejection_reason)
+        run = await runner.reject(session, run_id)
     except LookupError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="run not found"

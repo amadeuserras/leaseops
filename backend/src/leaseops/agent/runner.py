@@ -42,6 +42,7 @@ class GraphRunner:
             sender=email.sender,
             subject=email.subject,
             body=email.body,
+            received_at=email.received_at,
         )
         await self.graph.ainvoke(initial, config)
         snapshot = await self.graph.aget_state(config)
@@ -59,6 +60,7 @@ class GraphRunner:
             sender=email.sender,
             subject=email.subject,
             body=email.body,
+            received_at=email.received_at,
         )
         yield asdict(RunStartedEvent(run_id=str(run.id)))
 
@@ -125,16 +127,11 @@ class GraphRunner:
             ApprovalDecision(approved=True),
         )
 
-    async def reject(
-        self,
-        session: AsyncSession,
-        run_id: UUID,
-        rejection_reason: str | None,
-    ) -> Run:
+    async def reject(self, session: AsyncSession, run_id: UUID) -> Run:
         return await self._decide(
             session,
             run_id,
-            ApprovalDecision(approved=False, rejection_reason=rejection_reason),
+            ApprovalDecision(approved=False),
         )
 
     async def _decide(

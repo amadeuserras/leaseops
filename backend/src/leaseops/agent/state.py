@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from uuid import UUID
 
 from leaseops.agent.types import (
@@ -18,6 +19,7 @@ class AgentState(LeaseOpsModel):
     sender: str
     subject: str
     body: str
+    received_at: datetime
 
     # classify
     category: EmailCategory | None = None
@@ -34,6 +36,7 @@ class AgentState(LeaseOpsModel):
     responsibility: Responsibility | None = None
     lease_addresses_issue: bool | None = None
     qa_results: list[QAResultSchema] = []
+    citation: str | None = None
 
     # draft
     draft: str | None = None
@@ -43,4 +46,3 @@ class AgentState(LeaseOpsModel):
 
     # approval
     approved: bool | None = None
-    rejection_reason: str | None = None

@@ -13,7 +13,7 @@ from leaseops.agent.approval import approval
 from leaseops.agent.checkpoint import CHECKPOINT_SERDE
 from leaseops.agent.runner import GraphRunner
 from leaseops.agent.state import AgentState
-from leaseops.agent.types import PlanAction
+from leaseops.agent.types import EmailCategory, PlanAction, Responsibility, Severity
 from leaseops.db.models import Email
 from leaseops.models.enums import EmailStatus, RunStatus
 
@@ -27,11 +27,16 @@ def _after_approval(state: AgentState) -> str:
 def _seed_node(state: AgentState) -> dict[str, Any]:
     _ = state
     return {
+        "category": EmailCategory.MAINTENANCE,
+        "severity": Severity.MEDIUM,
         "actions": [PlanAction.CREATE_WORK_ORDER, PlanAction.SEND_REPLY],
         "draft": "We'll send someone out tomorrow.",
         "tenant_name": "Ada Tenant",
         "unit": "2A",
+        "address": "12 Example Street",
         "issue_summary": "leaky faucet",
+        "responsibility": Responsibility.LANDLORD,
+        "citation": "hardcoded-lease §7.2",
     }
 
 
@@ -91,12 +96,19 @@ async def test_list_approve_flow(api_client, db_session) -> None:
     assert approvals_response.status_code == 200
     items = approvals_response.json()["items"]
     assert len(items) == 1
-    assert items[0]["run_id"] == run["id"]
-    assert items[0]["actions"] == [
-        PlanAction.CREATE_WORK_ORDER,
-        PlanAction.SEND_REPLY,
-    ]
-    assert items[0]["issue_summary"] == "leaky faucet"
+    item = items[0]
+    assert item["run_id"] == run["id"]
+    assert item["email_id"] == str(email.id)
+    assert item["category"] == EmailCategory.MAINTENANCE
+    assert item["severity"] == Severity.MEDIUM
+    assert item["tenant_name"] == "Ada Tenant"
+    assert item["unit"] == "2A"
+    assert item["address"] == "12 Example Street"
+    assert item["issue_summary"] == "leaky faucet"
+    assert item["responsibility"] == Responsibility.LANDLORD
+    assert item["citation"] == "hardcoded-lease §7.2"
+    assert item["original_email"] == "Kitchen sink is dripping."
+    assert item["draft"] == "We'll send someone out tomorrow."
 
     approve_response = await api_client.post(f"/approvals/{run['id']}/approve")
     assert approve_response.status_code == 200
@@ -112,10 +124,7 @@ async def test_reject_completes(api_client, db_session) -> None:
     run_response = await api_client.post("/runs", json={"email_id": str(email.id)})
     run_id = run_response.json()["id"]
 
-    reject_response = await api_client.post(
-        f"/approvals/{run_id}/reject",
-        json={"rejection_reason": "tenant is responsible"},
-    )
+    reject_response = await api_client.post(f"/approvals/{run_id}/reject")
 
     assert reject_response.status_code == 200
     assert reject_response.json()["status"] == RunStatus.DONE

@@ -68,19 +68,21 @@ class StepListResponse(LeaseOpsModel):
 class ApprovalRequestResponse(LeaseOpsModel):
     run_id: UUID
     email_id: UUID
-    actions: list[str]
-    draft: str | None
+    category: str
+    severity: str | None
+    received_at: str
     tenant_name: str | None
     unit: str | None
+    address: str | None
     issue_summary: str | None
+    responsibility: str | None
+    citation: str | None
+    original_email: str
+    draft: str | None
 
 
 class ApprovalListResponse(LeaseOpsModel):
     items: list[ApprovalRequestResponse]
-
-
-class ApprovalRejectRequest(LeaseOpsModel):
-    rejection_reason: str | None = None
 
 
 class WorkOrderCreate(LeaseOpsModel):
