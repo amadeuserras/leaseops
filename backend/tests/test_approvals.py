@@ -49,6 +49,7 @@ def _seed_node(state: AgentState) -> dict[str, Any]:
                 question="Who is responsible for faucet repairs?",
                 answer="Landlord. [hardcoded-lease §7.2]",
                 citations=["[hardcoded-lease §7.2]"],
+                reasoning="Checking lease responsibility for faucet repairs.",
             )
         ],
     }

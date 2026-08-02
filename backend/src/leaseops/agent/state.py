@@ -38,6 +38,7 @@ class QAResultSchema(LeaseOpsModel):
     question: str
     answer: str
     citations: list[str]
+    reasoning: str
 
 
 class AgentState(LeaseOpsModel):

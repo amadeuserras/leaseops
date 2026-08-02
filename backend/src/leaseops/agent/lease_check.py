@@ -6,6 +6,7 @@ from anthropic import AsyncAnthropic, transform_schema
 from anthropic.types import (
     Message,
     MessageParam,
+    TextBlock,
     ToolChoiceParam,
     ToolParam,
     ToolResultBlockParam,
@@ -126,6 +127,11 @@ def _find_tool_use(response: Message, name: str) -> ToolUseBlock | None:
     return None
 
 
+def _response_text(response: Message) -> str:
+    parts = [block.text for block in response.content if isinstance(block, TextBlock)]
+    return "\n".join(parts).strip()
+
+
 async def lease_check(state: AgentState) -> LeaseCheckOutput:
     if state.tenant_name is None or state.address is None:
         return LeaseCheckOutput(
@@ -183,13 +189,14 @@ async def lease_check(state: AgentState) -> LeaseCheckOutput:
                 )
 
             question = cast(str, qa_use.input["question"])
+            reasoning = _response_text(response)
             tool_args: dict[str, object] = {
                 "question": question,
                 "tenant_name": state.tenant_name,
                 "address": state.address,
                 "unit": state.unit,
             }
-            emit_tool_call("lease_check", "lease_qa", tool_args)
+            emit_tool_call("lease_check", "lease_qa", tool_args, reasoning=reasoning)
             try:
                 qa_result = await call_tool(session, "lease_qa", tool_args)
                 answer = LeaseQAResponse.model_validate(qa_result).answer
@@ -204,6 +211,7 @@ async def lease_check(state: AgentState) -> LeaseCheckOutput:
                     question=question,
                     answer=answer,
                     citations=extract_citation_ids(answer),
+                    reasoning=reasoning,
                 )
             )
             tool_result: ToolResultBlockParam = {

@@ -50,6 +50,7 @@ class ToolCallEvent(LeaseOpsModel):
     node: str
     tool: str
     arguments: dict[str, Any]
+    reasoning: str
 
 
 class ToolResultEvent(LeaseOpsModel):
@@ -93,8 +94,12 @@ def _emit(event: StreamEvent) -> None:
     writer(event.model_dump(mode="json"))
 
 
-def emit_tool_call(node: str, tool: str, arguments: dict[str, Any]) -> None:
-    _emit(ToolCallEvent(node=node, tool=tool, arguments=arguments))
+def emit_tool_call(
+    node: str, tool: str, arguments: dict[str, Any], *, reasoning: str
+) -> None:
+    _emit(
+        ToolCallEvent(node=node, tool=tool, arguments=arguments, reasoning=reasoning)
+    )
 
 
 def emit_tool_result(

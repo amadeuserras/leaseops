@@ -34,9 +34,7 @@ def downgrade() -> None:
     op.execute(
         "UPDATE emails SET status = 'escalated' WHERE status = 'awaiting_approval'"
     )
-    op.execute(
-        "UPDATE emails SET status = 'pending' WHERE status = 'processing'"
-    )
+    op.execute("UPDATE emails SET status = 'pending' WHERE status = 'processing'")
     op.create_check_constraint(
         "emails_status_check",
         "emails",
