@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncGenerator
 from dataclasses import asdict, dataclass
-from typing import Any, cast
+from typing import Any, Literal, NotRequired, TypedDict, cast
 from uuid import UUID
 
 from langgraph.types import Command
@@ -23,6 +23,43 @@ from leaseops.db import runs as runs_repo
 from leaseops.db import steps as steps_repo
 from leaseops.db.models import Email, Run
 from leaseops.models.enums import EmailStatus, RunStatus
+
+
+class CostChunk(TypedDict):
+    type: Literal["cost"]
+    node: str
+    model: str
+    input_tokens: int
+    output_tokens: int
+    cost_usd: float
+
+
+class ToolCallChunk(TypedDict):
+    type: Literal["tool_call"]
+    node: str
+    tool: str
+    arguments: dict[str, Any]
+
+
+class ToolResultChunk(TypedDict):
+    type: Literal["tool_result"]
+    node: str
+    tool: str
+    result: Any
+    is_error: bool
+
+
+CustomChunk = CostChunk | ToolCallChunk | ToolResultChunk
+
+
+class TaskChunk(TypedDict):
+    id: str
+    name: str
+    error: NotRequired[Any | None]
+    result: NotRequired[Any]
+    interrupts: NotRequired[list[dict[str, Any]]]
+    input: NotRequired[Any]
+    triggers: NotRequired[list[str]]
 
 
 @dataclass(frozen=True)
@@ -71,23 +108,33 @@ class GraphRunner:
         yield asdict(RunStartedEvent(run_id=str(run.id)))
 
         paused = False
-        cost_by_node: dict[str, dict[str, Any]] = {}
+        cost_by_node: dict[str, CostChunk] = {}
         try:
-            async for mode, chunk in self.graph.astream(
+            async for pair in self.graph.astream(
                 initial, config, stream_mode=["tasks", "custom"]
             ):
+                mode = pair[0]
+                chunk = pair[1]
+
+                # Custom Chunks: written by emit (cost, tool calls, tool results)
                 if mode == "custom":
-                    chunk = cast(dict[str, Any], chunk)
-                    if chunk.get("type") == "cost":
-                        cost_by_node[chunk["node"]] = chunk
-                    yield chunk
+                    custom_chunk = cast(CustomChunk, chunk)
+                    if custom_chunk["type"] == "cost":
+                        cost_by_node[custom_chunk["node"]] = custom_chunk
+                    yield cast(dict[str, Any], chunk)
                     continue
-                task = cast(dict[str, Any], chunk)
-                node = cast(str, task["name"])
-                if "result" not in task:
-                    yield asdict(NodeStartedEvent(node=node))
+
+                # Task chunks: written by the graph (node start / finished / pause)
+                task_chunk = cast(TaskChunk, chunk)
+                node_name = task_chunk["name"]
+
+                # Node started: write the start event
+                if "result" not in task_chunk:
+                    yield asdict(NodeStartedEvent(node=node_name))
                     continue
-                interrupts = cast(list[dict[str, Any]], task["interrupts"])
+
+                # Node paused: write the pause event & update status
+                interrupts = task_chunk.get("interrupts") or []
                 if interrupts:
                     paused = True
                     await emails_repo.set_email_status(
@@ -97,17 +144,19 @@ class GraphRunner:
                     await steps_repo.create_step(
                         session,
                         run_id=run.id,
-                        node_name=node,
+                        node_name=node_name,
                         output=asdict(request),
                     )
                     yield asdict(PausedEvent(request=request))
                     continue
-                cost = cost_by_node.pop(node, None)
+
+                # Node finished: write the finished event & create the step
+                cost = cost_by_node.pop(node_name, None)
                 await steps_repo.create_step(
                     session,
                     run_id=run.id,
-                    node_name=node,
-                    output=task["result"],
+                    node_name=node_name,
+                    output=task_chunk["result"],
                     tokens=(
                         cost["input_tokens"] + cost["output_tokens"]
                         if cost is not None
@@ -115,12 +164,17 @@ class GraphRunner:
                     ),
                     cost_usd=cost["cost_usd"] if cost is not None else None,
                 )
-                yield asdict(NodeFinishedEvent(node=node, output=task["result"]))
+                yield asdict(
+                    NodeFinishedEvent(node=node_name, output=task_chunk["result"])
+                )
+
+        # Error: write the error event & update status
         except Exception as exc:
             await runs_repo.set_run_status(session, run, RunStatus.FAILED, ended=True)
             yield asdict(ErrorEvent(message=str(exc)))
             return
 
+        # Done: update the run status
         status = RunStatus.PAUSED if paused else RunStatus.DONE
         run = await runs_repo.set_run_status(session, run, status, ended=not paused)
         yield asdict(RunFinishedEvent(status=status.value))
