@@ -10,6 +10,10 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from leaseops.agent.runner import GraphRunner
+from leaseops.agent.step_schemas import (
+    StepListResponse,
+    StepResponseAdapter,
+)
 from leaseops.db import emails as emails_repo
 from leaseops.db import runs as runs_repo
 from leaseops.db import steps as steps_repo
@@ -17,8 +21,6 @@ from leaseops.db.session import SessionLocal, get_session
 from leaseops.models.schemas import (
     RunCreate,
     RunResponse,
-    StepListResponse,
-    StepResponse,
 )
 
 router = APIRouter(prefix="/runs", tags=["runs"])
@@ -78,4 +80,21 @@ async def list_steps(email_id: UUID, session: SessionDep) -> StepListResponse:
     if run is None:
         return StepListResponse(items=[])
     steps = await steps_repo.list_steps_for_run(session, run.id)
-    return StepListResponse(items=[StepResponse.model_validate(s) for s in steps])
+    return StepListResponse(
+        items=[
+            StepResponseAdapter.validate_python(
+                {
+                    "id": s.id,
+                    "run_id": s.run_id,
+                    "node_name": s.node_name,
+                    "output": s.output,
+                    "model": s.model,
+                    "input_tokens": s.input_tokens,
+                    "output_tokens": s.output_tokens,
+                    "cost_usd": float(s.cost_usd) if s.cost_usd is not None else None,
+                    "created_at": s.created_at,
+                }
+            )
+            for s in steps
+        ]
+    )

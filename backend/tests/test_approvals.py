@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import asdict
 from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
@@ -56,7 +55,7 @@ def _seed_node(state: AgentState) -> dict[str, Any]:
 
 
 def _approval_node(state: AgentState) -> dict[str, Any]:
-    return asdict(approval(state))
+    return approval(state).model_dump()
 
 
 def _execute_node(state: AgentState) -> dict[str, Any]:

@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 
 from leaseops.agent.events import emit_cost
 from leaseops.agent.state import AgentState, EmailCategory
+from leaseops.agent.step_schemas import ClassifyOutput
 from leaseops.core.config import settings
 
 _MODEL = "gpt-4o-mini"
@@ -35,16 +34,11 @@ class _ClassifyFormat(BaseModel):
     category: EmailCategory
 
 
-@dataclass(frozen=True)
-class _ClassifyResult:
-    category: EmailCategory
-
-
 def _content_message(state: AgentState) -> str:
     return f"Subject: {state.subject}\n\nBody:\n{state.body}"
 
 
-async def classify(state: AgentState) -> _ClassifyResult:
+async def classify(state: AgentState) -> ClassifyOutput:
     client = AsyncOpenAI(api_key=settings.openai_api_key)
     completion = await client.chat.completions.parse(
         model=_MODEL,
@@ -65,4 +59,4 @@ async def classify(state: AgentState) -> _ClassifyResult:
     result = completion.choices[0].message.parsed
     if result is None:
         raise RuntimeError("classify: model returned no parsed output")
-    return _ClassifyResult(category=result.category)
+    return ClassifyOutput(category=result.category)

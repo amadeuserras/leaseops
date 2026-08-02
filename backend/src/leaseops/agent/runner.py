@@ -8,16 +8,15 @@ from uuid import UUID
 from langgraph.types import Command
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from leaseops.agent.approval import ApprovalDecision, ApprovalRequest
 from leaseops.agent.events import (
     ErrorEvent,
     NodeFinishedEvent,
     NodeStartedEvent,
-    PausedEvent,
     RunFinishedEvent,
     RunStartedEvent,
 )
 from leaseops.agent.state import AgentState
+from leaseops.agent.step_schemas import ApprovalCard, ApprovalOutput
 from leaseops.db import emails as emails_repo
 from leaseops.db import runs as runs_repo
 from leaseops.db import steps as steps_repo
@@ -78,7 +77,7 @@ def _add_cost(existing: CostChunk | None, incoming: CostChunk) -> CostChunk:
 @dataclass(frozen=True)
 class PendingApproval:
     run_id: UUID
-    request: ApprovalRequest
+    request: ApprovalCard
 
 
 @dataclass
@@ -156,14 +155,17 @@ class GraphRunner:
                     await emails_repo.set_email_status(
                         session, email.id, EmailStatus.AWAITING_APPROVAL
                     )
-                    request = ApprovalRequest(**interrupts[0]["value"])
+                    request = ApprovalCard.model_validate(interrupts[0]["value"])
                     await steps_repo.create_step(
                         session,
                         run_id=run.id,
                         node_name=node_name,
-                        output=asdict(request),
+                        output=request.model_dump(mode="json"),
                     )
-                    yield asdict(PausedEvent(request=request))
+                    yield {
+                        "type": "paused",
+                        "request": request.model_dump(mode="json"),
+                    }
                     continue
 
                 # Node finished: write the finished event & create the step
@@ -207,21 +209,21 @@ class GraphRunner:
         return await self._decide(
             session,
             run_id,
-            ApprovalDecision(approved=True),
+            ApprovalOutput(approved=True),
         )
 
     async def reject(self, session: AsyncSession, run_id: UUID) -> Run:
         return await self._decide(
             session,
             run_id,
-            ApprovalDecision(approved=False),
+            ApprovalOutput(approved=False),
         )
 
     async def _decide(
         self,
         session: AsyncSession,
         run_id: UUID,
-        decision: ApprovalDecision,
+        decision: ApprovalOutput,
     ) -> Run:
         run = await runs_repo.get_run(session, run_id)
         if run is None:
@@ -237,7 +239,7 @@ class GraphRunner:
         config = self._thread_config(run_id)
         try:
             await self.graph.ainvoke(
-                Command(resume=asdict(decision)),
+                Command(resume=decision.model_dump()),
                 config,
             )
         except Exception:
@@ -250,12 +252,12 @@ class GraphRunner:
             )
         return await runs_repo.set_run_status(session, run, RunStatus.DONE, ended=True)
 
-    async def _pending_request(self, run_id: UUID) -> ApprovalRequest | None:
+    async def _pending_request(self, run_id: UUID) -> ApprovalCard | None:
         snapshot = await self.graph.aget_state(self._thread_config(run_id))
         if not snapshot.interrupts:
             return None
         raw = cast(dict[str, Any], snapshot.interrupts[0].value)
-        return ApprovalRequest(**raw)
+        return ApprovalCard.model_validate(raw)
 
     @staticmethod
     def _thread_config(run_id: UUID) -> dict[str, Any]:

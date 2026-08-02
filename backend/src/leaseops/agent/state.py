@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 from uuid import UUID
@@ -35,8 +34,7 @@ class PlanAction(StrEnum):
     CALL_TENANT = "call_tenant"
 
 
-@dataclass(frozen=True)
-class QAResultSchema:
+class QAResultSchema(LeaseOpsModel):
     question: str
     answer: str
     citations: list[str]

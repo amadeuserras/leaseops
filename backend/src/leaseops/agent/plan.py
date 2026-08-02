@@ -1,23 +1,17 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 from leaseops.agent.state import (
     AgentState,
     EmailCategory,
     PlanAction,
     Responsibility,
 )
+from leaseops.agent.step_schemas import PlanOutput
 
 
-@dataclass(frozen=True)
-class _PlanResult:
-    actions: list[PlanAction]
-
-
-def plan(state: AgentState) -> _PlanResult:
+def plan(state: AgentState) -> PlanOutput:
     if state.category == EmailCategory.EMERGENCY:
-        return _PlanResult(
+        return PlanOutput(
             actions=[PlanAction.CALL_TENANT, PlanAction.SEND_REPLY],
         )
 
@@ -27,4 +21,4 @@ def plan(state: AgentState) -> _PlanResult:
         and state.responsibility == Responsibility.LANDLORD
     ):
         actions.append(PlanAction.CREATE_WORK_ORDER)
-    return _PlanResult(actions=actions)
+    return PlanOutput(actions=actions)

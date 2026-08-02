@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Literal
 
 from openai import AsyncOpenAI
@@ -8,6 +7,7 @@ from pydantic import BaseModel
 
 from leaseops.agent.events import emit_cost
 from leaseops.agent.state import AgentState, EmailCategory, Severity
+from leaseops.agent.step_schemas import ExtractOutput
 from leaseops.core.config import settings
 from leaseops.db import tenants as tenants_repo
 from leaseops.db.models import Tenant
@@ -38,16 +38,6 @@ class _ExtractFormat(BaseModel):
     severity: Literal["high", "medium", "low"]
     appliance_or_system: str | None = None
     issue_summary: str
-
-
-@dataclass(frozen=True)
-class _ExtractResult:
-    tenant_name: str | None
-    unit: str | None
-    address: str | None
-    issue_summary: str
-    severity: Severity
-    appliance_or_system: str | None
 
 
 def _content_message(state: AgentState) -> str:
@@ -83,7 +73,7 @@ async def _lookup_tenant(sender: str) -> Tenant | None:
         return await tenants_repo.get_tenant_by_email(session, sender)
 
 
-async def extract(state: AgentState) -> _ExtractResult:
+async def extract(state: AgentState) -> ExtractOutput:
     fields = await _extract_fields(state)
     tenant = await _lookup_tenant(state.sender)
     severity = (
@@ -91,7 +81,7 @@ async def extract(state: AgentState) -> _ExtractResult:
         if state.category == EmailCategory.EMERGENCY
         else Severity(fields.severity)
     )
-    return _ExtractResult(
+    return ExtractOutput(
         tenant_name=tenant.name if tenant else None,
         unit=tenant.unit if tenant else None,
         address=tenant.address if tenant else None,

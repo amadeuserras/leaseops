@@ -5,7 +5,7 @@ from typing import Any, Literal
 
 from langgraph.config import get_stream_writer
 
-from leaseops.agent.approval import ApprovalRequest
+from leaseops.agent.step_schemas import ApprovalCard
 
 _PRICING_PER_TOKEN_USD: dict[str, tuple[float, float]] = {
     "gpt-4o-mini": (0.15 / 1_000_000, 0.60 / 1_000_000),
@@ -35,7 +35,7 @@ class NodeFinishedEvent:
 @dataclass(frozen=True, kw_only=True)
 class PausedEvent:
     type: Literal["paused"] = "paused"
-    request: ApprovalRequest
+    request: ApprovalCard
 
 
 @dataclass(frozen=True, kw_only=True)

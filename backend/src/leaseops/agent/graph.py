@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import asdict
 from typing import Any, Literal
 
 from langgraph.graph import (  # pyright: ignore[reportMissingTypeStubs]
@@ -23,31 +22,31 @@ _AfterApproval = Literal["execute", "end"]
 
 
 async def _classify_node(state: AgentState) -> dict[str, Any]:
-    return asdict(await classify(state))
+    return (await classify(state)).model_dump()
 
 
 async def _extract_node(state: AgentState) -> dict[str, Any]:
-    return asdict(await extract(state))
+    return (await extract(state)).model_dump()
 
 
 async def _lease_check_node(state: AgentState) -> dict[str, Any]:
-    return asdict(await lease_check(state))
+    return (await lease_check(state)).model_dump()
 
 
 async def _draft_node(state: AgentState) -> dict[str, Any]:
-    return asdict(await draft(state))
+    return (await draft(state)).model_dump()
 
 
 def _plan_node(state: AgentState) -> dict[str, Any]:
-    return asdict(plan(state))
+    return plan(state).model_dump()
 
 
 def _approval_node(state: AgentState) -> dict[str, Any]:
-    return asdict(approval(state))
+    return approval(state).model_dump()
 
 
 async def _execute_node(state: AgentState) -> dict[str, Any]:
-    return asdict(await execute(state))
+    return (await execute(state)).model_dump()
 
 
 def _after_extract(state: AgentState) -> _AfterExtract:

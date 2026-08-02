@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import cast
 
 from anthropic import AsyncAnthropic, transform_schema
@@ -17,6 +16,7 @@ from pydantic import BaseModel, Field
 from leaseops.agent.citations import extract_citation_ids
 from leaseops.agent.events import emit_cost, emit_tool_call, emit_tool_result
 from leaseops.agent.state import AgentState, QAResultSchema, Responsibility
+from leaseops.agent.step_schemas import LeaseCheckOutput
 from leaseops.core.config import settings
 from leaseops.mcp.client import McpToolError, call_tool, mcp_session
 from leaseops.models.schemas import LeaseQAResponse
@@ -80,13 +80,6 @@ class _SubmitVerdictFormat(BaseModel):
     )
 
 
-@dataclass(frozen=True)
-class _LeaseCheckResult:
-    lease_addresses_issue: bool
-    responsibility: Responsibility
-    qa_results: list[QAResultSchema]
-
-
 LEASE_QA_TOOL: ToolParam = {
     "name": "lease_qa",
     "description": (
@@ -133,9 +126,9 @@ def _find_tool_use(response: Message, name: str) -> ToolUseBlock | None:
     return None
 
 
-async def lease_check(state: AgentState) -> _LeaseCheckResult:
+async def lease_check(state: AgentState) -> LeaseCheckOutput:
     if state.tenant_name is None or state.address is None:
-        return _LeaseCheckResult(
+        return LeaseCheckOutput(
             responsibility=Responsibility.UNCLEAR,
             lease_addresses_issue=False,
             qa_results=[],
@@ -173,7 +166,7 @@ async def lease_check(state: AgentState) -> _LeaseCheckResult:
 
             verdict_use = _find_tool_use(response, "submit_verdict")
             if verdict_use is not None:
-                return _LeaseCheckResult(
+                return LeaseCheckOutput(
                     responsibility=Responsibility(verdict_use.input["responsibility"]),
                     lease_addresses_issue=bool(
                         verdict_use.input["lease_addresses_issue"]
@@ -183,7 +176,7 @@ async def lease_check(state: AgentState) -> _LeaseCheckResult:
 
             qa_use = _find_tool_use(response, "lease_qa")
             if qa_use is None:
-                return _LeaseCheckResult(
+                return LeaseCheckOutput(
                     responsibility=Responsibility.UNCLEAR,
                     lease_addresses_issue=False,
                     qa_results=qa_results,

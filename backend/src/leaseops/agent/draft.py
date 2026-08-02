@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 
 from leaseops.agent.events import emit_cost
 from leaseops.agent.state import AgentState, QAResultSchema
+from leaseops.agent.step_schemas import DraftOutput
 from leaseops.core.config import settings
 
 _MODEL = "gpt-4o-mini"
@@ -48,11 +47,6 @@ class _DraftFormat(BaseModel):
     draft: str
 
 
-@dataclass(frozen=True)
-class _DraftResult:
-    draft: str
-
-
 def _format_qa_results(qa_results: list[QAResultSchema]) -> str:
     if not qa_results:
         return "(none)"
@@ -82,7 +76,7 @@ def _content_message(state: AgentState) -> str:
     )
 
 
-async def draft(state: AgentState) -> _DraftResult:
+async def draft(state: AgentState) -> DraftOutput:
     client = AsyncOpenAI(api_key=settings.openai_api_key)
     completion = await client.chat.completions.parse(
         model=_MODEL,
@@ -103,4 +97,4 @@ async def draft(state: AgentState) -> _DraftResult:
     result = completion.choices[0].message.parsed
     if result is None:
         raise RuntimeError("draft: model returned no parsed output")
-    return _DraftResult(draft=result.draft.strip())
+    return DraftOutput(draft=result.draft.strip())
