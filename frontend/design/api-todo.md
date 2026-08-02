@@ -13,7 +13,7 @@ Plain English: after a run finishes (or pauses), open the email and see the full
 1. **`GET /runs/{email_id}` — run + email + steps**  
    One API call that returns everything the Runs screen needs: the original email, the run record, and every step.
 
-2. **Typed step `output` per node**  
+2. **Typed step `output` per node** ✅  
    Each step’s result has a known shape for that node (classify, extract, lease_check, etc.) — not a vague “blob of JSON.”
 
 3. **Persist `lease_check` tool calls**  
@@ -22,10 +22,7 @@ Plain English: after a run finishes (or pauses), open the email and see the full
 4. **Persist per-step `model`, `input_tokens`, `output_tokens`, `cost_usd`** ✅  
    Remember which model ran each step and how many tokens / how much money it cost, broken out clearly.
 
-5. **Step statuses incl. approval `paused` / `skipped` / `completed`**  
-   Each step knows if it finished, is waiting on you, or was skipped — especially the approval gate.
-
-6. **Run aggregates: `tokens`, `cost`, `elapsed`, `step_count`**  
+6. **Run aggregates: `tokens`, `cost`, `elapsed`, `step_count`** ✅  
    The footer totals (tokens, $, time, number of steps) come from the API for the whole run, not pieced together by the UI.
 
 ## Checkpoint 2 — Live Runs = reload shape

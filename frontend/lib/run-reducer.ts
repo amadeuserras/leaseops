@@ -30,9 +30,10 @@ export type RunState = {
   steps: TraceStep[];
   pausedRequest: ApprovalRequest | null;
   error: string | null;
-  inputTokens: number;
-  outputTokens: number;
+  tokens: number;
   costUsd: number;
+  elapsedMs: number | null;
+  stepCount: number;
   startedAt: number;
   endedAt: number | null;
 };
@@ -55,6 +56,7 @@ export const applyEvent = (run: RunState, event: StreamEvent): RunState => {
     case 'node_started':
       return {
         ...run,
+        stepCount: run.steps.length + 1,
         steps: [
           ...run.steps,
           {
@@ -75,8 +77,7 @@ export const applyEvent = (run: RunState, event: StreamEvent): RunState => {
     case 'cost':
       return {
         ...run,
-        inputTokens: run.inputTokens + event.input_tokens,
-        outputTokens: run.outputTokens + event.output_tokens,
+        tokens: run.tokens + event.input_tokens + event.output_tokens,
         costUsd: run.costUsd + event.cost_usd,
         steps: patchStep(run, event.node, (step) => ({
           ...step,
@@ -164,13 +165,17 @@ export const applyEvent = (run: RunState, event: StreamEvent): RunState => {
 export const buildRunFromSteps = (
   emailId: string,
   dbSteps: StepRecord[],
+  aggregates: { tokens: number; cost: number; elapsed: number; step_count: number },
   awaitingApproval = false,
 ): RunState => {
   const last = dbSteps[dbSteps.length - 1];
   const pausedRequest =
     awaitingApproval && last?.node_name === 'approval' && last.output !== null
-      ? (last.output as ApprovalRequest)
+      ? last.output
       : null;
+
+  const startedAt = Date.parse(dbSteps[0].created_at);
+  const elapsedMs = aggregates.elapsed * 1000;
 
   return {
     emailId,
@@ -183,7 +188,7 @@ export const buildRunFromSteps = (
         pausedRequest !== null && s.node_name === 'approval' && s.id === last.id
           ? ('paused' as const)
           : ('completed' as const),
-      output: s.output,
+      output: s.output as Record<string, unknown> | null,
       calls: [],
       model: s.model,
       inputTokens: s.input_tokens ?? 0,
@@ -194,10 +199,11 @@ export const buildRunFromSteps = (
     })),
     pausedRequest,
     error: null,
-    inputTokens: dbSteps.reduce((sum, s) => sum + (s.input_tokens ?? 0), 0),
-    outputTokens: dbSteps.reduce((sum, s) => sum + (s.output_tokens ?? 0), 0),
-    costUsd: dbSteps.reduce((sum, s) => sum + (s.cost_usd ?? 0), 0),
-    startedAt: Date.parse(dbSteps[0].created_at),
-    endedAt: Date.parse(dbSteps[dbSteps.length - 1].created_at),
+    tokens: aggregates.tokens,
+    costUsd: aggregates.cost,
+    elapsedMs,
+    stepCount: aggregates.step_count,
+    startedAt,
+    endedAt: startedAt + elapsedMs,
   };
 };

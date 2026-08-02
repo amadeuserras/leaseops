@@ -166,11 +166,65 @@ export const streamRun = async ({ emailId, onEvent, signal }: StreamRunOptions):
   if (buffer.trim() !== '') emit(buffer);
 };
 
-export type StepRecord = {
+export type EmailCategory = ApprovalCategory;
+export type Severity = ApprovalSeverity;
+export type Responsibility = ApprovalResponsibility;
+
+export type ClassifyOutput = {
+  category: EmailCategory;
+};
+
+export type ExtractOutput = {
+  tenant_name: string | null;
+  unit: string | null;
+  address: string | null;
+  issue_summary: string | null;
+  severity: Severity | null;
+  appliance_or_system: string | null;
+};
+
+export type QAResultOutput = {
+  question: string;
+  answer: string;
+  citations: string[];
+};
+
+export type LeaseCheckOutput = {
+  lease_addresses_issue: boolean;
+  responsibility: Responsibility;
+  qa_results: QAResultOutput[];
+};
+
+export type PlanOutput = {
+  actions: PlanAction[];
+};
+
+export type DraftOutput = {
+  draft: string;
+};
+
+export type ApprovalCard = ApprovalRequest;
+
+export type ApprovalOutput = {
+  approved: boolean;
+};
+
+export type ExecuteOutput = {
+  actions_taken: PlanAction[];
+};
+
+export type StepOutput =
+  | ClassifyOutput
+  | ExtractOutput
+  | LeaseCheckOutput
+  | PlanOutput
+  | DraftOutput
+  | ApprovalCard
+  | ExecuteOutput;
+
+type StepRecordBase = {
   id: string;
   run_id: string;
-  node_name: string;
-  output: Record<string, unknown> | null;
   model: string | null;
   input_tokens: number | null;
   output_tokens: number | null;
@@ -178,10 +232,25 @@ export type StepRecord = {
   created_at: string;
 };
 
-export const listEmailSteps = async (emailId: string): Promise<StepRecord[]> => {
-  const data = await request<{ items: StepRecord[] }>(`/runs/${emailId}/steps`);
-  return data.items;
+export type StepRecord =
+  | (StepRecordBase & { node_name: 'classify'; output: ClassifyOutput | null })
+  | (StepRecordBase & { node_name: 'extract'; output: ExtractOutput | null })
+  | (StepRecordBase & { node_name: 'lease_check'; output: LeaseCheckOutput | null })
+  | (StepRecordBase & { node_name: 'plan'; output: PlanOutput | null })
+  | (StepRecordBase & { node_name: 'draft'; output: DraftOutput | null })
+  | (StepRecordBase & { node_name: 'approval'; output: ApprovalCard | null })
+  | (StepRecordBase & { node_name: 'execute'; output: ExecuteOutput | null });
+
+export type StepListResponse = {
+  items: StepRecord[];
+  tokens: number;
+  cost: number;
+  elapsed: number;
+  step_count: number;
 };
+
+export const listEmailSteps = async (emailId: string): Promise<StepListResponse> =>
+  request<StepListResponse>(`/runs/${emailId}/steps`);
 
 export const listApprovals = async (): Promise<PendingApproval[]> => {
   const data = await request<{ items: PendingApproval[] }>('/approvals');

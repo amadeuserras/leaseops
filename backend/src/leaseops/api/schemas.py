@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
+from leaseops.agent.step_schemas import StepResponse
 from leaseops.core.base import LeaseOpsModel
 from leaseops.models.enums import EmailStatus, OutboxStatus, RunStatus, WorkOrderStatus
 
@@ -47,6 +48,14 @@ class RunResponse(LeaseOpsModel):
     status: RunStatus
     started_at: datetime
     ended_at: datetime | None
+
+
+class StepListResponse(LeaseOpsModel):
+    items: list[StepResponse]
+    tokens: int = 0
+    cost: float = 0.0
+    elapsed: float = 0.0
+    step_count: int = 0
 
 
 class ApprovalRequestResponse(LeaseOpsModel):

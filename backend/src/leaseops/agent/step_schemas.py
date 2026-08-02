@@ -136,7 +136,3 @@ StepResponse = Annotated[
 ]
 
 StepResponseAdapter: TypeAdapter[StepResponse] = TypeAdapter(StepResponse)
-
-
-class StepListResponse(LeaseOpsModel):
-    items: list[StepResponse]

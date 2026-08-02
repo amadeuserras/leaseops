@@ -15,6 +15,7 @@ const useElapsed = (run: RunState | undefined): number => {
   }, [streaming]);
 
   if (run === undefined) return 0;
+  if (run.elapsedMs !== null) return run.elapsedMs;
   return (run.endedAt ?? now) - run.startedAt;
 };
 
@@ -36,13 +37,10 @@ export function RunStats({ run }: RunStatsProps) {
 
   return (
     <div className="bg-canvas text-ink/55 flex shrink-0 items-center gap-7 border-t border-black/8 px-7 py-3 font-mono text-[12px]">
-      <Stat
-        label="tokens"
-        value={run === undefined ? '—' : formatTokens(run.inputTokens + run.outputTokens)}
-      />
+      <Stat label="tokens" value={run === undefined ? '—' : formatTokens(run.tokens)} />
       <Stat label="cost" value={run === undefined ? '—' : formatCost(run.costUsd)} />
       <Stat label="elapsed" value={run === undefined ? '—' : formatDuration(elapsed)} />
-      <Stat label="steps" value={run === undefined ? '—' : String(run.steps.length)} />
+      <Stat label="steps" value={run === undefined ? '—' : String(run.stepCount)} />
     </div>
   );
 }

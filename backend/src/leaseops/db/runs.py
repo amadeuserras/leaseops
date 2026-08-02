@@ -1,17 +1,37 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import TypedDict
 from uuid import UUID
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from leaseops.db.models import Run
+from leaseops.db.models import Run, Step
 from leaseops.models.enums import RunStatus
 
 
 def _utcnow() -> datetime:
     return datetime.now(UTC)
+
+
+class RunAggregates(TypedDict):
+    tokens: int
+    cost: float
+    elapsed: float
+    step_count: int
+
+
+def run_aggregates(run: Run, steps: list[Step]) -> RunAggregates:
+    tokens = sum((s.input_tokens or 0) + (s.output_tokens or 0) for s in steps)
+    cost = sum(float(s.cost_usd or 0) for s in steps)
+    end = run.ended_at or (steps[-1].created_at if steps else run.started_at)
+    return {
+        "tokens": tokens,
+        "cost": cost,
+        "elapsed": (end - run.started_at).total_seconds(),
+        "step_count": len(steps),
+    }
 
 
 async def create_run(session: AsyncSession, email_id: UUID) -> Run:

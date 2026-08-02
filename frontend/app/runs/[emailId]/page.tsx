@@ -51,9 +51,10 @@ export default function RunTracePage() {
       steps: [],
       pausedRequest: null,
       error: null,
-      inputTokens: 0,
-      outputTokens: 0,
+      tokens: 0,
       costUsd: 0,
+      elapsedMs: null,
+      stepCount: 0,
       startedAt: Date.now(),
       endedAt: null,
     });
@@ -106,9 +107,11 @@ export default function RunTracePage() {
     if (email === null || autoStarted.current === emailId) return;
     autoStarted.current = emailId;
 
-    void listEmailSteps(emailId).then((dbSteps) => {
-      if (dbSteps.length > 0) {
-        setRun(buildRunFromSteps(emailId, dbSteps, email.status === 'awaiting_approval'));
+    void listEmailSteps(emailId).then((data) => {
+      if (data.items.length > 0) {
+        setRun(
+          buildRunFromSteps(emailId, data.items, data, email.status === 'awaiting_approval'),
+        );
         return;
       }
       if (email.status === 'pending') startStream();

@@ -10,13 +10,11 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from leaseops.agent.runner import GraphRunner
-from leaseops.agent.step_schemas import (
-    StepListResponse,
-    StepResponseAdapter,
-)
+from leaseops.agent.step_schemas import StepResponseAdapter
 from leaseops.api.schemas import (
     RunCreate,
     RunResponse,
+    StepListResponse,
 )
 from leaseops.db import emails as emails_repo
 from leaseops.db import runs as runs_repo
@@ -96,5 +94,6 @@ async def list_steps(email_id: UUID, session: SessionDep) -> StepListResponse:
                 }
             )
             for s in steps
-        ]
+        ],
+        **runs_repo.run_aggregates(run, steps),
     )
