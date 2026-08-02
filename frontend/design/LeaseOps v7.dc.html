@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#F4F5F7;height:100vh;overflow:hidden;}
+  *{box-sizing:border-box;}
+  a{color:#2C7BC8;}
+  a:hover{color:#1F5F9E;}
+  ::selection{background:rgba(44,123,200,0.16);}
+  input::placeholder,textarea::placeholder{color:rgba(23,24,27,0.36);}
+  @keyframes pulseAmber { 0%,100% { box-shadow: 0 0 0 0 rgba(138,90,22,0.35); } 50% { box-shadow: 0 0 0 6px rgba(138,90,22,0); } }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @keyframes pulseRed { 0%,100% { box-shadow: 0 0 0 0 rgba(163,53,44,0.30); } 50% { box-shadow: 0 0 0 7px rgba(163,53,44,0); } }
+</style>
+</helmet>
+
+<div style="width:100%;height:100vh;display:flex;font-family:'Inter',ui-sans-serif,system-ui,sans-serif;color:#17181B;overflow:hidden;background:#F4F5F7;">
+
+  <aside style="width:240px;flex-shrink:0;background:transparent;border-right:1px solid rgba(0,0,0,0.09);display:flex;flex-direction:column;padding:20px 16px;overflow-y:auto;">
+    <div style="display:flex;align-items:center;gap:10px;padding:4px 8px 22px 8px;">
+      <div style="width:32px;height:26px;border-radius:12px 10px 10px 3px;background:{{ accent }};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div style="font-weight:600;font-size:15px;letter-spacing:-0.01em;">LeaseOps</div>
+    </div>
+    <nav style="display:flex;flex-direction:column;gap:2px;">
+      <div onClick="{{ goInbox }}" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;font-size:13.5px;font-weight:500;cursor:pointer;background:{{ navInboxBg }};color:{{ navInboxText }};" style-hover="background:#EDEEF1;">
+        <div style="width:6px;height:6px;border-radius:2px;background:{{ navInboxDot }};"></div>
+        Inbox
+      </div>
+      <div onClick="{{ goRuns }}" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;font-size:13.5px;font-weight:500;cursor:pointer;background:{{ navRunsBg }};color:{{ navRunsText }};" style-hover="background:#EDEEF1;">
+        <div style="width:6px;height:6px;border-radius:2px;background:{{ navRunsDot }};"></div>
+        Runs
+      </div>
+      <div onClick="{{ goApprovals }}" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;font-size:13.5px;font-weight:500;cursor:pointer;background:{{ navApprovalsBg }};color:{{ navApprovalsText }};" style-hover="background:#EDEEF1;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:6px;height:6px;border-radius:2px;background:{{ navApprovalsDot }};"></div>
+          Approvals
+        </div>
+        <sc-if value="{{ pendingCount }}" hint-placeholder-val="{{ true }}">
+          <div style="background:rgba(23,24,27,0.08);color:rgba(23,24,27,0.55);font-size:10.5px;font-weight:600;border-radius:50%;width:18px;height:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">{{ pendingCount }}</div>
+        </sc-if>
+      </div>
+    </nav>
+    <div style="margin-top:auto;padding:12px 10px 4px 10px;border-top:1px solid rgba(0,0,0,0.09);display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(23,24,27,0.55);">
+        <div style="width:6px;height:6px;border-radius:50%;background:#2E8B4F;"></div>
+        42/42 evals passing
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:rgba(23,24,27,0.4);">v0.4.2-beta · build 8f21a0c</div>
+    </div>
+  </aside>
+
+  <main style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;">
+
+    <sc-if value="{{ isInbox }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:28px 36px 40px 36px;overflow-y:auto;height:100%;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;row-gap:8px;">
+        <h1 style="font-size:20px;font-weight:700;margin:0;letter-spacing:-0.01em;">Inbox</h1>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="font-size:12.5px;color:rgba(23,24,27,0.4);white-space:nowrap;">{{ emailCount }} messages</div>
+          <div style="width:32px;height:32px;border-radius:50%;background:#3C4450;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600;cursor:pointer;flex-shrink:0;">D</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;row-gap:10px;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <sc-for list="{{ filterChips }}" as="chip" hint-placeholder-count="6">
+            <div onClick="{{ chip.onClick }}" style="padding:6px 12px;border-radius:999px;font-size:12.5px;font-weight:500;cursor:pointer;white-space:nowrap;background:{{ chip.bg }};color:{{ chip.text }};border:1px solid {{ chip.border }};">{{ chip.label }}</div>
+          </sc-for>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:rgba(23,24,27,0.45);white-space:nowrap;">
+          <div style="width:5px;height:5px;border-radius:50%;background:#2E8B4F;"></div>
+          Agent last ran 2 min ago
+        </div>
+      </div>
+
+      <div style="border:1px solid rgba(0,0,0,0.09);border-radius:12px;overflow-x:auto;background:#FFFFFF;">
+        <div style="display:grid;grid-template-columns:180px 1fr 110px 90px 150px 180px;gap:16px;padding:10px 18px;background:#F4F5F7;border-bottom:1px solid rgba(0,0,0,0.09);font-size:11px;font-weight:600;color:rgba(23,24,27,0.45);text-transform:uppercase;letter-spacing:0.03em;min-width:960px;">
+          <div>Sender</div><div>Subject</div><div>Received</div><div>Severity</div><div>Status</div><div>Actions taken</div>
+        </div>
+        <sc-for list="{{ filteredEmails }}" as="em" hint-placeholder-count="8">
+          <div onClick="{{ em.onClick }}" style="display:grid;grid-template-columns:180px 1fr 110px 90px 150px 180px;gap:16px;padding:14px 18px;border-bottom:1px solid rgba(0,0,0,0.07);cursor:pointer;align-items:center;min-width:960px;" style-hover="background:#F7F8FA;">
+            <div style="min-width:0;">
+              <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ em.sender }}</div>
+              <div style="font-size:11.5px;color:rgba(23,24,27,0.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Unit {{ em.unit }}</div>
+            </div>
+            <div style="min-width:0;">
+              <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ em.subject }}</div>
+              <div style="font-size:12px;color:rgba(23,24,27,0.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ em.preview }}</div>
+            </div>
+            <div style="font-size:12px;color:rgba(23,24,27,0.55);">{{ em.time }}</div>
+            <div>
+              <sc-if value="{{ em.showSeverity }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:{{ em.severityColor }};font-weight:500;">
+                  <div style="width:6px;height:6px;border-radius:50%;background:{{ em.severityColor }};flex-shrink:0;"></div>
+                  {{ em.severityLabel }}
+                </div>
+              </sc-if>
+              <sc-if value="{{ em.noSeverity }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:12px;color:rgba(23,24,27,0.28);">—</div>
+              </sc-if>
+            </div>
+            <div>
+              <div style="display:inline-block;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:600;background:{{ em.statusBg }};color:{{ em.statusText }};border:1px solid {{ em.statusBorder }};">{{ em.status }}</div>
+            </div>
+            <div style="min-width:0;font-size:12px;color:rgba(23,24,27,0.6);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+              <sc-if value="{{ em.hasActions }}" hint-placeholder-val="{{ false }}">{{ em.actionsText }}</sc-if>
+              <sc-if value="{{ em.noActions }}" hint-placeholder-val="{{ true }}"><span style="color:rgba(23,24,27,0.28);">—</span></sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isRuns }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;height:100%;min-height:0;">
+      <div style="display:flex;flex:1;min-height:0;">
+
+        <div style="width:420px;flex:0 1 420px;min-width:280px;border-right:1px solid rgba(0,0,0,0.09);padding:24px;background:#F4F5F7;overflow-y:auto;">
+          <div style="font-size:12.5px;color:rgba(23,24,27,0.4);margin-bottom:10px;">Original message</div>
+          <div style="background:#FFFFFF;border:1px solid rgba(0,0,0,0.09);border-radius:12px;padding:20px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+              <div style="width:34px;height:34px;border-radius:50%;background:#EAF3FC;color:#2C7BC8;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">{{ activeEmail.initials }}</div>
+              <div style="min-width:0;">
+                <div style="font-size:13.5px;font-weight:600;">{{ activeEmail.sender }}</div>
+                <div style="font-size:11.5px;color:rgba(23,24,27,0.5);">{{ activeEmail.email }}</div>
+              </div>
+            </div>
+            <div style="font-size:14.5px;font-weight:700;margin-bottom:4px;">{{ activeEmail.subject }}</div>
+            <div style="font-size:12.5px;color:rgba(23,24,27,0.4);margin-bottom:14px;">Received {{ activeEmail.time }}</div>
+            <div style="font-size:13px;line-height:1.7;color:rgba(23,24,27,0.82);white-space:pre-line;">{{ activeEmail.body }}</div>
+          </div>
+        </div>
+
+        <div style="flex:1 1 480px;min-width:380px;padding:24px 28px;overflow-y:auto;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:4px;">
+            <h1 style="font-size:18px;font-weight:700;margin:0;letter-spacing:-0.01em;">Agent run trace</h1>
+
+          </div>
+          <div style="font-size:12.5px;color:rgba(23,24,27,0.4);margin-bottom:22px;">run_{{ activeRunId }} · {{ streamLabel }}</div>
+
+          <div style="position:relative;">
+            <sc-for list="{{ displaySteps }}" as="step" hint-placeholder-count="6">
+              <div style="display:flex;gap:14px;">
+                <div style="display:flex;flex-direction:column;align-items:center;width:14px;flex-shrink:0;">
+                  <div style="width:11px;height:11px;border-radius:50%;background:{{ step.dotColor }};margin-top:6px;flex-shrink:0;"></div>
+                  <sc-if value="{{ step.hasNext }}" hint-placeholder-val="{{ true }}"><div style="width:1.5px;flex:1;background:rgba(0,0,0,0.1);min-height:20px;"></div></sc-if>
+                </div>
+                <div style="flex:1;min-width:0;padding-bottom:18px;">
+                  <div onClick="{{ step.onToggle }}" style="display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;padding:9px 14px;background:#FFFFFF;border:1px solid rgba(0,0,0,0.09);border-radius:12px 12px 0 0;">
+                    <div style="display:flex;align-items:center;gap:10px;flex:0 0 auto;">
+                      <div style="font-size:13px;font-weight:600;white-space:nowrap;">{{ step.name }}</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:0 3 auto;overflow:hidden;">
+                      <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:rgba(23,24,27,0.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;">{{ step.headerRight }}</div>
+                    </div>
+                  </div>
+                  <sc-if value="{{ step.expanded }}" hint-placeholder-val="{{ false }}">
+                    <div style="background:#FFFFFF;border:1px solid rgba(0,0,0,0.09);border-top:none;border-radius:0 0 12px 12px;padding:16px;">
+
+                      <sc-if value="{{ step.isClassify }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:8px 10px;font-size:13px;">
+                          <div style="color:rgba(23,24,27,0.45);min-width:0;white-space:nowrap;">Category</div><div style="font-weight:400;min-width:0;overflow-wrap:break-word;">{{ step.category }}</div>
+                        </div>
+                      </sc-if>
+
+                      <sc-if value="{{ step.isExtract }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex;align-items:flex-start;flex-wrap:wrap;gap:9px 24px;">
+                          <div style="flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:9px;">
+                            <sc-for list="{{ step.fieldsLeft }}" as="f" hint-placeholder-count="4">
+                              <div style="display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:8px 10px;font-size:13px;min-width:0;">
+                                <div style="color:rgba(23,24,27,0.45);min-width:0;white-space:nowrap;">{{ f.k }}</div><div style="font-weight:400;min-width:0;overflow-wrap:break-word;color:{{ f.color }};">{{ f.v }}</div>
+                              </div>
+                            </sc-for>
+                          </div>
+                          <sc-if value="{{ step.hasRightCol }}" hint-placeholder-val="{{ true }}">
+                            <div style="flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:9px;">
+                              <sc-for list="{{ step.fieldsRight }}" as="f" hint-placeholder-count="3">
+                                <div style="display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:8px 10px;font-size:13px;min-width:0;">
+                                  <div style="color:rgba(23,24,27,0.45);min-width:0;white-space:nowrap;">{{ f.k }}</div><div style="font-weight:400;min-width:0;overflow-wrap:break-word;color:{{ f.color }};">{{ f.v }}</div>
+                                </div>
+                              </sc-for>
+                            </div>
+                          </sc-if>
+                        </div>
+                      </sc-if>
+
+                      <sc-if value="{{ step.isLease }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex;flex-direction:column;gap:14px;">
+                          <sc-for list="{{ step.leaseCalls }}" as="call" hint-placeholder-count="2">
+                            <div>
+                              <div style="font-size:13px;color:rgba(23,24,27,0.82);margin-bottom:8px;">{{ call.reasoning }}</div>
+                              <div style="border:1px solid rgba(0,0,0,0.09);border-radius:8px;overflow:hidden;">
+                                <div onClick="{{ call.onToggle }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;padding:9px 12px;background:#F4F5F7;">
+                                  <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+                                    <sc-if value="{{ call.pending }}" hint-placeholder-val="{{ false }}">
+                                      <div style="width:11px;height:11px;border-radius:50%;border:1.8px solid rgba(44,123,200,0.22);border-top-color:#2C7BC8;animation:spin 0.7s linear infinite;flex-shrink:0;"></div>
+                                    </sc-if>
+                                    <sc-if value="{{ call.done }}" hint-placeholder-val="{{ true }}">
+                                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;"><path d="M5 13l4 4L19 7" stroke="#2E8B4F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    </sc-if>
+                                    <div style="font-size:12px;color:rgba(23,24,27,0.5);white-space:nowrap;">Tool call<span style="padding:0 5px;">·</span>{{ call.tool }}</div>
+                                  </div>
+                                  
+                                </div>
+                                <sc-if value="{{ call.expanded }}" hint-placeholder-val="{{ false }}">
+                                  <div style="padding:12px;background:#FFFFFF;border-top:1px solid rgba(0,0,0,0.07);display:flex;flex-direction:column;gap:10px;">
+                                    <sc-if value="{{ call.isQA }}" hint-placeholder-val="{{ false }}">
+                                      <div style="font-size:12.5px;color:rgba(23,24,27,0.55);line-height:1.6;">question:&quot;{{ call.question }}&quot;</div>
+                                      <sc-if value="{{ call.done }}" hint-placeholder-val="{{ true }}">
+                                        <div style="font-size:12.5px;color:#17181B;line-height:1.7;">{{ call.answer }}
+                                          <sc-for list="{{ call.citations }}" as="cite" hint-placeholder-count="1">
+                                            <span style="display:inline-flex;align-items:center;gap:4px;border-radius:20px;background:rgba(0,0,0,0.055);padding:1px 8px;font-family:'Inter',sans-serif;font-size:11.5px;font-weight:500;white-space:nowrap;vertical-align:middle;color:rgba(23,24,27,0.5);margin:0 2px;cursor:pointer;" style-hover="background:rgba(0,0,0,0.1);color:#17181B;">{{ cite }}</span>
+                                          </sc-for>
+                                        </div>
+                                      </sc-if>
+                                    </sc-if>
+                                    <sc-if value="{{ call.isVerdict }}" hint-placeholder-val="{{ false }}">
+                                      <div style="font-size:12.5px;color:rgba(23,24,27,0.55);line-height:1.6;">{{ call.argsText }}</div>
+                                    </sc-if>
+                                  </div>
+                                </sc-if>
+                              </div>
+                            </div>
+                          </sc-for>
+
+                          <div style="display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:8px 10px;font-size:13px;margin-top:4px;">
+                            <sc-for list="{{ step.verdictFields }}" as="v" hint-placeholder-count="2">
+                              <div style="color:rgba(23,24,27,0.45);min-width:0;white-space:nowrap;">{{ v.k }}</div><div style="font-weight:400;min-width:0;overflow-wrap:break-word;">{{ v.v }}</div>
+                            </sc-for>
+                          </div>
+                        </div>
+                      </sc-if>
+
+                      <sc-if value="{{ step.isDecide }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:8px 10px;font-size:13px;">
+                          <div style="color:rgba(23,24,27,0.45);min-width:0;white-space:nowrap;">Suggested actions</div><div style="font-weight:400;min-width:0;overflow-wrap:break-word;">{{ step.actionType }}</div>
+                        </div>
+                      </sc-if>
+
+                      <sc-if value="{{ step.isDraft }}" hint-placeholder-val="{{ false }}">
+                        <div style="font-size:13px;line-height:1.6;color:rgba(23,24,27,0.82);white-space:pre-line;">{{ step.replyPreview }}</div>
+                      </sc-if>
+
+                      <sc-if value="{{ step.isGate }}" hint-placeholder-val="{{ false }}">
+                        <div style="padding:12px 14px;border-radius:7px;background:{{ step.gateBg }};border:1px solid {{ step.gateBorder }};color:{{ step.gateText }};font-size:13px;line-height:1.5;display:flex;align-items:center;justify-content:space-between;gap:14px;{{ step.gateAnim }}">
+                          <div style="min-width:0;">{{ step.note }}</div>
+                          <div onClick="{{ step.onOpenApprovals }}" style="flex-shrink:0;display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;opacity:0.7;cursor:pointer;text-decoration:underline;text-underline-offset:2px;" style-hover="opacity:1;">Open →</div>
+                        </div>
+                      </sc-if>
+
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:28px;padding:12px 28px;border-top:1px solid rgba(0,0,0,0.09);background:#F4F5F7;font-family:'JetBrains Mono',monospace;font-size:12px;color:rgba(23,24,27,0.55);flex-shrink:0;">
+        <div><span style="color:rgba(23,24,27,0.4);">tokens</span> &nbsp;{{ activeTrace.tokens }}</div>
+        <div><span style="color:rgba(23,24,27,0.4);">cost</span> &nbsp;{{ activeTrace.cost }}</div>
+        <div><span style="color:rgba(23,24,27,0.4);">elapsed</span> &nbsp;{{ activeTrace.elapsed }}</div>
+        <div><span style="color:rgba(23,24,27,0.4);">steps</span> &nbsp;{{ activeTrace.stepCount }}</div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isApprovals }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;height:100%;min-height:0;">
+      <div style="padding:28px 36px 18px 36px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+        <div>
+          <h1 style="font-size:20px;font-weight:700;margin:0;letter-spacing:-0.01em;">Approvals</h1>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="font-size:12.5px;color:rgba(23,24,27,0.4);white-space:nowrap;">{{ shownCount }} of {{ pendingCount }} pending</div>
+          <div style="width:32px;height:32px;border-radius:50%;background:#3C4450;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600;cursor:pointer;flex-shrink:0;">D</div>
+        </div>
+      </div>
+
+      <div style="padding:0 36px;flex-shrink:0;display:flex;align-items:center;gap:10px 18px;flex-wrap:wrap;">
+        <sc-for list="{{ filterGroups }}" as="grp" hint-placeholder-count="3">
+          <div style="display:flex;align-items:center;gap:7px;">
+            <div style="font-size:12.5px;color:rgba(23,24,27,0.4);white-space:nowrap;">{{ grp.label }}</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap;">
+              <sc-for list="{{ grp.options }}" as="opt" hint-placeholder-count="3">
+                <button onClick="{{ opt.onClick }}" style="border:1px solid {{ opt.chipBorder }};background:{{ opt.chipBg }};color:{{ opt.chipInk }};font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;padding:6px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;">{{ opt.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="flex:1;min-height:0;overflow-y:auto;padding:18px 36px 40px 36px;display:flex;flex-direction:column;gap:18px;">
+        <sc-if value="{{ hasNone }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:34px;text-align:center;font-size:12.5px;color:rgba(23,24,27,0.35);border:1px dashed rgba(0,0,0,0.12);border-radius:12px;">{{ emptyLabel }}</div>
+        </sc-if>
+        <sc-for list="{{ shown }}" as="card" hint-placeholder-count="5">
+          <div onClick="{{ card.onToggle }}" style="display:flex;border-radius:12px;cursor:pointer;animation:{{ card.cardAnim }};">
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 14px;background:{{ card.cardHeaderBg }};border:1px solid {{ card.cardBorder }};border-radius:12px 12px 0 0;">
+                <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 auto;overflow:hidden;">
+                  <span style="display:inline-flex;align-items:center;border-radius:20px;padding:2px 9px;font-size:11.5px;font-weight:500;white-space:nowrap;flex-shrink:0;background:{{ card.catBg }};color:{{ card.catInk }};border:1px solid {{ card.catBorder }};">{{ card.categoryLabel }}</span>
+                  <div style="font-size:13px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ card.issue_summary }}</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;font-size:12px;color:rgba(23,24,27,0.35);white-space:nowrap;">
+                  <sc-if value="{{ card.hasSeverity }}" hint-placeholder-val="{{ true }}">
+                    <span style="display:inline-flex;align-items:center;gap:6px;color:{{ card.sevInk }};font-weight:{{ card.sevWeight }};">
+                      <sc-if value="{{ card.showSevDot }}" hint-placeholder-val="{{ true }}">
+                        <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:{{ card.sevDotColor }};"></span>
+                      </sc-if>
+                      <span style="font-size:13px;">{{ card.severityLabel }}</span><span style="padding:0 3px;color:rgba(23,24,27,0.3);font-weight:400;">·</span>
+                    </span>
+                  </sc-if>
+                  {{ card.receivedAt }}
+                </div>
+              </div>
+
+              <div style="background:{{ card.cardBg }};border:1px solid {{ card.cardBorder }};border-top:none;border-radius:0 0 12px 12px;padding:16px;display:flex;flex-direction:column;gap:16px;">
+                <div style="display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 10px;font-size:13px;">
+                  <div style="color:rgba(23,24,27,0.45);min-width:0;white-space:nowrap;">Tenant</div>
+                  <div style="min-width:0;overflow-wrap:break-word;">{{ card.tenantName }}<span style="color:rgba(23,24,27,0.45);"> · Unit {{ card.unit }} · {{ card.address }}</span></div>
+                  <sc-if value="{{ card.hasResponsibility }}" hint-placeholder-val="{{ true }}">
+                    <div style="color:rgba(23,24,27,0.45);min-width:0;white-space:nowrap;">Responsibility</div>
+                  </sc-if>
+                  <sc-if value="{{ card.hasResponsibility }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-width:0;">
+                      <span>{{ card.responsibility }}</span>
+                      <span onClick="{{ card.onCitation }}" style="display:inline-flex;align-items:center;gap:4px;border-radius:20px;background:rgba(0,0,0,0.055);padding:1px 8px;font-family:'Inter',sans-serif;font-size:11.5px;font-weight:500;white-space:nowrap;vertical-align:middle;color:rgba(23,24,27,0.5);cursor:pointer;" style-hover="background:rgba(0,0,0,0.1);color:#17181B;">{{ card.citation }}</span>
+                    </div>
+                  </sc-if>
+                  <div style="color:rgba(23,24,27,0.45);min-width:0;white-space:nowrap;">Issue type</div>
+                  <div style="min-width:0;overflow-wrap:break-word;">{{ card.issueCategory }}</div>
+                </div>
+
+                <sc-if value="{{ card.isOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:14px;">
+                    <div>
+                      <div style="font-size:13px;color:rgba(23,24,27,0.45);margin-bottom:8px;">Original message</div>
+                      <div style="font-size:13px;line-height:1.7;color:rgba(23,24,27,0.82);white-space:pre-line;border-left:1.5px solid rgba(0,0,0,0.12);padding-left:12px;">{{ card.original_email }}</div>
+                    </div>
+                    <div>
+                      <div style="font-size:13px;color:rgba(23,24,27,0.45);margin-bottom:8px;">Reply draft</div>
+                      <div style="font-size:13px;line-height:1.7;color:rgba(23,24,27,0.82);white-space:pre-line;border-left:1.5px solid rgba(0,0,0,0.12);padding-left:12px;">{{ card.draft }}</div>
+                    </div>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ card.isOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
+                  <sc-for list="{{ card.actions }}" as="act" hint-placeholder-count="2">
+                    <div onClick="{{ act.onClick }}" style="display:flex;align-items:center;gap:6px;padding:6px 13px;border-radius:8px;font-size:12.5px;font-weight:500;background:{{ act.bgA }};border:1px solid {{ act.borderA }};color:{{ act.inkA }};cursor:{{ act.cursorA }};white-space:nowrap;" style-hover="{{ act.hoverA }}">
+                      <sc-if value="{{ act.isDone }}" hint-placeholder-val="{{ false }}">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;"><path d="M5 13l4 4L19 7" stroke="#2E8B4F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      </sc-if>
+                      {{ act.label }}
+                    </div>
+                  </sc-for>
+                </div>
+                </sc-if>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+  </main>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;startScreen&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;inbox&quot;, &quot;runs&quot;, &quot;approvals&quot;], &quot;default&quot;: &quot;inbox&quot;, &quot;tsType&quot;: &quot;string&quot; },
+  &quot;accentColor&quot;: { &quot;editor&quot;: &quot;color&quot;, &quot;options&quot;: [&quot;#4C9EEB&quot;, &quot;#3679C5&quot;, &quot;#2E8B4F&quot;, &quot;#17181B&quot;], &quot;default&quot;: &quot;#4C9EEB&quot;, &quot;tsType&quot;: &quot;string&quot; },
+  &quot;autoExpandSteps&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot; }
+}">
+class Component extends DCLogic {
+  state = {
+    screen: null,
+    activeRunId: 'priya2',
+    filter: 'all',
+    collapsed: {},
+    leaseCallExpanded: {},
+    rejectOpen: {},
+    rejectText: {},
+    status: {}
+  };
+
+  emails = [
+    { id:'maria', sender:'Maria Martinez', email:'m.martinez@tenantmail.com', unit:'4B', subject:'Gas smell in kitchen', preview:'There\'s a strong gas smell coming from the kitchen stove, please send someone ASAP…', time:'08:12', status:'Awaiting approval', severity:'emergency', body:'Hi, I need someone urgently — there\'s a strong gas smell coming from around the kitchen stove. It\'s been getting stronger over the last hour. I\'ve turned off the stove and cracked a window but I\'m worried. Can someone come check this today? — Maria, Unit 4B' },
+    { id:'james', sender:'James Okafor', email:'j.okafor@tenantmail.com', unit:'12A', subject:'Radiator leaking onto bedroom floor', preview:'The radiator in the back bedroom has been leaking onto the floor since last night…', time:'09:05', status:'Awaiting approval', severity:'high', body:'Hello, the radiator in the back bedroom has been leaking onto the floor since last night. I\'ve put towels down but it keeps coming back. Could someone take a look this week? Thanks, James, Unit 12A' },
+    { id:'priya', sender:'Priya Chandrasekaran', email:'p.chandra@tenantmail.com', unit:'7C', subject:'Intercom not buzzing guests in', preview:'Front door intercom isn\'t buzzing guests in, been broken for 3 days now…', time:'07:48', status:'Processed', actions:["Work order created","Reply sent"], severity:'low', body:'Hi there, the front door intercom panel isn\'t buzzing guests in — it\'s been broken for about 3 days now. My guests have had to call me to come down and let them in. Could this get fixed? Thank you, Priya, Unit 7C' },
+    { id:'david', sender:'David Chen', email:'d.chen@tenantmail.com', unit:'3A', subject:'Dishwasher not draining', preview:'Dishwasher fills but won\'t drain, water pooling at the bottom after every cycle…', time:'10:22', status:'Processing', severity:'medium', body:'Hi, my dishwasher fills with water but won\'t drain — there\'s standing water pooling at the bottom after every cycle. Started two days ago. Let me know when someone can come take a look. David, Unit 3A' },
+    { id:'aisha', sender:'Aisha Bello', email:'a.bello@tenantmail.com', unit:'9D', subject:'Noise complaint — upstairs neighbor', preview:'The neighbors upstairs have been really loud at night again, wondering if…', time:'10:41', status:'Pending', severity:'low', body:'Hi, the neighbors upstairs have been really loud again late at night this week. Wondering if building management could send a reminder about quiet hours? Thanks, Aisha, Unit 9D' },
+    { id:'tom', sender:'Tom Reilly', email:'t.reilly@tenantmail.com', unit:'2B', subject:'Parking spot reassignment request', preview:'Is it possible to switch my parking spot? Mine is quite far from the entrance…', time:'06:55', status:'Processed', actions:["Reply sent"], severity:'low', body:'Hi, is it possible to switch my assigned parking spot? Mine is quite far from the entrance and I noticed a few closer spots seem to be open. Thanks, Tom, Unit 2B' },
+    { id:'sophie', sender:'Sophie Laurent', email:'s.laurent@tenantmail.com', unit:'5A', subject:'AC unit not cooling', preview:'AC has stopped cooling properly the past two days, it\'s just blowing warm air…', time:'09:37', status:'Awaiting approval', severity:'medium', body:'Hello, the AC unit has stopped cooling properly over the past two days — it\'s just blowing warm air now. It\'s been quite uncomfortable. Could someone take a look soon? Sophie, Unit 5A' },
+    { id:'marcus', sender:'Marcus Webb', email:'m.webb@tenantmail.com', unit:'15C', subject:'Mailbox lock broken', preview:'Mailbox key won\'t turn, think the lock mechanism is broken…', time:'11:03', status:'Pending', severity:'low', body:'Hi, my mailbox key won\'t turn anymore — I think the lock mechanism itself is broken. Could someone from maintenance take a look? Marcus, Unit 15C' },
+    { id:'linda', sender:'Linda Foster', email:'l.foster@tenantmail.com', unit:'6B', subject:'Front door lock not latching', preview:'Front door isn\'t latching properly anymore, has to be slammed shut to lock…', time:'06:20', status:'Processed', actions:["Work order created","Reply sent"], severity:'medium', body:'Hi, my front door isn\'t latching properly anymore — I have to slam it to get it to lock. Worried about security. Could someone fix the latch mechanism? Linda, Unit 6B' },
+    { id:'priya2', sender:'Priya Nadkarni', email:'p.nadkarni@tenantmail.com', unit:'3C', subject:'Can I paint the living room?', preview:'The lease doesn\'t specify any restrictions on paint colors, wondering if I can paint it light blue…', time:'11:20', status:'Awaiting approval', severity:'low', body:'Hi, I was hoping to paint the living room a light blue. I noticed the lease doesn\'t specify any restrictions on paint colors. I\'m happy to restore it to the original color when I move out. Let me know if that\'s alright. Thanks, Priya, Unit 3C' }
+  ];
+
+  traces = {
+    maria: { tokens:'4,812', cost:'$0.0142', elapsed:'1.8s', steps:[
+      { name:'classify', status:'completed', duration:'118ms', type:'classify', category:'emergency_maintenance' },
+      { name:'extract', status:'completed', duration:'342ms', type:'extract', fields:[{k:'tenant',v:'Maria Martinez'},{k:'unit',v:'4B'},{k:'issue',v:'Gas smell reported in kitchen'},{k:'severity',v:'critical'}] },
+      { name:'lease_check', status:'completed', duration:'891ms', type:'lease_check', calls:[
+        { reasoning:'Gas safety is a landlord duty in most leases — confirming the responsibility and the response window.', tool:'lease_qa', question:'Is gas appliance repair a landlord responsibility, and what is the emergency response SLA?', answer:'Landlord is responsible for gas line and appliance safety issues. Emergency response is required within 2 hours of report.', citations:['martinez-lease §8.2'] },
+        { reasoning:'Responsibility and SLA are both established — submitting a verdict.', tool:'submit_verdict', argsText:'lease_addresses_issue: true, responsibility: "landlord"' }
+      ], verdictFields:[{k:'lease_addresses_issue',v:'true'},{k:'responsibility',v:'landlord'}] },
+      { name:'plan', status:'completed', duration:'54ms', type:'decide', actionType:'create_work_order', summary:'Critical urgency and cost above the $200 threshold — route for human approval before dispatch.' },
+      { name:'draft', status:'completed', duration:'206ms', type:'draft', replyPreview:'Hi Maria, thank you for reporting this immediately — a gas smell is a safety emergency. We\'ve escalated to our emergency gas technician and someone will be on site shortly. Please keep windows open and avoid using gas appliances until then.', woId:'WO-0191', woCost:'$340', woDesc:'Emergency gas technician dispatch — unit 4B' },
+      { name:'approval_gate', status:'paused', duration:null, type:'gate', note:'Waiting for human approval — dispatch involves an emergency vendor and cost is above the $200 auto-approval threshold.' }
+    ]},
+    james: { tokens:'3,980', cost:'$0.0121', elapsed:'1.4s', steps:[
+      { name:'classify', status:'completed', duration:'95ms', type:'classify', category:'routine_maintenance' },
+      { name:'extract', status:'completed', duration:'288ms', type:'extract', fields:[{k:'tenant',v:'James Okafor'},{k:'unit',v:'12A'},{k:'issue',v:'Radiator leaking onto bedroom floor'},{k:'severity',v:'high'}] },
+      { name:'lease_check', status:'completed', duration:'654ms', type:'lease_check', calls:[
+        { reasoning:'Checking who carries radiator repair costs before committing to a dispatch.', tool:'lease_qa', question:'Who is responsible for radiator repair costs, and is there a maintenance dispatch fee?', answer:'Landlord covers radiator repair; a standard $85 dispatch fee applies if tenant-caused damage is ruled out.', citations:['okafor-lease §5.4'] },
+        { reasoning:'Responsibility is clear — submitting a verdict.', tool:'submit_verdict', argsText:'lease_addresses_issue: true, responsibility: "landlord"' }
+      ], verdictFields:[{k:'lease_addresses_issue',v:'true'},{k:'responsibility',v:'landlord'}] },
+      { name:'plan', status:'completed', duration:'48ms', type:'decide', actionType:'create_work_order', summary:'High urgency, estimate $340 above the $200 threshold — route for human approval.' },
+      { name:'draft', status:'completed', duration:'188ms', type:'draft', replyPreview:'Hi James, thanks for flagging this — we\'ve scheduled a plumber to assess and repair the radiator leak. Towels should be fine in the meantime; we\'ll confirm a time window shortly.', woId:'WO-0193', woCost:'$340', woDesc:'Plumbing repair — radiator leak, unit 12A' },
+      { name:'approval_gate', status:'paused', duration:null, type:'gate', note:'Waiting for human approval — cost estimate exceeds the $200 auto-approval threshold.' }
+    ]},
+    sophie: { tokens:'3,510', cost:'$0.0104', elapsed:'1.2s', steps:[
+      { name:'classify', status:'completed', duration:'102ms', type:'classify', category:'routine_maintenance' },
+      { name:'extract', status:'completed', duration:'265ms', type:'extract', fields:[{k:'tenant',v:'Sophie Laurent'},{k:'unit',v:'5A'},{k:'issue',v:'AC unit not cooling'},{k:'severity',v:'medium'}] },
+      { name:'lease_check', status:'completed', duration:'588ms', type:'lease_check', calls:[
+        { reasoning:'Confirming HVAC coverage and whether a vendor is named in the lease.', tool:'lease_qa', question:'Is HVAC repair covered under the lease, and is there a preferred vendor?', answer:'HVAC repairs are landlord-covered; preferred vendor is Coastal Air Systems with a standard $150 callout fee.', citations:['laurent-lease §6.1'] },
+        { reasoning:'Coverage and vendor are established — submitting a verdict.', tool:'submit_verdict', argsText:'lease_addresses_issue: true, responsibility: "landlord", vendor: "Coastal Air Systems"' }
+      ], verdictFields:[{k:'lease_addresses_issue',v:'true'},{k:'responsibility',v:'landlord'},{k:'vendor',v:'Coastal Air Systems'}] },
+      { name:'plan', status:'completed', duration:'44ms', type:'decide', actionType:'create_work_order', summary:'Estimate $210 above threshold and vendor quote unconfirmed — route for human approval.' },
+      { name:'draft', status:'completed', duration:'176ms', type:'draft', replyPreview:'Hi Sophie, sorry to hear the AC isn\'t cooling — we\'ve requested a callout from Coastal Air Systems and will confirm a time window shortly.', woId:'WO-0197', woCost:'$210', woDesc:'HVAC diagnostic + repair — unit 5A' },
+      { name:'approval_gate', status:'paused', duration:null, type:'gate', note:'Waiting for human approval — cost estimate exceeds the $200 auto-approval threshold.' }
+    ]},
+    priya: { tokens:'3,120', cost:'$0.0089', elapsed:'0.9s', steps:[
+      { name:'classify', status:'completed', duration:'88ms', type:'classify', category:'routine_maintenance' },
+      { name:'extract', status:'completed', duration:'240ms', type:'extract', fields:[{k:'tenant',v:'Priya Chandrasekaran'},{k:'unit',v:'7C'},{k:'issue',v:'Intercom not buzzing in guests'},{k:'severity',v:'low'}] },
+      { name:'lease_check', status:'completed', duration:'402ms', type:'lease_check', calls:[
+        { reasoning:'The intercom may be a shared system — checking whether repairs are pre-approved.', tool:'lease_qa', question:'Is intercom repair a shared building system, and can it be auto-approved?', answer:'Intercom is a shared building system; repairs under $200 are pre-approved per building ops policy.', citations:['building-ops-policy §2.3'] },
+        { reasoning:'Repair falls under pre-approved building maintenance — submitting a verdict.', tool:'submit_verdict', argsText:'lease_addresses_issue: true, responsibility: "landlord", pre_approved: true' }
+      ], verdictFields:[{k:'lease_addresses_issue',v:'true'},{k:'responsibility',v:'landlord'},{k:'pre_approved',v:'true'}] },
+      { name:'plan', status:'completed', duration:'40ms', type:'decide', actionType:'create_work_order', summary:'Low urgency and estimate under $200 — auto-approved, no human review needed.' },
+      { name:'draft', status:'completed', duration:'150ms', type:'draft', replyPreview:'Hi Priya, thanks for letting us know — we\'ve scheduled our building tech to repair the intercom panel this week.', woId:'WO-0188', woCost:'$95', woDesc:'Intercom panel repair — unit 7C' },
+      { name:'approval_gate', status:'skipped', duration:null, type:'gate', note:'Not required — auto-approved, low risk.' }
+    ]},
+    tom: { tokens:'2,640', cost:'$0.0071', elapsed:'0.7s', steps:[
+      { name:'classify', status:'completed', duration:'76ms', type:'classify', category:'admin_request' },
+      { name:'extract', status:'completed', duration:'198ms', type:'extract', fields:[{k:'tenant',v:'Tom Reilly'},{k:'unit',v:'2B'},{k:'issue',v:'Requesting closer parking spot'},{k:'severity',v:'low'}] },
+      { name:'lease_check', status:'completed', duration:'320ms', type:'lease_check', calls:[
+        { reasoning:'Checking whether reassignment is permitted and whether a fee applies.', tool:'lease_qa', question:'Does the lease allow parking spot reassignment requests, and is there an admin fee?', answer:'Parking reassignment is permitted subject to availability; no fee for the first request per tenancy.', citations:['reilly-lease §11.0'] },
+        { reasoning:'Request is permitted at no cost — submitting a verdict.', tool:'submit_verdict', argsText:'lease_addresses_issue: true, responsibility: "landlord", fee: "$0"' }
+      ], verdictFields:[{k:'lease_addresses_issue',v:'true'},{k:'responsibility',v:'landlord'},{k:'fee',v:'$0'}] },
+      { name:'plan', status:'completed', duration:'32ms', type:'decide', actionType:'send_reply', summary:'No cost impact, administrative change only — auto-approved.' },
+      { name:'draft', status:'completed', duration:'120ms', type:'draft', replyPreview:'Hi Tom, good news — spot P-14 is available and closer to your unit. We\'ve updated your parking assignment.', woId:null, woCost:null, woDesc:null },
+      { name:'approval_gate', status:'skipped', duration:null, type:'gate', note:'Not required — no cost, administrative change only.' }
+    ]},
+    david: { tokens:'1,240', cost:'$0.0038', elapsed:'0.6s', steps:[
+      { name:'classify', status:'completed', duration:'91ms', type:'classify', category:'routine_maintenance' },
+      { name:'extract', status:'completed', duration:'250ms', type:'extract', fields:[{k:'tenant',v:'David Chen'},{k:'unit',v:'3A'},{k:'issue',v:'Dishwasher not draining'},{k:'severity',v:'medium'}] },
+      { name:'lease_check', status:'running', duration:null, type:'lease_check', calls:[
+        { reasoning:'Checking whether appliance repair is landlord-covered before drafting a response.', tool:'lease_qa', question:'Is appliance repair landlord-covered, and what is the standard vendor lead time?', answer:'…', citations:[] }
+      ], verdictFields:[] },
+      { name:'plan', status:'pending', duration:null, type:'decide', actionType:null, summary:null },
+      { name:'draft', status:'pending', duration:null, type:'draft', replyPreview:null, woId:null, woCost:null, woDesc:null },
+      { name:'approval_gate', status:'pending', duration:null, type:'gate', note:'Not yet reached.' }
+    ]},
+    aisha: { tokens:'0', cost:'$0.0000', elapsed:'—', steps:[
+      { name:'classify', status:'pending', duration:null, type:'classify', category:null },
+      { name:'extract', status:'pending', duration:null, type:'extract', fields:[] },
+      { name:'lease_check', status:'pending', duration:null, type:'lease_check', calls:[], verdictFields:[] },
+      { name:'plan', status:'pending', duration:null, type:'decide', actionType:null, summary:null },
+      { name:'draft', status:'pending', duration:null, type:'draft', replyPreview:null, woId:null, woCost:null, woDesc:null },
+      { name:'approval_gate', status:'pending', duration:null, type:'gate', note:'Agent has not yet processed this email.' }
+    ]},
+    marcus: { tokens:'0', cost:'$0.0000', elapsed:'—', steps:[
+      { name:'classify', status:'pending', duration:null, type:'classify', category:null },
+      { name:'extract', status:'pending', duration:null, type:'extract', fields:[] },
+      { name:'lease_check', status:'pending', duration:null, type:'lease_check', calls:[], verdictFields:[] },
+      { name:'plan', status:'pending', duration:null, type:'decide', actionType:null, summary:null },
+      { name:'draft', status:'pending', duration:null, type:'draft', replyPreview:null, woId:null, woCost:null, woDesc:null },
+      { name:'approval_gate', status:'pending', duration:null, type:'gate', note:'Agent has not yet processed this email.' }
+    ]},
+    linda: { tokens:'3,340', cost:'$0.0098', elapsed:'1.0s', steps:[
+      { name:'classify', status:'completed', duration:'84ms', type:'classify', category:'routine_maintenance' },
+      { name:'extract', status:'completed', duration:'230ms', type:'extract', fields:[{k:'tenant',v:'Linda Foster'},{k:'unit',v:'6B'},{k:'issue',v:'Front door lock not latching'},{k:'severity',v:'medium'}] },
+      { name:'lease_check', status:'completed', duration:'410ms', type:'lease_check', calls:[
+        { reasoning:'Door hardware is usually landlord-covered — confirming, plus dispatch fee terms.', tool:'lease_qa', question:'Is lock repair a landlord responsibility, and is locksmith dispatch covered?', answer:'Landlord covers lock and door hardware repairs; a locksmith dispatch fee applies for after-hours calls.', citations:['foster-lease §5.4'] },
+        { reasoning:'Coverage confirmed — submitting a verdict.', tool:'submit_verdict', argsText:'lease_addresses_issue: true, responsibility: "landlord"' }
+      ], verdictFields:[{k:'lease_addresses_issue',v:'true'},{k:'responsibility',v:'landlord'}] },
+      { name:'plan', status:'completed', duration:'38ms', type:'decide', actionType:'create_work_order', summary:'Locksmith dispatch fee $260 above threshold — required human approval.' },
+      { name:'draft', status:'completed', duration:'140ms', type:'draft', replyPreview:'Hi Linda, thanks for reporting this — we\'ve dispatched a locksmith to repair the latch mechanism today.', woId:'WO-0184', woCost:'$260', woDesc:'Locksmith dispatch — door latch repair, unit 6B' },
+      { name:'approval_gate', status:'completed', duration:null, type:'gate', note:'Approved by A.S. · 14:02:11 · logged' }
+    ]},
+    priya2: { tokens:'2,806', cost:'$0.01418', elapsed:'2.1s', steps:[
+      { name:'classify', status:'completed', duration:null, type:'classify', category:'lease_question', model:'gpt-4o-mini', inTok:282, outTok:6, cost:'$0.0000459' },
+      { name:'extract', status:'completed', duration:null, type:'extract', model:'gpt-4o-mini', inTok:539, outTok:78, cost:'$0.0001276', fields:[
+        {k:'tenant_name',v:'Keisha Price'},
+        {k:'address',v:'5522 Westheimer Road, Houston, TX 77056'},
+        {k:'unit',v:'14C'},
+        {k:'appliance_or_system',v:'water heater'},
+        {k:'severity',v:'high'},
+        {k:'issue_summary',v:'The property is experiencing a lack of hot water.'}
+      ] },
+      { name:'lease_check', status:'completed', duration:null, type:'lease_check', model:'claude-sonnet-4-5', inTok:2775, outTok:340, cost:'$0.013425', calls:[
+        { reasoning:'Checking whether the lease restricts painting before responding.', tool:'lease_qa', question:'Who is responsible for painting and what are the rules or restrictions regarding the tenant painting or altering the paint color of the unit?', answer:'Tenant may not paint the unit without Landlord\'s prior written consent. If Tenant deducts the cost of any painting from Rent without such consent, that deduction will be treated as unpaid Rent.', citations:['lease-agreement-final-v3-1 §6(1)'] },
+        { reasoning:'Consent is required — confirming who holds that authority.', tool:'lease_qa', question:'Who holds the authority to grant written consent for painting or altering the unit?', answer:'Authority to grant consent rests with the Landlord.', citations:['lease-agreement-final-v3-1 §6(1)'] },
+        { reasoning:'The lease fully addresses this — submitting a verdict.', tool:'submit_verdict', argsText:'lease_addresses_issue: true, responsibility: "landlord"' }
+      ], verdictFields:[{k:'lease_addresses_issue',v:'true'},{k:'responsibility',v:'landlord'}] },
+      { name:'plan', status:'completed', duration:null, type:'decide', actionType:'send_reply', summary:'Lease addresses the question; draft a cited reply.' },
+      { name:'draft', status:'completed', duration:null, type:'draft', model:'gpt-4o-mini', inTok:587, outTok:126, cost:'$0.00016365', replyPreview:'Hi Priya, thanks for asking — the lease requires the landlord\'s prior written consent before painting (§6(1)), so you\'d need approval before proceeding. Let me know if you\'d like me to submit that request on your behalf.', woId:null, woCost:null, woDesc:null },
+      { name:'approval_gate', status:'paused', duration:null, type:'gate', note:'Waiting for human approval' }
+    ]}
+  };
+
+  approvals = [
+    { id:'1', runId:'priya2', tenant_name:'Priya Nadkarni', unit:'3C', action_type:'send_reply',
+      summary:'Lease addresses the question; draft a cited reply.',
+      draft:'Hi Priya, thanks for asking — the lease requires the landlord\'s prior written consent before painting (§6(1)), so you\'d need approval before proceeding. Let me know if you\'d like me to submit that request on your behalf.',
+      issue_summary:'Tenant is asking to paint the living room light blue, noting the lease has no color restriction, and offers to restore the original color on move-out.' },
+    { id:'2', runId:'davidc', tenant_name:'David Chen', unit:'11B', action_type:'create_work_order',
+      summary:'Gas smell reported — safety emergency, escalate to on-call technician immediately.',
+      draft:null,
+      issue_summary:'Tenant reports a strong gas smell near the kitchen stove and is asking for urgent guidance.' },
+    { id:'3', runId:'mrossi', tenant_name:'Marta Rossi', unit:'7A', action_type:'send_reply',
+      summary:'First late payment on file, lease allows a one-time courtesy waiver; waive the $75 late fee.',
+      draft:'Hi Marta, I\'ve waived the $75 late fee on this occasion as a courtesy. Please note future late payments may incur the standard fee per §4(2) of your lease.',
+      issue_summary:'Tenant paid rent 3 days late due to a bank transfer delay and is requesting the late fee be waived.' },
+    { id:'4', runId:'jkim88', tenant_name:'Jason Kim', unit:'2D', action_type:'create_work_order',
+      summary:'Confirmed maintenance issue; schedule plumber for Thursday and notify tenant.',
+      draft:'Hi Jason, we\'ve scheduled a plumber to look at the leaking faucet this Thursday between 10am–2pm. We\'ll confirm the exact window the day before.',
+      issue_summary:'Tenant reports a slow leak under the kitchen sink that has been ongoing for a week.' },
+    { id:'5', runId:'lgarza', tenant_name:'Luis Garza', unit:'5F', action_type:'send_reply',
+      summary:'Dispute over security deposit exceeds agent authority; escalate to property manager.',
+      draft:null,
+      issue_summary:'Former tenant disputes a $400 deduction from their security deposit for cleaning charges.' }
+  ];
+
+  approvalItems = [
+    { suggestedActions:['call_tenant', 'dispatch_emergency_vendor', 'send_reply'], id:'v2', category:'Emergency', severity:null, receivedAt:'4 min ago', tenant_name:'Dana Whitfield', unit:'4B', address:'840 Marlow St',
+      issue_summary:'Gas smell in kitchen, worsening since this morning',
+      issueCategory:'Gas / utilities', responsibility:null, citation:null,
+      original_email:"There's a strong smell of gas in the kitchen — it was faint when I woke up and it's much worse now. I've opened the windows but it isn't clearing. What should I do?",
+      draft:"Dana — please leave the building immediately and do not switch anything electrical on or off on your way out. Once you're outside, call the gas emergency line on 0800 111 999.\n\nI'm contacting our on-call engineer now and will call you within the next few minutes." },
+    { suggestedActions:['create_work_order', 'send_reply'], id:'v1', category:'Maintenance', severity:'Medium', receivedAt:'22 min ago', tenant_name:'James Okoro', unit:'12A', address:'840 Marlow St',
+      issue_summary:'Blocked kitchen sink after tenant used drain cleaner',
+      issueCategory:'Plumbing', responsibility:'Landlord', citation:'marlow-st-okoro §7.2',
+      original_email:"The kitchen sink has been draining slowly for a few days and now it's completely blocked. I tried a bottle of drain cleaner last night and it didn't help. Can someone come look at it?",
+      draft:"Hi James, thanks for flagging this. Clearing a blocked drain falls to us as landlord under §7.2 of your lease, so we'll cover the callout. One note for next time — pouring drain cleaner can damage the trap, so please hold off on that and let us handle it.\n\nI can get a plumber out tomorrow between 10am and 2pm. Does that window work for you?" },
+    { suggestedActions:['create_work_order', 'schedule_inspection', 'send_reply'], id:'v4', category:'Maintenance', severity:'High', receivedAt:'1 hr ago', tenant_name:'Marcus Bell', unit:'9D', address:'12 Ardsley Row',
+      issue_summary:'Water through bedroom ceiling when flat above runs a bath',
+      issueCategory:'Plumbing / structural', responsibility:'Landlord', citation:'ardsley-row-bell §7.1',
+      original_email:"Every time the flat above runs a bath, water comes through my bedroom ceiling. There's a brown stain spreading and it dripped onto the bed last night.",
+      draft:"Hi Marcus, this is a structural plumbing issue and sits with us under §7.1. I've flagged it as urgent and we'll have someone inspect both units today — we may need brief access to 10D as well.\n\nPlease move anything valuable out from under the affected area in the meantime." },
+    { suggestedActions:['send_reply'], id:'v5', category:'Maintenance', severity:'Low', receivedAt:'2 hr ago', tenant_name:'Sofia Lindqvist', unit:'6E', address:'840 Marlow St',
+      issue_summary:'Cracked toilet seat, believes it broke from normal use',
+      issueCategory:'Fixtures', responsibility:'Tenant', citation:'marlow-st-lindqvist §7.4',
+      original_email:"The toilet seat in the main bathroom has cracked right along the hinge. Nothing unusual happened, it just went. Is that something you replace?",
+      draft:"Hi Sofia, this one falls to you under the lease (§7.4 covers tenant fixtures), but we can arrange it through our handyman and bill it at cost — around £45 including fitting — if that's easier than sourcing it yourself. Just let me know which you'd prefer." },
+    { suggestedActions:['send_reply', 'log_consent_request'], id:'v3', category:'Lease question', severity:'Low', receivedAt:'3 hr ago', tenant_name:'Priya Nadkarni', unit:'3C', address:'12 Ardsley Row',
+      issue_summary:'Asking whether she can repaint the living room light blue',
+      issueCategory:'Alterations', responsibility:'Tenant', citation:'ardsley-row-nadkarni §6.1',
+      original_email:"Quick question — am I allowed to repaint the living room? I was thinking a light blue. Happy to paint it back before I move out if that's needed.",
+      draft:"Hi Priya, the lease requires the landlord's prior written consent before painting (§6.1), so we'd need to approve the colour before you start. Happy to put that request in for you — just confirm the exact shade and whether you'll restore the original on move-out." }
+  ];
+
+  apBadgeStyle(cat) {
+    const map = {
+      'Maintenance':    { bg:'#EAF3FC', ink:'#2C7BC8', border:'rgba(44,123,200,0.28)' },
+      'Lease question': { bg:'#F3F3F5', ink:'rgba(23,24,27,0.62)', border:'rgba(0,0,0,0.16)' },
+      'Emergency':      { bg:'#FBE9E7', ink:'#A3352C', border:'rgba(163,53,44,0.3)' }
+    };
+    return map[cat] || map['Lease question'];
+  }
+
+  apSevDot(sev) { return sev === 'High' ? '#D9483C' : sev === 'Medium' ? '#E0A227' : '#8B9099'; }
+
+  apFilters() { return { category:'All', severity:'All', responsibility:'All', ...(this.state.apFilters || {}) }; }
+  setApFilter = (key, val) => this.setState({ apFilters: { ...this.apFilters(), [key]: val } });
+  toggleApproval = (id) => this.setState(s => ({ apOpen: { ...(s.apOpen || {}), [id]: !(s.apOpen || {})[id] } }));
+
+  apMarkDone = (id, label) => this.setState(s => ({ apDone: { ...(s.apDone || {}), [id + '|' + label]: true } }));
+  apComplete = (id) => this.setState(s => ({ apCleared: { ...(s.apCleared || {}), [id]: true } }));
+
+  apActions(item) {
+    const done = this.state.apDone || {};
+    const mk = (label, ink) => {
+      const isDone = !!done[item.id + '|' + label];
+      return {
+        label,
+        isDone,
+        pending: !isDone,
+        inkA: isDone ? 'rgba(23,24,27,0.4)' : (ink || 'rgba(23,24,27,0.72)'),
+        bgA: isDone ? 'transparent' : '#F4F5F7',
+        borderA: isDone ? 'rgba(0,0,0,0.07)' : 'rgba(0,0,0,0.09)',
+        hoverA: isDone ? '' : 'background:#EDEEF1;border-color:rgba(0,0,0,0.16);',
+        cursorA: isDone ? 'default' : 'pointer',
+        onClick: (e) => {
+          e.stopPropagation();
+          if (isDone) return;
+          if (label === 'Mark complete') this.apComplete(item.id);
+          else this.apMarkDone(item.id, label);
+        }
+      };
+    };
+    if (item.category === 'Emergency') return [ mk('Create work order', '#A3352C'), mk('Send reply'), mk('Mark complete') ];
+    const acts = [ mk('Send reply', '#2C7BC8') ];
+    if (item.category === 'Maintenance' && item.responsibility === 'Landlord') acts.push(mk('Create work order'));
+    acts.push(mk('Mark complete'));
+    return acts;
+  }
+
+  statusStyle(status) {
+    const map = {
+      'Pending': { bg:'#EDEEF1', text:'rgba(23,24,27,0.6)', border:'rgba(0,0,0,0.09)' },
+      'Processing': { bg:'#EAF3FC', text:'#2C7BC8', border:'rgba(44,123,200,0.28)' },
+      'Awaiting approval': { bg:'#FCF3E3', text:'#8A5A16', border:'#EFDDB0' },
+      'Processed': { bg:'#E9F5EC', text:'#256B3A', border:'#BFE2C8' }
+    };
+    return map[status] || map['Pending'];
+  }
+
+  stepBadge(status) {
+    const map = {
+      completed: { bg:'#E9F5EC', text:'#256B3A', border:'#BFE2C8', label:'completed', dot:'#2E8B4F' },
+      running: { bg:'#EAF3FC', text:'#2C7BC8', border:'rgba(44,123,200,0.28)', label:'running', dot:'#2C7BC8' },
+      paused: { bg:'#FCF3E3', text:'#8A5A16', border:'#EFDDB0', label:'paused', dot:'#C68A2E' },
+      pending: { bg:'#EDEEF1', text:'rgba(23,24,27,0.5)', border:'rgba(0,0,0,0.09)', label:'pending', dot:'rgba(0,0,0,0.12)' },
+      skipped: { bg:'#EDEEF1', text:'rgba(23,24,27,0.5)', border:'rgba(0,0,0,0.09)', label:'skipped', dot:'rgba(0,0,0,0.12)' }
+    };
+    return map[status] || map.pending;
+  }
+
+  severityStyle(u) {
+    const map = {
+      emergency: { color:'#963226', label:'Emergency' },
+      high: { color:'#8A5A16', label:'High' },
+      medium: { color:'rgba(23,24,27,0.6)', label:'Medium' },
+      low: { color:'rgba(23,24,27,0.4)', label:'Low' }
+    };
+    return map[u] || map.low;
+  }
+
+  actionBadge(actionType) {
+    const map = {
+      send_reply: { bg:'#EAF3FC', text:'#2C7BC8', border:'rgba(44,123,200,0.25)' },
+      create_work_order: { bg:'#FEF6DC', text:'#96730A', border:'rgba(150,115,10,0.25)' }
+    };
+    return map[actionType] || { bg:'#EDEEF1', text:'#4A4C52', border:'rgba(0,0,0,0.1)' };
+  }
+
+  hum(k) {
+    if (!k) return k;
+    const s = String(k).replace(/_/g, ' ').trim();
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+  humVal(v) {
+    if (v === null || v === undefined) return v;
+    const s = String(v);
+    if (s === 'true') return 'Yes';
+    if (s === 'false') return 'No';
+    if (s === '…' || /^[$£€\d]/.test(s) || /[A-Z]/.test(s.charAt(0))) return s;
+    const t = s.replace(/_/g, ' ');
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  }
+  humArgs(txt) {
+    if (!txt) return txt;
+    return txt.split(', ').map(pair => {
+      const i = pair.indexOf(':');
+      if (i < 0) return pair;
+      const k = pair.slice(0, i).trim();
+      const v = pair.slice(i + 1).trim().replace(/^"|"$/g, '');
+      return this.hum(k) + ': ' + this.humVal(v);
+    }).join('  ·  ');
+  }
+
+  screen() { return this.state.screen || this.props.startScreen || 'inbox'; }
+
+  goInbox = () => this.setState({ screen:'inbox' });
+  goRuns = () => this.setState({ screen:'runs' });
+  goApprovals = () => this.setState({ screen:'approvals' });
+  selectRun = () => this.setState({ screen:'runs', activeRunId:'priya2' });
+  setFilter = (f) => this.setState({ filter:f });
+  toggleStep = (runId, idx) => {
+    const key = runId + '-' + idx;
+    this.setState(s => ({ collapsed: { ...s.collapsed, [key]: !s.collapsed[key] } }));
+  };
+  toggleLeaseCall = (runId, stepIdx, callIdx) => {
+    const key = runId + '-' + stepIdx + '-' + callIdx;
+    this.setState(s => ({ leaseCallExpanded: { ...s.leaseCallExpanded, [key]: !s.leaseCallExpanded[key] } }));
+  };
+  openReject = (id) => this.setState(s => ({ rejectOpen: { ...s.rejectOpen, [id]: true } }));
+  cancelReject = (id) => this.setState(s => ({ rejectOpen: { ...s.rejectOpen, [id]: false } }));
+  setRejectText = (id, val) => this.setState(s => ({ rejectText: { ...s.rejectText, [id]: val } }));
+  approve = (id) => this.setState(s => ({ status: { ...s.status, [id]: 'approved' } }));
+  confirmReject = (id) => this.setState(s => ({ status: { ...s.status, [id]: 'rejected' }, rejectOpen: { ...s.rejectOpen, [id]: false } }));
+
+  renderVals() {
+    const s = this.state;
+    const screen = this.screen();
+    const accent = this.props.accentColor ?? '#4C9EEB';
+    const autoExpand = this.props.autoExpandSteps ?? true;
+
+    const filterChips = ['all','Pending','Processing','Awaiting approval','Processed'].map(f => {
+      const active = s.filter === f;
+      return {
+        label: f === 'all' ? 'All' : f,
+        bg: active ? '#17181B' : '#FFFFFF',
+        text: active ? '#FFFFFF' : 'rgba(23,24,27,0.6)',
+        border: active ? '#17181B' : 'rgba(0,0,0,0.1)',
+        onClick: () => this.setFilter(f)
+      };
+    });
+
+    const filteredEmails = this.emails
+      .filter(em => s.filter === 'all' || em.status === s.filter)
+      .map(em => {
+        const st = this.statusStyle(em.status);
+        const sev = this.severityStyle(em.severity);
+        return { ...em, statusBg:st.bg, statusText:st.text, statusBorder:st.border, severityColor:sev.color, severityLabel:sev.label, showSeverity: em.status !== 'Pending', noSeverity: em.status === 'Pending', actionsText: (em.status === 'Processed' ? (em.actions || []) : []).join(', '), hasActions: !!(em.status === 'Processed' && em.actions && em.actions.length), noActions: !(em.status === 'Processed' && em.actions && em.actions.length), onClick:() => this.selectRun(em.id) };
+      });
+
+    const activeEmailRaw = this.emails.find(e => e.id === s.activeRunId) || this.emails[0];
+    const est = this.statusStyle(activeEmailRaw.status);
+    const activeEmail = {
+      ...activeEmailRaw,
+      initials: activeEmailRaw.sender.split(' ').map(p => p[0]).join('').slice(0,2),
+      statusBg: est.bg, statusText: est.text, statusBorder: est.border
+    };
+
+    const trace = this.traces[s.activeRunId] || this.traces.priya2;
+    const sourceSteps = trace.steps;
+    const displaySteps = sourceSteps.map((step, idx) => {
+      const badge = this.stepBadge(step.status);
+      const collapsedByUser = s.collapsed[s.activeRunId + '-' + idx];
+      const defaultExpanded = autoExpand && step.status !== 'pending';
+      const expanded = collapsedByUser === undefined ? defaultExpanded : !collapsedByUser;
+      const gate = step.status === 'paused'
+        ? { bg:'#FCF3E3', border:'#EFDDB0', text:'#8A5A16', anim:'animation: pulseAmber 2s ease-in-out infinite;' }
+        : step.status === 'completed'
+        ? { bg:'#E9F5EC', border:'#BFE2C8', text:'#256B3A', anim:'' }
+        : { bg:'#EDEEF1', border:'rgba(0,0,0,0.09)', text:'rgba(23,24,27,0.5)', anim:'' };
+      const usage = step.model
+        ? (step.model + ' · ' + step.inTok + ' in / ' + step.outTok + ' out tok · ' + step.cost)
+        : null;
+      const fmtF = f => ({ k: this.hum(f.k), v: this.humVal(f.v), color: f.isNull ? 'rgba(23,24,27,0.35)' : '#17181B' });
+      const allFields = (step.fields || []).map(fmtF);
+      const pick = keys => keys.map(k => allFields.find(f => f.k === this.hum(k))).filter(Boolean);
+      const specLeft = pick(['tenant_name', 'address', 'unit']);
+      const fieldsLeft = specLeft.length ? specLeft : allFields.slice(0, Math.ceil(allFields.length / 2));
+      const fieldsRight = specLeft.length ? pick(['appliance_or_system', 'severity', 'issue_category', 'issue_summary']) : allFields.slice(Math.ceil(allFields.length / 2));
+      const leaseCalls = (step.calls || []).map((call, callIdx) => {
+        const key = s.activeRunId + '-' + idx + '-' + callIdx;
+        const done = call.tool === 'submit_verdict' || (!!call.answer && call.answer !== '…');
+        return {
+          ...call,
+          argsText: this.humArgs(call.argsText),
+          isQA: call.tool === 'lease_qa',
+          isVerdict: call.tool === 'submit_verdict',
+          done, pending: !done,
+          expanded: !!s.leaseCallExpanded[key],
+          chevronRotate: s.leaseCallExpanded[key] ? '90deg' : '0deg',
+          onToggle: () => this.toggleLeaseCall(s.activeRunId, idx, callIdx)
+        };
+      });
+      return {
+        ...step,
+        hasNext: idx < sourceSteps.length - 1,
+        dotColor: badge.dot,
+        badgeBg: badge.bg, badgeText: badge.text, badgeBorder: badge.border, statusLabel: badge.label,
+        headerRight: usage || step.duration || '',
+        expanded: expanded && (step.type !== 'gate' || !!step.note),
+        chevronRotate: (expanded && (step.type !== 'gate' || !!step.note)) ? '90deg' : '0deg',
+        onToggle: () => this.toggleStep(s.activeRunId, idx),
+        onOpenApprovals: (e) => { e.stopPropagation(); this.goApprovals(); },
+        isClassify: step.type === 'classify' && !!step.category,
+        isExtract: step.type === 'extract' && allFields.length > 0,
+        isLease: step.type === 'lease_check',
+        isDecide: step.type === 'decide',
+        isDraft: step.type === 'draft' && !!step.replyPreview,
+        isGate: step.type === 'gate' && !!step.note,
+        name: this.hum(step.name),
+        category: this.humVal(step.category),
+        actionType: this.humVal(step.actionType),
+        fieldsLeft, fieldsRight, hasRightCol: fieldsRight.length > 0,
+        replyPreview: step.replyPreview,
+        leaseCalls,
+        verdictFields: (step.verdictFields || []).map(v => ({ k: this.hum(v.k), v: this.humVal(v.v) })),
+        gateBg: gate.bg, gateBorder: gate.border, gateText: gate.text, gateAnim: gate.anim
+      };
+    });
+
+    const cards = this.approvals.map(item => {
+      const badge = this.actionBadge(item.action_type);
+      const status = s.status[item.id];
+      const rejOpen = !!s.rejectOpen[item.id];
+      const text = s.rejectText[item.id] || '';
+      const decided = status === 'approved' || status === 'rejected';
+      return {
+        ...item,
+        initials: item.tenant_name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase(),
+        badgeBg: badge.bg, badgeText: badge.text, badgeBorder: badge.border,
+        hasDraft: !!item.draft,
+        cardOpacity: decided ? 0.6 : 1,
+        showActions: !decided,
+        rejectOpen: rejOpen,
+        rejectClosed: !rejOpen,
+        rejectText: text,
+        onRejectTextChange: (e) => this.setRejectText(item.id, e.target.value),
+        onOpenReject: () => this.openReject(item.id),
+        onCancelReject: () => this.cancelReject(item.id),
+        onApprove: () => this.approve(item.id),
+        onConfirmReject: () => { if (text.trim()) this.confirmReject(item.id); },
+        confirmDisabled: !text.trim(),
+        confirmOpacity: text.trim() ? 1 : 0.5,
+        isDecided: decided,
+        decidedLabel: status === 'approved' ? 'Approved' : 'Rejected' + (text.trim() ? ': ' + text.trim() : ''),
+        decidedBg: status === 'approved' ? '#EAF6EE' : '#FBEAEA',
+        decidedBorder: status === 'approved' ? 'rgba(46,139,79,0.25)' : 'rgba(178,58,50,0.25)',
+        decidedDot: status === 'approved' ? '#2E8B4F' : '#B23A32',
+        decidedText: status === 'approved' ? '#1E6B3A' : '#8E2A24'
+      };
+    });
+
+    const apOpen = this.state.apOpen || {};
+    const approvalCards = this.approvalItems.map(item => {
+      const b = this.apBadgeStyle(item.category);
+      const isOpen = !!apOpen[item.id];
+      return {
+        ...item,
+        categoryLabel: item.category,
+        catInk: item.category === 'Emergency' ? '#A3352C' : item.category === 'Maintenance' ? '#2C7BC8' : 'rgba(23,24,27,0.55)',
+        catBg: item.category === 'Emergency' ? 'rgba(163,53,44,0.08)' : item.category === 'Maintenance' ? 'rgba(44,123,200,0.08)' : 'rgba(0,0,0,0.04)',
+        catBorder: item.category === 'Emergency' ? 'rgba(163,53,44,0.28)' : item.category === 'Maintenance' ? 'rgba(44,123,200,0.3)' : 'rgba(0,0,0,0.12)',
+        catWeight: item.category === 'Emergency' ? 600 : 400,
+        badgeBg: b.bg, badgeInk: b.ink, badgeBorder: b.border,
+        who: item.tenant_name + ' · Unit ' + item.unit + ' · ' + item.address,
+        tenantName: item.tenant_name,
+        unit: item.unit,
+        address: item.address,
+        hasResponsibility: item.category !== 'Emergency' && !!item.responsibility,
+        isOpen,
+        chevron: isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+        sevDotColor: item.category === 'Emergency' ? '#A3352C' : this.apSevDot(item.severity),
+        hasSeverity: !!item.severity || item.category === 'Emergency',
+        showSevDot: item.category !== 'Emergency',
+        sevInk: item.category === 'Emergency' ? '#A3352C' : 'rgba(23,24,27,0.45)',
+        sevWeight: item.category === 'Emergency' ? 600 : 400,
+        severityLabel: item.severity || (item.category === 'Emergency' ? 'Critical' : ''),
+        cardBorder: item.category === 'Emergency' ? 'rgba(163,53,44,0.28)' : 'rgba(0,0,0,0.09)',
+        cardBg: item.category === 'Emergency' ? '#FDF6F5' : '#FFFFFF',
+        cardHeaderBg: item.category === 'Emergency' ? '#FBEFEE' : '#FFFFFF',
+        cardAnim: item.category === 'Emergency' ? 'pulseRed 2s ease-in-out infinite' : 'none',
+        onToggle: () => this.toggleApproval(item.id),
+        onCitation: (e) => { e.stopPropagation(); },
+        suggestedList: (item.suggestedActions || []).join(', '),
+        actions: this.apActions(item)
+      };
+    });
+    const af = this.apFilters();
+    const respOf = (c) => c.category === 'Emergency' ? '—' : (c.responsibility || '—');
+    const cleared = this.state.apCleared || {};
+    const liveApprovals = approvalCards.filter(c => !cleared[c.id]);
+    const shownApprovals = liveApprovals.filter(c =>
+      (af.category === 'All' || c.category === af.category) &&
+      (af.severity === 'All' || c.severity === af.severity) &&
+      (af.responsibility === 'All' || respOf(c) === af.responsibility));
+    const apGroup = (key, label, opts) => ({
+      label,
+      options: opts.map(o => {
+        const active = af[key] === o;
+        return {
+          label: o,
+          chipBg: active ? '#17181B' : '#FFFFFF',
+          chipInk: active ? '#FFFFFF' : 'rgba(23,24,27,0.6)',
+          chipBorder: active ? '#17181B' : 'rgba(0,0,0,0.1)',
+          onClick: () => this.setApFilter(key, o)
+        };
+      })
+    });
+    const filterGroups = [
+      apGroup('category', 'Category', ['All', 'Emergency', 'Maintenance', 'Lease question']),
+      apGroup('severity', 'Severity', ['All', 'High', 'Medium', 'Low']),
+      apGroup('responsibility', 'Responsibility', ['All', 'Landlord', 'Tenant'])
+    ];
+
+    return {
+      accent,
+      isInbox: screen === 'inbox',
+      isRuns: screen === 'runs',
+      isApprovals: screen === 'approvals',
+      navInboxBg: screen === 'inbox' ? '#EDEEF1' : 'transparent',
+      navInboxText: screen === 'inbox' ? '#17181B' : 'rgba(23,24,27,0.55)',
+      navInboxDot: screen === 'inbox' ? accent : 'rgba(0,0,0,0.12)',
+      navRunsBg: screen === 'runs' ? '#EDEEF1' : 'transparent',
+      navRunsText: screen === 'runs' ? '#17181B' : 'rgba(23,24,27,0.55)',
+      navRunsDot: screen === 'runs' ? accent : 'rgba(0,0,0,0.12)',
+      navApprovalsBg: screen === 'approvals' ? '#EDEEF1' : 'transparent',
+      navApprovalsText: screen === 'approvals' ? '#17181B' : 'rgba(23,24,27,0.55)',
+      navApprovalsDot: screen === 'approvals' ? accent : 'rgba(0,0,0,0.12)',
+      goInbox: this.goInbox, goRuns: this.goRuns, goApprovals: this.goApprovals,
+      emailCount: this.emails.length,
+      filterChips,
+      filteredEmails,
+      activeRunId: s.activeRunId,
+      activeEmail,
+      displaySteps,
+      activeTrace: { tokens: trace.tokens, cost: trace.cost, elapsed: trace.elapsed, stepCount: trace.steps.length },
+      streamLabel: 'started ' + activeEmail.time,
+      runStatusBg: est.bg,
+      runStatusText: est.text,
+      runStatusBorder: est.border,
+      runStatusLabel: activeEmail.status,
+      shown: shownApprovals,
+      filterGroups,
+      hasNone: shownApprovals.length === 0,
+      emptyLabel: liveApprovals.length === 0 ? 'All approvals cleared' : 'No approvals match these filters',
+      shownCount: shownApprovals.length,
+      clearedCount: 12 + Object.keys(this.state.apCleared || {}).length,
+      pendingCount: liveApprovals.length
+    };
+  }
+}
+</script>
+</body>
+</html>
