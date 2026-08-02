@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from leaseops.db.models import Run
@@ -46,6 +46,10 @@ async def get_latest_run_for_email(session: AsyncSession, email_id: UUID) -> Run
             .limit(1)
         )
     ).first()
+
+
+async def get_agent_last_ran_at(session: AsyncSession) -> datetime | None:
+    return await session.scalar(select(func.max(Run.ended_at)))
 
 
 async def set_run_status(

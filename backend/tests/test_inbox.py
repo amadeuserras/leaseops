@@ -35,7 +35,9 @@ async def test_list_inbox(api_client) -> None:
 
     response = await api_client.get("/inbox")
     assert response.status_code == 200
-    assert len(response.json()["items"]) == 2
+    body = response.json()
+    assert len(body["items"]) == 2
+    assert body["agent_last_ran_at"] is None
 
     filtered = await api_client.get("/inbox", params={"status": "processed"})
     assert filtered.status_code == 200
@@ -64,7 +66,12 @@ async def test_list_inbox_includes_enrichment_fields(api_client, db_session) -> 
     )
     email_id = create_response.json()["id"]
 
-    run = Run(email_id=email_id, status=RunStatus.DONE)
+    ended_at = datetime(2026, 8, 2, 12, 0, tzinfo=UTC)
+    run = Run(
+        email_id=email_id,
+        status=RunStatus.DONE,
+        ended_at=ended_at,
+    )
     db_session.add(run)
     await db_session.commit()
     await db_session.refresh(run)
@@ -87,10 +94,12 @@ async def test_list_inbox_includes_enrichment_fields(api_client, db_session) -> 
 
     response = await api_client.get("/inbox")
     assert response.status_code == 200
-    item = next(i for i in response.json()["items"] if i["id"] == email_id)
+    body = response.json()
+    item = next(i for i in body["items"] if i["id"] == email_id)
     assert item["unit"] == "4B"
     assert item["severity"] == "high"
     assert item["actions_taken"] == ["create_work_order", "send_reply"]
+    assert body["agent_last_ran_at"] == ended_at.isoformat().replace("+00:00", "Z")
 
 
 async def test_get_email(api_client) -> None:
@@ -99,7 +108,12 @@ async def test_get_email(api_client) -> None:
 
     response = await api_client.get(f"/inbox/{email_id}")
     assert response.status_code == 200
-    assert response.json()["id"] == email_id
+    body = response.json()
+    assert body["id"] == email_id
+    assert body["sender"] == "tenant@example.com"
+    assert body["subject"]
+    assert body["body"]
+    assert body["received_at"]
 
 
 async def test_get_unknown_email_is_404(api_client) -> None:

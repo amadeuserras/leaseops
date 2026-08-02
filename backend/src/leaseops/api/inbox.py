@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from leaseops.db import emails as repo
+from leaseops.db import runs as runs_repo
 from leaseops.db.emails import InboxRow
 from leaseops.db.session import get_session
 from leaseops.models.enums import EmailStatus
@@ -47,7 +48,10 @@ async def list_inbox(
     status_filter: Annotated[EmailStatus | None, Query(alias="status")] = None,
 ) -> EmailListResponse:
     rows = await repo.list_inbox_rows(session, status=status_filter)
-    return EmailListResponse(items=[_to_response(row) for row in rows])
+    return EmailListResponse(
+        items=[_to_response(row) for row in rows],
+        agent_last_ran_at=await runs_repo.get_agent_last_ran_at(session),
+    )
 
 
 @router.get("/{email_id}", response_model=EmailResponse)

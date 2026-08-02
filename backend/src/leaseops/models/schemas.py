@@ -40,6 +40,7 @@ class EmailResponse(LeaseOpsModel):
 
 class EmailListResponse(LeaseOpsModel):
     items: list[EmailResponse]
+    agent_last_ran_at: datetime | None = None
 
 
 class RunCreate(LeaseOpsModel):
