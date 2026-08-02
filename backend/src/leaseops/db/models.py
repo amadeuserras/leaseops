@@ -154,7 +154,9 @@ class Step(Base):
     node_name: Mapped[str] = mapped_column(Text, nullable=False)
     input: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
     output: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
-    tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    model: Mapped[str | None] = mapped_column(Text, nullable=True)
+    input_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    output_tokens: Mapped[int | None] = mapped_column(Integer, nullable=True)
     latency_ms: Mapped[Decimal | None] = mapped_column(Numeric(12, 3), nullable=True)
     cost_usd: Mapped[Decimal | None] = mapped_column(Numeric(12, 6), nullable=True)
     created_at: Mapped[datetime] = mapped_column(

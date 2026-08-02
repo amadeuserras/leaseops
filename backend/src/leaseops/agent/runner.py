@@ -62,6 +62,19 @@ class TaskChunk(TypedDict):
     triggers: NotRequired[list[str]]
 
 
+def _add_cost(existing: CostChunk | None, incoming: CostChunk) -> CostChunk:
+    if existing is None:
+        return incoming
+    return {
+        "type": "cost",
+        "node": incoming["node"],
+        "model": incoming["model"],
+        "input_tokens": existing["input_tokens"] + incoming["input_tokens"],
+        "output_tokens": existing["output_tokens"] + incoming["output_tokens"],
+        "cost_usd": existing["cost_usd"] + incoming["cost_usd"],
+    }
+
+
 @dataclass(frozen=True)
 class PendingApproval:
     run_id: UUID
@@ -120,7 +133,10 @@ class GraphRunner:
                 if mode == "custom":
                     custom_chunk = cast(CustomChunk, chunk)
                     if custom_chunk["type"] == "cost":
-                        cost_by_node[custom_chunk["node"]] = custom_chunk
+                        node = custom_chunk["node"]
+                        cost_by_node[node] = _add_cost(
+                            cost_by_node.get(node), custom_chunk
+                        )
                     yield cast(dict[str, Any], chunk)
                     continue
 
@@ -157,11 +173,9 @@ class GraphRunner:
                     run_id=run.id,
                     node_name=node_name,
                     output=task_chunk["result"],
-                    tokens=(
-                        cost["input_tokens"] + cost["output_tokens"]
-                        if cost is not None
-                        else None
-                    ),
+                    model=cost["model"] if cost is not None else None,
+                    input_tokens=cost["input_tokens"] if cost is not None else None,
+                    output_tokens=cost["output_tokens"] if cost is not None else None,
                     cost_usd=cost["cost_usd"] if cost is not None else None,
                 )
                 yield asdict(

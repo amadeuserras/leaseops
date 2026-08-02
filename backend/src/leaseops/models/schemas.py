@@ -60,7 +60,9 @@ class StepResponse(LeaseOpsModel):
     run_id: UUID
     node_name: str
     output: dict[str, Any] | None
-    tokens: int | None
+    model: str | None
+    input_tokens: int | None
+    output_tokens: int | None
     cost_usd: float | None
     created_at: datetime
 

@@ -21,14 +21,18 @@ async def create_step(
     run_id: UUID,
     node_name: str,
     output: Any,
-    tokens: int | None = None,
+    model: str | None = None,
+    input_tokens: int | None = None,
+    output_tokens: int | None = None,
     cost_usd: float | None = None,
 ) -> Step:
     step = Step(
         run_id=run_id,
         node_name=node_name,
         output=_jsonable(output) if output is not None else None,
-        tokens=tokens,
+        model=model,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
         cost_usd=Decimal(str(cost_usd)) if cost_usd is not None else None,
     )
     session.add(step)

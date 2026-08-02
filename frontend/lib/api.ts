@@ -171,7 +171,9 @@ export type StepRecord = {
   run_id: string;
   node_name: string;
   output: Record<string, unknown> | null;
-  tokens: number | null;
+  model: string | null;
+  input_tokens: number | null;
+  output_tokens: number | null;
   cost_usd: number | null;
   created_at: string;
 };
