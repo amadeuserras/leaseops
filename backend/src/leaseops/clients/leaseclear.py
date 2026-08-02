@@ -5,11 +5,15 @@ from uuid import UUID
 
 import httpx
 
+from leaseops.core.base import LeaseOpsModel
 from leaseops.core.config import settings
-from leaseops.models.schemas import LeaseQAResponse
 
 _TIMEOUT = 60.0
 _token: str | None = None
+
+
+class LeaseQAResponse(LeaseOpsModel):
+    answer: str
 
 
 class LeaseClearError(Exception):

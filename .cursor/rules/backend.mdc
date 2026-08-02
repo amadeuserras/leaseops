@@ -16,11 +16,6 @@ alwaysApply: false
 - All `__init__.py` files should be empty by default.
 - Only add re-exports if an import path becomes genuinely painful through repeated use.
 
-## Types and Validation
-
-- Internal code should rely on type hints and Pyright dataclasses.
-- Use Pydantic only at API boundaries: FastAPI request and response models.
-
 ## Verification
 
 After backend changes, run from `backend/` when relevant:

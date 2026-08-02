@@ -3,13 +3,8 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
-
+from leaseops.core.base import LeaseOpsModel
 from leaseops.models.enums import EmailStatus, OutboxStatus, RunStatus, WorkOrderStatus
-
-
-class LeaseOpsModel(BaseModel):
-    model_config = ConfigDict(from_attributes=True, extra="forbid")
 
 
 class HealthResponse(LeaseOpsModel):
@@ -122,7 +117,3 @@ class OutboxResponse(LeaseOpsModel):
     draft_text: str
     status: OutboxStatus
     created_at: datetime
-
-
-class LeaseQAResponse(LeaseOpsModel):
-    answer: str

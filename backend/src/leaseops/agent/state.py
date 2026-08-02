@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import StrEnum
 from uuid import UUID
 
-from leaseops.models.schemas import LeaseOpsModel
+from leaseops.core.base import LeaseOpsModel
 
 
 class EmailCategory(StrEnum):

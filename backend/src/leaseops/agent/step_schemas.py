@@ -13,7 +13,7 @@ from leaseops.agent.state import (
     Responsibility,
     Severity,
 )
-from leaseops.models.schemas import LeaseOpsModel
+from leaseops.core.base import LeaseOpsModel
 
 
 class ClassifyOutput(LeaseOpsModel):

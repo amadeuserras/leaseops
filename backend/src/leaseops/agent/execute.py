@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from leaseops.agent.state import AgentState, PlanAction
 from leaseops.agent.step_schemas import ExecuteOutput
+from leaseops.api.schemas import OutboxCreate, WorkOrderCreate
 from leaseops.db import emails as emails_repo
 from leaseops.db import outbox as outbox_repo
 from leaseops.db import tenants as tenants_repo
@@ -13,7 +14,6 @@ from leaseops.db import work_orders as work_orders_repo
 from leaseops.db.models import Tenant
 from leaseops.db.session import SessionLocal
 from leaseops.models.enums import EmailStatus, OutboxStatus, WorkOrderStatus
-from leaseops.models.schemas import OutboxCreate, WorkOrderCreate
 
 logger = logging.getLogger(__name__)
 

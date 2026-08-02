@@ -1,17 +1,20 @@
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator
-from dataclasses import asdict, dataclass
-from typing import Any, Literal, NotRequired, TypedDict, cast
+from dataclasses import dataclass
+from typing import Any, NotRequired, TypedDict, cast
 from uuid import UUID
 
 from langgraph.types import Command
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from leaseops.agent.events import (
+    CostEvent,
+    CustomEventAdapter,
     ErrorEvent,
     NodeFinishedEvent,
     NodeStartedEvent,
+    PausedEvent,
     RunFinishedEvent,
     RunStartedEvent,
 )
@@ -24,33 +27,6 @@ from leaseops.db.models import Email, Run
 from leaseops.models.enums import EmailStatus, RunStatus
 
 
-class CostChunk(TypedDict):
-    type: Literal["cost"]
-    node: str
-    model: str
-    input_tokens: int
-    output_tokens: int
-    cost_usd: float
-
-
-class ToolCallChunk(TypedDict):
-    type: Literal["tool_call"]
-    node: str
-    tool: str
-    arguments: dict[str, Any]
-
-
-class ToolResultChunk(TypedDict):
-    type: Literal["tool_result"]
-    node: str
-    tool: str
-    result: Any
-    is_error: bool
-
-
-CustomChunk = CostChunk | ToolCallChunk | ToolResultChunk
-
-
 class TaskChunk(TypedDict):
     id: str
     name: str
@@ -61,17 +37,16 @@ class TaskChunk(TypedDict):
     triggers: NotRequired[list[str]]
 
 
-def _add_cost(existing: CostChunk | None, incoming: CostChunk) -> CostChunk:
+def _add_cost(existing: CostEvent | None, incoming: CostEvent) -> CostEvent:
     if existing is None:
         return incoming
-    return {
-        "type": "cost",
-        "node": incoming["node"],
-        "model": incoming["model"],
-        "input_tokens": existing["input_tokens"] + incoming["input_tokens"],
-        "output_tokens": existing["output_tokens"] + incoming["output_tokens"],
-        "cost_usd": existing["cost_usd"] + incoming["cost_usd"],
-    }
+    return CostEvent(
+        node=incoming.node,
+        model=incoming.model,
+        input_tokens=existing.input_tokens + incoming.input_tokens,
+        output_tokens=existing.output_tokens + incoming.output_tokens,
+        cost_usd=existing.cost_usd + incoming.cost_usd,
+    )
 
 
 @dataclass(frozen=True)
@@ -117,10 +92,10 @@ class GraphRunner:
             body=email.body,
             received_at=email.received_at,
         )
-        yield asdict(RunStartedEvent(run_id=str(run.id)))
+        yield RunStartedEvent(run_id=str(run.id)).model_dump(mode="json")
 
         paused = False
-        cost_by_node: dict[str, CostChunk] = {}
+        cost_by_node: dict[str, CostEvent] = {}
         try:
             async for pair in self.graph.astream(
                 initial, config, stream_mode=["tasks", "custom"]
@@ -130,13 +105,12 @@ class GraphRunner:
 
                 # Custom Chunks: written by emit (cost, tool calls, tool results)
                 if mode == "custom":
-                    custom_chunk = cast(CustomChunk, chunk)
-                    if custom_chunk["type"] == "cost":
-                        node = custom_chunk["node"]
-                        cost_by_node[node] = _add_cost(
-                            cost_by_node.get(node), custom_chunk
+                    custom = CustomEventAdapter.validate_python(chunk)
+                    if custom.type == "cost":
+                        cost_by_node[custom.node] = _add_cost(
+                            cost_by_node.get(custom.node), custom
                         )
-                    yield cast(dict[str, Any], chunk)
+                    yield custom.model_dump(mode="json")
                     continue
 
                 # Task chunks: written by the graph (node start / finished / pause)
@@ -145,7 +119,7 @@ class GraphRunner:
 
                 # Node started: write the start event
                 if "result" not in task_chunk:
-                    yield asdict(NodeStartedEvent(node=node_name))
+                    yield NodeStartedEvent(node=node_name).model_dump(mode="json")
                     continue
 
                 # Node paused: write the pause event & update status
@@ -162,10 +136,7 @@ class GraphRunner:
                         node_name=node_name,
                         output=request.model_dump(mode="json"),
                     )
-                    yield {
-                        "type": "paused",
-                        "request": request.model_dump(mode="json"),
-                    }
+                    yield PausedEvent(request=request).model_dump(mode="json")
                     continue
 
                 # Node finished: write the finished event & create the step
@@ -175,25 +146,25 @@ class GraphRunner:
                     run_id=run.id,
                     node_name=node_name,
                     output=task_chunk["result"],
-                    model=cost["model"] if cost is not None else None,
-                    input_tokens=cost["input_tokens"] if cost is not None else None,
-                    output_tokens=cost["output_tokens"] if cost is not None else None,
-                    cost_usd=cost["cost_usd"] if cost is not None else None,
+                    model=cost.model if cost is not None else None,
+                    input_tokens=cost.input_tokens if cost is not None else None,
+                    output_tokens=cost.output_tokens if cost is not None else None,
+                    cost_usd=cost.cost_usd if cost is not None else None,
                 )
-                yield asdict(
-                    NodeFinishedEvent(node=node_name, output=task_chunk["result"])
-                )
+                yield NodeFinishedEvent(
+                    node=node_name, output=task_chunk["result"]
+                ).model_dump(mode="json")
 
         # Error: write the error event & update status
         except Exception as exc:
             await runs_repo.set_run_status(session, run, RunStatus.FAILED, ended=True)
-            yield asdict(ErrorEvent(message=str(exc)))
+            yield ErrorEvent(message=str(exc)).model_dump(mode="json")
             return
 
         # Done: update the run status
         status = RunStatus.PAUSED if paused else RunStatus.DONE
         run = await runs_repo.set_run_status(session, run, status, ended=not paused)
-        yield asdict(RunFinishedEvent(status=status.value))
+        yield RunFinishedEvent(status=status.value).model_dump(mode="json")
 
     async def list_pending(self, session: AsyncSession) -> list[PendingApproval]:
         paused = await runs_repo.list_runs(session, status=RunStatus.PAUSED)

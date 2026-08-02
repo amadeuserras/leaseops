@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 from langgraph.config import get_stream_writer
+from pydantic import Field, TypeAdapter
 
 from leaseops.agent.step_schemas import ApprovalCard
+from leaseops.core.base import LeaseOpsModel
 
 _PRICING_PER_TOKEN_USD: dict[str, tuple[float, float]] = {
     "gpt-4o-mini": (0.15 / 1_000_000, 0.60 / 1_000_000),
@@ -13,53 +14,45 @@ _PRICING_PER_TOKEN_USD: dict[str, tuple[float, float]] = {
 }
 
 
-@dataclass(frozen=True, kw_only=True)
-class RunStartedEvent:
+class RunStartedEvent(LeaseOpsModel):
     type: Literal["run_started"] = "run_started"
     run_id: str
 
 
-@dataclass(frozen=True, kw_only=True)
-class NodeStartedEvent:
+class NodeStartedEvent(LeaseOpsModel):
     type: Literal["node_started"] = "node_started"
     node: str
 
 
-@dataclass(frozen=True, kw_only=True)
-class NodeFinishedEvent:
+class NodeFinishedEvent(LeaseOpsModel):
     type: Literal["node_finished"] = "node_finished"
     node: str
     output: Any
 
 
-@dataclass(frozen=True, kw_only=True)
-class PausedEvent:
+class PausedEvent(LeaseOpsModel):
     type: Literal["paused"] = "paused"
     request: ApprovalCard
 
 
-@dataclass(frozen=True, kw_only=True)
-class ErrorEvent:
+class ErrorEvent(LeaseOpsModel):
     type: Literal["error"] = "error"
     message: str
 
 
-@dataclass(frozen=True, kw_only=True)
-class RunFinishedEvent:
+class RunFinishedEvent(LeaseOpsModel):
     type: Literal["run_finished"] = "run_finished"
     status: str
 
 
-@dataclass(frozen=True, kw_only=True)
-class ToolCallEvent:
+class ToolCallEvent(LeaseOpsModel):
     type: Literal["tool_call"] = "tool_call"
     node: str
     tool: str
     arguments: dict[str, Any]
 
 
-@dataclass(frozen=True, kw_only=True)
-class ToolResultEvent:
+class ToolResultEvent(LeaseOpsModel):
     type: Literal["tool_result"] = "tool_result"
     node: str
     tool: str
@@ -67,8 +60,7 @@ class ToolResultEvent:
     is_error: bool = False
 
 
-@dataclass(frozen=True, kw_only=True)
-class CostEvent:
+class CostEvent(LeaseOpsModel):
     type: Literal["cost"] = "cost"
     node: str
     model: str
@@ -89,10 +81,16 @@ StreamEvent = (
     | CostEvent
 )
 
+CustomEvent = Annotated[
+    CostEvent | ToolCallEvent | ToolResultEvent,
+    Field(discriminator="type"),
+]
+CustomEventAdapter: TypeAdapter[CustomEvent] = TypeAdapter(CustomEvent)
+
 
 def _emit(event: StreamEvent) -> None:
     writer = get_stream_writer()
-    writer(asdict(event))
+    writer(event.model_dump(mode="json"))
 
 
 def emit_tool_call(node: str, tool: str, arguments: dict[str, Any]) -> None:

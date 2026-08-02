@@ -6,12 +6,12 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from leaseops.api.schemas import EmailCreate, EmailListResponse, EmailResponse
 from leaseops.db import emails as repo
 from leaseops.db import runs as runs_repo
 from leaseops.db.emails import InboxRow
 from leaseops.db.session import get_session
 from leaseops.models.enums import EmailStatus
-from leaseops.models.schemas import EmailCreate, EmailListResponse, EmailResponse
 
 router = APIRouter(prefix="/inbox", tags=["inbox"])
 

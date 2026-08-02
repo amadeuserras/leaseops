@@ -4,8 +4,8 @@ from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from leaseops.api.schemas import OutboxCreate
 from leaseops.db.models import Outbox
-from leaseops.models.schemas import OutboxCreate
 
 
 async def create_outbox_entry(session: AsyncSession, payload: OutboxCreate) -> Outbox:

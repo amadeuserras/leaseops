@@ -7,12 +7,12 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from leaseops.agent.runner import GraphRunner
-from leaseops.db.session import get_session
-from leaseops.models.schemas import (
+from leaseops.api.schemas import (
     ApprovalListResponse,
     ApprovalRequestResponse,
     RunResponse,
 )
+from leaseops.db.session import get_session
 
 router = APIRouter(prefix="/approvals", tags=["approvals"])
 

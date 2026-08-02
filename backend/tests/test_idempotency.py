@@ -5,11 +5,11 @@ from uuid import uuid4
 
 from sqlalchemy import func, select
 
+from leaseops.api.schemas import OutboxCreate, WorkOrderCreate
 from leaseops.db.models import Email, Outbox, Tenant, WorkOrder
 from leaseops.db.outbox import create_outbox_entry
 from leaseops.db.work_orders import create_work_order
 from leaseops.models.enums import EmailStatus
-from leaseops.models.schemas import OutboxCreate, WorkOrderCreate
 
 
 async def test_outbox_create_is_idempotent_for_same_email(db_session) -> None:

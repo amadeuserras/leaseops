@@ -6,9 +6,9 @@ from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from leaseops.api.schemas import WorkOrderCreate, WorkOrderUpdate
 from leaseops.db.models import WorkOrder
 from leaseops.models.enums import WorkOrderStatus
-from leaseops.models.schemas import WorkOrderCreate, WorkOrderUpdate
 
 
 async def create_work_order(

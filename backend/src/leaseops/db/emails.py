@@ -7,9 +7,9 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from leaseops.api.schemas import EmailCreate
 from leaseops.db.models import Email, Run, Step, Tenant
 from leaseops.models.enums import EmailStatus
-from leaseops.models.schemas import EmailCreate
 
 
 def _empty_actions() -> list[str]:

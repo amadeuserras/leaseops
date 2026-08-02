@@ -7,15 +7,15 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from leaseops.db import work_orders as repo
-from leaseops.db.session import get_session
-from leaseops.models.enums import WorkOrderStatus
-from leaseops.models.schemas import (
+from leaseops.api.schemas import (
     WorkOrderCreate,
     WorkOrderListResponse,
     WorkOrderResponse,
     WorkOrderUpdate,
 )
+from leaseops.db import work_orders as repo
+from leaseops.db.session import get_session
+from leaseops.models.enums import WorkOrderStatus
 
 logger = logging.getLogger(__name__)
 

@@ -5,10 +5,9 @@ from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 
 from leaseops.clients import leaseclear
-from leaseops.clients.leaseclear import LeaseClearError
+from leaseops.clients.leaseclear import LeaseClearError, LeaseQAResponse
 from leaseops.db import tenants as tenants_repo
 from leaseops.db.session import SessionLocal
-from leaseops.models.schemas import LeaseQAResponse
 
 mcp = FastMCP("leaseops", log_level="WARNING")
 

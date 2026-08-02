@@ -14,14 +14,14 @@ from leaseops.agent.step_schemas import (
     StepListResponse,
     StepResponseAdapter,
 )
+from leaseops.api.schemas import (
+    RunCreate,
+    RunResponse,
+)
 from leaseops.db import emails as emails_repo
 from leaseops.db import runs as runs_repo
 from leaseops.db import steps as steps_repo
 from leaseops.db.session import SessionLocal, get_session
-from leaseops.models.schemas import (
-    RunCreate,
-    RunResponse,
-)
 
 router = APIRouter(prefix="/runs", tags=["runs"])
 
