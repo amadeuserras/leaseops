@@ -10,15 +10,19 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from leaseops.agent.runner import GraphRunner
-from leaseops.agent.step_schemas import StepResponseAdapter
+from leaseops.agent.step_schemas import StepResponse, StepResponseAdapter
 from leaseops.api.schemas import (
+    EmailResponse,
     RunCreate,
+    RunDetailResponse,
     RunResponse,
-    StepListResponse,
+    RunStats,
 )
 from leaseops.db import emails as emails_repo
 from leaseops.db import runs as runs_repo
 from leaseops.db import steps as steps_repo
+from leaseops.db.emails import InboxRow
+from leaseops.db.models import Run, Step
 from leaseops.db.session import SessionLocal, get_session
 
 router = APIRouter(prefix="/runs", tags=["runs"])
@@ -31,6 +35,46 @@ def get_runner(request: Request) -> GraphRunner:
 
 
 RunnerDep = Annotated[GraphRunner, Depends(get_runner)]
+
+
+def _email_response(row: InboxRow) -> EmailResponse:
+    email = row.email
+    return EmailResponse(
+        id=email.id,
+        sender=email.sender,
+        subject=email.subject,
+        body=email.body,
+        received_at=email.received_at,
+        status=email.status,
+        unit=row.unit,
+        severity=row.severity,
+        actions_taken=row.actions_taken,
+    )
+
+
+def _step_responses(steps: list[Step]) -> list[StepResponse]:
+    return [
+        StepResponseAdapter.validate_python(
+            {
+                "id": s.id,
+                "run_id": s.run_id,
+                "node_name": s.node_name,
+                "output": s.output,
+                "model": s.model,
+                "input_tokens": s.input_tokens,
+                "output_tokens": s.output_tokens,
+                "cost_usd": float(s.cost_usd) if s.cost_usd is not None else None,
+                "created_at": s.created_at,
+            }
+        )
+        for s in steps
+    ]
+
+
+def _stats(run: Run | None, steps: list[Step]) -> RunStats:
+    if run is None:
+        return RunStats()
+    return RunStats.model_validate(runs_repo.run_aggregates(run, steps))
 
 
 @router.post("", response_model=RunResponse, status_code=status.HTTP_201_CREATED)
@@ -72,28 +116,19 @@ async def stream_run(
     return StreamingResponse(event_source(), media_type="text/event-stream")
 
 
-@router.get("/{email_id}/steps", response_model=StepListResponse)
-async def list_steps(email_id: UUID, session: SessionDep) -> StepListResponse:
+@router.get("/{email_id}", response_model=RunDetailResponse)
+async def get_run(email_id: UUID, session: SessionDep) -> RunDetailResponse:
+    row = await emails_repo.get_inbox_row(session, email_id)
+    if row is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="email not found"
+        )
     run = await runs_repo.get_latest_run_for_email(session, email_id)
-    if run is None:
-        return StepListResponse(items=[])
-    steps = await steps_repo.list_steps_for_run(session, run.id)
-    return StepListResponse(
-        items=[
-            StepResponseAdapter.validate_python(
-                {
-                    "id": s.id,
-                    "run_id": s.run_id,
-                    "node_name": s.node_name,
-                    "output": s.output,
-                    "model": s.model,
-                    "input_tokens": s.input_tokens,
-                    "output_tokens": s.output_tokens,
-                    "cost_usd": float(s.cost_usd) if s.cost_usd is not None else None,
-                    "created_at": s.created_at,
-                }
-            )
-            for s in steps
-        ],
-        **runs_repo.run_aggregates(run, steps),
+    steps = (
+        await steps_repo.list_steps_for_run(session, run.id) if run is not None else []
+    )
+    return RunDetailResponse(
+        email=_email_response(row),
+        steps=_step_responses(steps),
+        stats=_stats(run, steps),
     )

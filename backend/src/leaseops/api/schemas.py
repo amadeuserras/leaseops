@@ -50,12 +50,17 @@ class RunResponse(LeaseOpsModel):
     ended_at: datetime | None
 
 
-class StepListResponse(LeaseOpsModel):
-    items: list[StepResponse]
+class RunStats(LeaseOpsModel):
     tokens: int = 0
     cost: float = 0.0
     elapsed: float = 0.0
     step_count: int = 0
+
+
+class RunDetailResponse(LeaseOpsModel):
+    email: EmailResponse
+    steps: list[StepResponse]
+    stats: RunStats = RunStats()
 
 
 class ApprovalRequestResponse(LeaseOpsModel):

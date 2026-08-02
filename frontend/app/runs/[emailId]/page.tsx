@@ -5,7 +5,7 @@ import { EmailCard } from '@/components/email-card';
 import { RunStats } from '@/components/run-stats';
 import { useTenants } from '@/components/tenants-provider';
 import { TraceStep } from '@/components/trace-step';
-import { ApiError, getEmail, listEmailSteps, streamRun } from '@/lib/api';
+import { ApiError, getRun, streamRun } from '@/lib/api';
 import type { Email, StreamEvent } from '@/lib/api';
 import { shortId } from '@/lib/format';
 import { applyEvent, buildRunFromSteps, type RunState } from '@/lib/run-reducer';
@@ -93,30 +93,33 @@ export default function RunTracePage() {
     setEmail(null);
     setEmailError(null);
     abortRef.current?.abort();
+    autoStarted.current = null;
   }, [emailId]);
 
   useEffect(() => {
-    getEmail(emailId)
-      .then(setEmail)
-      .catch((cause: unknown) =>
-        setEmailError(cause instanceof Error ? cause.message : 'could not load the message'),
-      );
-  }, [emailId]);
-
-  useEffect(() => {
-    if (email === null || autoStarted.current === emailId) return;
+    if (autoStarted.current === emailId) return;
     autoStarted.current = emailId;
 
-    void listEmailSteps(emailId).then((data) => {
-      if (data.items.length > 0) {
-        setRun(
-          buildRunFromSteps(emailId, data.items, data, email.status === 'awaiting_approval'),
-        );
-        return;
-      }
-      if (email.status === 'pending') startStream();
-    });
-  }, [email, emailId, startStream]);
+    void getRun(emailId)
+      .then((data) => {
+        setEmail(data.email);
+        if (data.steps.length > 0) {
+          setRun(
+            buildRunFromSteps(
+              emailId,
+              data.steps,
+              data,
+              data.run?.status === 'paused',
+            ),
+          );
+          return;
+        }
+        if (data.email.status === 'pending') startStream();
+      })
+      .catch((cause: unknown) =>
+        setEmailError(cause instanceof Error ? cause.message : 'could not load the run'),
+      );
+  }, [emailId, startStream]);
 
   useEffect(() => {
     if (run?.status === 'paused') void refresh();

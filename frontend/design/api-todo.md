@@ -10,7 +10,7 @@ Plain English: after a run finishes (or pauses), open the email and see the full
 
 **Plain English for Checkpoint 1** — after a run finishes, reopen the email and see the same timeline again.
 
-1. **`GET /runs/{email_id}` — run + email + steps**  
+1. **`GET /runs/{email_id}` — run + email + steps** ✅  
    One API call that returns everything the Runs screen needs: the original email, the run record, and every step.
 
 2. **Typed step `output` per node** ✅  

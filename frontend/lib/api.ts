@@ -241,16 +241,18 @@ export type StepRecord =
   | (StepRecordBase & { node_name: 'approval'; output: ApprovalCard | null })
   | (StepRecordBase & { node_name: 'execute'; output: ExecuteOutput | null });
 
-export type StepListResponse = {
-  items: StepRecord[];
+export type RunDetail = {
+  email: Email;
+  run: Run | null;
+  steps: StepRecord[];
   tokens: number;
   cost: number;
   elapsed: number;
   step_count: number;
 };
 
-export const listEmailSteps = async (emailId: string): Promise<StepListResponse> =>
-  request<StepListResponse>(`/runs/${emailId}/steps`);
+export const getRun = async (emailId: string): Promise<RunDetail> =>
+  request<RunDetail>(`/runs/${emailId}`);
 
 export const listApprovals = async (): Promise<PendingApproval[]> => {
   const data = await request<{ items: PendingApproval[] }>('/approvals');
