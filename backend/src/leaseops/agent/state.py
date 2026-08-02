@@ -73,3 +73,6 @@ class AgentState(LeaseOpsModel):
 
     # approval
     approved: bool | None = None
+
+    # execute
+    actions_taken: list[PlanAction] = []

@@ -47,8 +47,7 @@ def _approval_node(state: AgentState) -> dict[str, Any]:
 
 
 async def _execute_node(state: AgentState) -> dict[str, Any]:
-    await execute(state)
-    return {}
+    return asdict(await execute(state))
 
 
 def _after_extract(state: AgentState) -> _AfterExtract:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,6 +16,11 @@ from leaseops.models.enums import EmailStatus, OutboxStatus, WorkOrderStatus
 from leaseops.models.schemas import OutboxCreate, WorkOrderCreate
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class _ExecuteResult:
+    actions_taken: list[PlanAction]
 
 
 async def _resolve_tenant(session: AsyncSession, state: AgentState) -> Tenant:
@@ -63,7 +69,8 @@ def _call_tenant(state: AgentState) -> None:
     )
 
 
-async def execute(state: AgentState) -> None:
+async def execute(state: AgentState) -> _ExecuteResult:
+    actions_taken: list[PlanAction] = []
     async with SessionLocal() as session:
         for action in state.actions:
             if action == PlanAction.SEND_REPLY:
@@ -74,6 +81,8 @@ async def execute(state: AgentState) -> None:
                 _call_tenant(state)
             else:
                 raise RuntimeError(f"unknown action: {action}")
+            actions_taken.append(action)
         await emails_repo.set_email_status(
             session, state.email_id, EmailStatus.PROCESSED
         )
+    return _ExecuteResult(actions_taken=actions_taken)
