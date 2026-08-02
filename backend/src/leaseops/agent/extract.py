@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Literal
 
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 
 from leaseops.agent.events import emit_cost
-from leaseops.agent.state import AgentState, Severity
+from leaseops.agent.state import AgentState, EmailCategory, Severity
 from leaseops.core.config import settings
 from leaseops.db import tenants as tenants_repo
 from leaseops.db.models import Tenant
@@ -34,7 +35,7 @@ Rules:
 
 
 class _ExtractFormat(BaseModel):
-    severity: Severity
+    severity: Literal["high", "medium", "low"]
     appliance_or_system: str | None = None
     issue_summary: str
 
@@ -85,11 +86,16 @@ async def _lookup_tenant(sender: str) -> Tenant | None:
 async def extract(state: AgentState) -> _ExtractResult:
     fields = await _extract_fields(state)
     tenant = await _lookup_tenant(state.sender)
+    severity = (
+        Severity.CRITICAL
+        if state.category == EmailCategory.EMERGENCY
+        else Severity(fields.severity)
+    )
     return _ExtractResult(
         tenant_name=tenant.name if tenant else None,
         unit=tenant.unit if tenant else None,
         address=tenant.address if tenant else None,
         issue_summary=fields.issue_summary,
-        severity=fields.severity,
+        severity=severity,
         appliance_or_system=fields.appliance_or_system,
     )

@@ -33,6 +33,9 @@ class EmailResponse(LeaseOpsModel):
     body: str
     received_at: datetime
     status: EmailStatus
+    unit: str | None = None
+    severity: str | None = None
+    actions_taken: list[str] = []
 
 
 class EmailListResponse(LeaseOpsModel):

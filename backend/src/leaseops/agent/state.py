@@ -19,6 +19,7 @@ class Severity(StrEnum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
+    CRITICAL = "critical"
 
 
 class Responsibility(StrEnum):
