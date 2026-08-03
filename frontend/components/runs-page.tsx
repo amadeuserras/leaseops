@@ -10,17 +10,12 @@ import { useEffect, useMemo, useRef } from 'react';
 export function RunsPage({ data }: { data: RunDetailResponse }) {
   const initial = useMemo(() => fromRunDetail(data), [data]);
   const { state, start } = useRunStream(data.email.id, initial);
-  const autoStarted = useRef(false);
 
-  // Opening an email the agent has not touched yet is what starts the run. It
-  // is an explicit call from this flow, fired once, never on later re-renders.
   useEffect(() => {
-    if (autoStarted.current) return;
     if (data.steps.length === 0 && data.email.status === 'pending') {
-      autoStarted.current = true;
       start();
     }
-  }, [data.steps.length, data.email.status, start]);
+  }, [data.email.id, data.steps.length, data.email.status, start]);
 
   const steps = toDisplaySteps(state);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -96,13 +91,7 @@ export function RunsPage({ data }: { data: RunDetailResponse }) {
             </div>
           )}
 
-          {steps.length === 0 && !state.live ? (
-            <div className="text-ink-35 rounded-xl border border-dashed border-black/12 px-4 py-9 text-center text-[12.5px]">
-              The agent has not processed this email yet.
-            </div>
-          ) : (
-            <RunTimeline steps={steps} />
-          )}
+          <RunTimeline steps={steps} />
         </div>
       </div>
 
