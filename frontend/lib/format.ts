@@ -1,74 +1,95 @@
-const TIME_FORMAT = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' });
-const DATE_FORMAT = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short' });
+/**
+ * Presentation helpers lifted from the design files' `hum` / `humVal` /
+ * `fmtCost` logic. Pure string/number formatting only — no data shaping.
+ */
 
-const isToday = (date: Date): boolean => {
-  const now = new Date();
-  return (
-    date.getFullYear() === now.getFullYear() &&
-    date.getMonth() === now.getMonth() &&
-    date.getDate() === now.getDate()
-  );
-};
+/** `lease_addresses_issue` -> `Lease addresses issue` */
+export function hum(key: string | null | undefined): string {
+  if (!key) return '';
+  const s = String(key).replace(/_/g, ' ').trim();
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
-export const formatReceived = (iso: string): string => {
-  const date = new Date(iso);
-  return isToday(date) ? TIME_FORMAT.format(date) : DATE_FORMAT.format(date);
-};
+/** `send_reply` -> `Send reply`, `true` -> `Yes`, leaves proper nouns alone. */
+export function humVal(value: unknown): string {
+  if (value === null || value === undefined) return '';
+  const s = String(value);
+  if (s === 'true') return 'Yes';
+  if (s === 'false') return 'No';
+  if (/^[$£€\d]/.test(s) || /[A-Z]/.test(s.charAt(0))) return s;
+  const t = s.replace(/_/g, ' ');
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
 
-export const formatDateTime = (iso: string): string => {
-  const date = new Date(iso);
-  return `${DATE_FORMAT.format(date)} ${TIME_FORMAT.format(date)}`;
-};
+/** `a: 1, b: "x"` -> `A: 1  ·  B: X` */
+export function humArgs(text: string | null | undefined): string {
+  if (!text) return '';
+  return text
+    .split(', ')
+    .map((pair) => {
+      const i = pair.indexOf(':');
+      if (i < 0) return pair;
+      const k = pair.slice(0, i).trim();
+      const v = pair
+        .slice(i + 1)
+        .trim()
+        .replace(/^"|"$/g, '');
+      return `${hum(k)}: ${humVal(v)}`;
+    })
+    .join('  ·  ');
+}
 
-export const formatRelativeTime = (iso: string): string => {
-  const minutes = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60_000));
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes} min ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours} hr ago`;
-  return formatDateTime(iso);
-};
+export function fmtCost(n: number): string {
+  if (!n) return '$0.00';
+  return `$${n < 0.001 ? n.toFixed(7).replace(/0+$/, '').replace(/\.$/, '') : n.toFixed(5)}`;
+}
 
-export const formatTokens = (tokens: number): string => tokens.toLocaleString('en-US');
+export function fmtTokens(n: number): string {
+  return n.toLocaleString('en-US');
+}
 
-export const formatCost = (usd: number): string => {
-  if (usd === 0) return '$0.00';
-  if (usd < 0.001) return `$${usd.toFixed(7).replace(/0+$/, '').replace(/\.$/, '')}`;
-  return `$${usd.toFixed(5)}`;
-};
+export function fmtElapsed(seconds: number): string {
+  if (!seconds) return '0.00s';
+  return `${seconds.toFixed(2)}s`;
+}
 
-export const formatDuration = (ms: number): string => `${(ms / 1000).toFixed(2)}s`;
+export function fmtClock(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+}
 
-export const initialsOf = (name: string): string =>
-  name
+const RELATIVE_STEPS: [limit: number, divisor: number, unit: string][] = [
+  [60, 1, 'sec'],
+  [3600, 60, 'min'],
+  [86400, 3600, 'hr'],
+];
+
+export function fmtRelative(iso: string | null): string {
+  if (!iso) return 'never';
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return '';
+  const seconds = Math.max(0, Math.round((Date.now() - then) / 1000));
+  for (const [limit, divisor, unit] of RELATIVE_STEPS) {
+    if (seconds < limit) {
+      const value = Math.max(1, Math.floor(seconds / divisor));
+      return `${value} ${unit} ago`;
+    }
+  }
+  return `${Math.floor(seconds / 86400)} d ago`;
+}
+
+export function initials(name: string): string {
+  return name
     .split(/\s+/)
-    .map((part) => part[0] ?? '')
+    .filter(Boolean)
+    .map((part) => part[0])
     .join('')
     .slice(0, 2)
     .toUpperCase();
+}
 
-export const shortId = (id: string): string => id.replaceAll('-', '').slice(0, 8);
-
-export const previewOf = (body: string, limit = 120): string => {
+export function preview(body: string, length = 96): string {
   const flat = body.replace(/\s+/g, ' ').trim();
-  return flat.length > limit ? `${flat.slice(0, limit)}…` : flat;
-};
-
-export const nameFromAddress = (address: string): string =>
-  address
-    .split('@')[0]
-    .split(/[._-]+/)
-    .filter(Boolean)
-    .map((part) => part[0].toUpperCase() + part.slice(1))
-    .join(' ');
-
-export const splitCitations = (answer: string): { text: string; citations: string[] } => {
-  const citations: string[] = [];
-  const text = answer.replace(/\s*\[([^\]]+)\]/g, (_match: string, citation: string) => {
-    if (!citations.includes(citation)) citations.push(citation);
-    return '';
-  });
-  return { text: text.replace(/\s+([.,;])/g, '$1').trim(), citations };
-};
-
-export const humanize = (value: string): string => value.replaceAll('_', ' ');
+  return flat.length > length ? `${flat.slice(0, length)}…` : flat;
+}

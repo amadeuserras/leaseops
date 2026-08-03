@@ -1,228 +1,90 @@
-const BASE_PATH = process.env.NEXT_PUBLIC_LEASEOPS_API_URL;
-
-export class ApiError extends Error {
-  readonly status: number;
-
-  constructor(status: number, message: string) {
-    super(message);
-    this.name = 'ApiError';
-    this.status = status;
-  }
-}
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000';
 
 export type EmailStatus = 'pending' | 'processing' | 'awaiting_approval' | 'processed';
 
-export type Email = {
+export type RunStatus = 'running' | 'paused' | 'done' | 'failed';
+
+export type Severity = 'low' | 'medium' | 'high' | 'critical';
+
+export type Responsibility = 'landlord' | 'tenant' | 'shared' | 'unclear';
+
+export type EmailCategory = 'maintenance' | 'lease_question' | 'not_our_problem' | 'emergency';
+
+export type PlanAction = 'send_reply' | 'create_work_order' | 'call_tenant';
+
+export interface EmailResponse {
   id: string;
   sender: string;
   subject: string;
   body: string;
   received_at: string;
   status: EmailStatus;
-};
-
-export type RunStatus = 'running' | 'paused' | 'done' | 'failed';
-
-export type Run = {
-  id: string;
-  email_id: string;
-  status: RunStatus;
-  started_at: string;
-  ended_at: string | null;
-};
-
-export type PlanAction = 'create_work_order' | 'send_reply' | 'call_tenant';
-
-export type ApprovalCategory = 'emergency' | 'maintenance' | 'lease_question' | 'not_our_problem';
-export type ApprovalSeverity = 'high' | 'medium' | 'low';
-export type ApprovalResponsibility = 'landlord' | 'tenant' | 'shared' | 'unclear';
-
-export type ApprovalRequest = {
-  email_id: string;
-  category: ApprovalCategory;
-  severity: ApprovalSeverity | null;
-  received_at: string;
-  tenant_name: string | null;
   unit: string | null;
-  address: string | null;
-  issue_summary: string | null;
-  appliance_or_system: string | null;
-  responsibility: ApprovalResponsibility | null;
-  citation: string | null;
-  original_email: string;
-  draft: string | null;
-  actions: PlanAction[];
-};
+  severity: Severity | null;
+  actions_taken: string[];
+}
 
-export type PendingApproval = ApprovalRequest & { run_id: string };
+export interface EmailListResponse {
+  items: EmailResponse[];
+  agent_last_ran_at: string | null;
+}
 
-export type StreamEvent =
-  | { type: 'run_started'; run_id: string }
-  | { type: 'node_started'; node: string }
-  | { type: 'node_finished'; node: string; output: Record<string, unknown> | null }
-  | {
-      type: 'tool_call';
-      node: string;
-      tool: string;
-      arguments: Record<string, unknown>;
-      /**
-       * Why the agent reached for this tool, shown above the call in the trace.
-       * MOCK — `ToolCallEvent` does not carry this yet, so it is backfilled in
-       * `parseEvent`. Delete `mockedReasoning` once the backend emits it.
-       */
-      reasoning: string;
-    }
-  | { type: 'tool_result'; node: string; tool: string; result: unknown; is_error: boolean }
-  | {
-      type: 'cost';
-      node: string;
-      model: string;
-      input_tokens: number;
-      output_tokens: number;
-      cost_usd: number;
-    }
-  | { type: 'paused'; request: ApprovalRequest }
-  | { type: 'run_finished'; status: RunStatus }
-  | { type: 'error'; message: string };
+export interface QaResult {
+  question: string;
+  answer: string;
+  citations: string[];
+  reasoning: string;
+}
 
-const errorMessage = async (response: Response): Promise<string> => {
-  try {
-    const body: unknown = await response.json();
-    if (body !== null && typeof body === 'object' && 'detail' in body) {
-      return String((body as { detail: unknown }).detail);
-    }
-  } catch {}
-  return `${response.status} ${response.statusText}`;
-};
-
-const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
-  const response = await fetch(`${BASE_PATH}${path}`, {
-    ...init,
-    headers: { Accept: 'application/json', ...init?.headers },
-  });
-  if (!response.ok) throw new ApiError(response.status, await errorMessage(response));
-  return (await response.json()) as T;
-};
-
-const postJson = async <T>(path: string, payload: unknown): Promise<T> =>
-  request<T>(path, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-
-export const listEmails = async (status?: EmailStatus): Promise<Email[]> => {
-  const query = status ? `?status=${status}` : '';
-  const data = await request<{ items: Email[] }>(`/inbox${query}`);
-  return data.items;
-};
-
-export const getEmail = async (emailId: string): Promise<Email> =>
-  request<Email>(`/inbox/${emailId}`);
-
-type StreamRunOptions = {
-  emailId: string;
-  onEvent: (event: StreamEvent) => void;
-  signal?: AbortSignal;
-};
-
-const parseEvent = (payload: string): StreamEvent => {
-  const raw = JSON.parse(payload) as Record<string, unknown>;
-  if (raw.type === 'tool_call' && typeof raw.reasoning !== 'string') {
-    return { ...raw, reasoning: mockedReasoning(String(raw.tool)) } as unknown as StreamEvent;
-  }
-  return raw as unknown as StreamEvent;
-};
-
-export const streamRun = async ({ emailId, onEvent, signal }: StreamRunOptions): Promise<void> => {
-  const response = await fetch(`${BASE_PATH}/runs/stream`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
-    body: JSON.stringify({ email_id: emailId }),
-    signal,
-  });
-
-  if (!response.ok) throw new ApiError(response.status, await errorMessage(response));
-  if (response.body === null) throw new ApiError(response.status, 'trace stream had no body');
-
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-
-  const emit = (frame: string) => {
-    const line = frame.split('\n').find((candidate) => candidate.startsWith('data:'));
-    if (line === undefined) return;
-    onEvent(parseEvent(line.slice(5).trim()));
-  };
-
-  let chunk = await reader.read();
-  while (!chunk.done) {
-    buffer += decoder.decode(chunk.value, { stream: true });
-    const frames = buffer.split('\n\n');
-    buffer = frames.pop() ?? '';
-    frames.forEach(emit);
-    chunk = await reader.read();
-  }
-  if (buffer.trim() !== '') emit(buffer);
-};
-
-export type EmailCategory = ApprovalCategory;
-export type Severity = ApprovalSeverity;
-export type Responsibility = ApprovalResponsibility;
-
-export type ClassifyOutput = {
+export interface ClassifyOutput {
   category: EmailCategory;
-};
+}
 
-export type ExtractOutput = {
+export interface ExtractOutput {
   tenant_name: string | null;
   unit: string | null;
   address: string | null;
   issue_summary: string | null;
   severity: Severity | null;
   appliance_or_system: string | null;
-};
+}
 
-export type QAResultOutput = {
-  question: string;
-  answer: string;
-  citations: string[];
-};
-
-export type LeaseCheckOutput = {
+export interface LeaseCheckOutput {
   lease_addresses_issue: boolean;
   responsibility: Responsibility;
-  qa_results: QAResultOutput[];
-};
+  qa_results: QaResult[];
+}
 
-export type PlanOutput = {
+export interface PlanOutput {
   actions: PlanAction[];
-};
+}
 
-export type DraftOutput = {
+export interface DraftOutput {
   draft: string;
-};
+}
 
-export type ApprovalCard = ApprovalRequest;
+export interface ApprovalCard {
+  email_id: string;
+  category: string;
+  severity: Severity | null;
+  received_at: string;
+  tenant_name: string | null;
+  unit: string | null;
+  address: string | null;
+  issue_summary: string | null;
+  appliance_or_system: string | null;
+  responsibility: Responsibility | null;
+  citation: string | null;
+  original_email: string;
+  draft: string | null;
+  actions: PlanAction[];
+}
 
-export type ApprovalOutput = {
-  approved: boolean;
-};
-
-export type ExecuteOutput = {
+export interface ExecuteOutput {
   actions_taken: PlanAction[];
-};
+}
 
-export type StepOutput =
-  | ClassifyOutput
-  | ExtractOutput
-  | LeaseCheckOutput
-  | PlanOutput
-  | DraftOutput
-  | ApprovalCard
-  | ExecuteOutput;
-
-type StepRecordBase = {
+interface StepBase {
   id: string;
   run_id: string;
   model: string | null;
@@ -230,191 +92,188 @@ type StepRecordBase = {
   output_tokens: number | null;
   cost_usd: number | null;
   created_at: string;
-};
+}
 
-export type StepRecord =
-  | (StepRecordBase & { node_name: 'classify'; output: ClassifyOutput | null })
-  | (StepRecordBase & { node_name: 'extract'; output: ExtractOutput | null })
-  | (StepRecordBase & { node_name: 'lease_check'; output: LeaseCheckOutput | null })
-  | (StepRecordBase & { node_name: 'plan'; output: PlanOutput | null })
-  | (StepRecordBase & { node_name: 'draft'; output: DraftOutput | null })
-  | (StepRecordBase & { node_name: 'approval'; output: ApprovalCard | null })
-  | (StepRecordBase & { node_name: 'execute'; output: ExecuteOutput | null });
+export type StepResponse =
+  | (StepBase & { node_name: 'classify'; output: ClassifyOutput | null })
+  | (StepBase & { node_name: 'extract'; output: ExtractOutput | null })
+  | (StepBase & { node_name: 'lease_check'; output: LeaseCheckOutput | null })
+  | (StepBase & { node_name: 'plan'; output: PlanOutput | null })
+  | (StepBase & { node_name: 'draft'; output: DraftOutput | null })
+  | (StepBase & { node_name: 'approval'; output: ApprovalCard | null })
+  | (StepBase & { node_name: 'execute'; output: ExecuteOutput | null });
 
-export type RunDetail = {
-  email: Email;
-  run: Run | null;
-  steps: StepRecord[];
+export type NodeName = StepResponse['node_name'];
+
+export interface RunStats {
   tokens: number;
   cost: number;
   elapsed: number;
   step_count: number;
-};
+}
 
-export const getRun = async (emailId: string): Promise<RunDetail> =>
-  request<RunDetail>(`/runs/${emailId}`);
+export interface RunDetailResponse {
+  email: EmailResponse;
+  steps: StepResponse[];
+  stats: RunStats;
+}
 
-export const listApprovals = async (): Promise<PendingApproval[]> => {
-  const data = await request<{ items: PendingApproval[] }>('/approvals');
-  return data.items;
-};
+export interface RunResponse {
+  id: string;
+  email_id: string;
+  status: RunStatus;
+  started_at: string;
+  ended_at: string | null;
+}
 
-export const approveRun = async (runId: string): Promise<Run> =>
-  postJson<Run>(`/approvals/${runId}/approve`, {});
+export interface ApprovalRequestResponse extends ApprovalCard {
+  run_id: string;
+}
 
-export const rejectRun = async (runId: string): Promise<Run> =>
-  postJson<Run>(`/approvals/${runId}/reject`, {});
+export interface ApprovalListResponse {
+  items: ApprovalRequestResponse[];
+}
 
-/* ========================================================================== */
-/* MOCKED DATA — no API endpoint exists for any of the below                   */
-/* ========================================================================== */
+export type StreamEvent =
+  | { type: 'run_started'; run_id: string }
+  | { type: 'node_started'; node: NodeName }
+  | { type: 'node_finished'; node: NodeName; output: unknown }
+  | { type: 'paused'; request: ApprovalCard }
+  | { type: 'error'; message: string }
+  | { type: 'run_finished'; status: RunStatus }
+  | {
+      type: 'tool_call';
+      node: NodeName;
+      tool: string;
+      arguments: Record<string, unknown>;
+      reasoning: string;
+    }
+  | {
+      type: 'tool_result';
+      node: NodeName;
+      tool: string;
+      result: unknown;
+      is_error: boolean;
+    }
+  | {
+      type: 'cost';
+      node: NodeName;
+      model: string;
+      input_tokens: number;
+      output_tokens: number;
+      cost_usd: number;
+    };
 
-/**
- * MOCK — hardcoded stand-in for the `reasoning` field on `tool_call` events.
- *
- * The trace shows a sentence above each tool call explaining why the agent
- * reached for it. `leaseops.agent.events.ToolCallEvent` has no such field, so
- * every call gets this canned line per tool. Once the backend emits a real
- * `reasoning`, `parseEvent` passes it straight through and this can go.
- */
-const mockedReasoning = (tool: string): string => {
-  const byTool: Record<string, string> = {
-    lease_qa: 'Checking what the lease says about this before responding.',
-    tenant_lookup: 'Resolving the sender to a tenant record before writing anything.',
-    work_order_create: 'Responsibility is established — opening the work order.',
-    send_reply: 'Reply approved — queueing it in the outbox.',
-  };
-  return byTool[tool] ?? `Calling ${tool}.`;
-};
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(`${BASE_URL}${path}`, {
+    ...init,
+    cache: 'no-store',
+    headers: { 'content-type': 'application/json', ...init?.headers },
+  });
+  if (!response.ok) {
+    const detail = await response.text().catch(() => '');
+    throw new Error(`${init?.method ?? 'GET'} ${path} failed: ${response.status} ${detail}`);
+  }
+  return (await response.json()) as T;
+}
 
-export type Tenant = {
-  email: string;
-  name: string;
-  address: string;
-  unit: string | null;
-};
+export function listEmails(): Promise<EmailListResponse> {
+  return request<EmailListResponse>('/inbox');
+}
 
-/**
- * MOCK — the API exposes no `/tenants` endpoint, so the inbox has no way to
- * turn a sender address into a display name and unit. Mirrors
- * `backend/seed_data/tenants.json`; replace with a real fetch once the
- * endpoint lands.
- */
-export const listTenants = async (): Promise<Tenant[]> =>
-  Promise.resolve([
-    {
-      email: 'deshawn.johnson@example.com',
-      name: 'DeShawn Johnson',
-      address: '1142 Sunset Ridge Drive, Los Angeles, CA 90026',
-      unit: '5',
-    },
-    {
-      email: 'yuna.kim@example.com',
-      name: 'Yuna Kim',
-      address: '1142 Sunset Ridge Drive, Los Angeles, CA 90026',
-      unit: '5',
-    },
-    {
-      email: 'maria.vega@example.com',
-      name: 'Maria Elena Vega',
-      address: '884 Pelican Court, Oxnard, CA 93035',
-      unit: null,
-    },
-    {
-      email: 'james.whitfield@example.com',
-      name: 'James Whitfield',
-      address: '884 Pelican Court, Oxnard, CA 93035',
-      unit: null,
-    },
-    {
-      email: 'priya.nadkarni@example.com',
-      name: 'Priya Nadkarni',
-      address: '77 Larkspur Lane, Port Marlow, CA 94066',
-      unit: '3C',
-    },
-    {
-      email: 'daniel.osei@example.com',
-      name: 'Daniel Osei',
-      address: '77 Larkspur Lane, Port Marlow, CA 94066',
-      unit: '3C',
-    },
-    {
-      email: 'soojin.park@example.com',
-      name: 'Soo-Jin Park',
-      address: '302 Fern Valley Road, Ashford Heights, OR 97201',
-      unit: '8B',
-    },
-    {
-      email: 'kevin.chen@example.com',
-      name: 'Kevin Chen',
-      address: '302 Fern Valley Road, Ashford Heights, OR 97201',
-      unit: '8B',
-    },
-    {
-      email: 'astrid.lindqvist@example.com',
-      name: 'Astrid Lindqvist',
-      address: '3712 Lake Harriet Pkwy, Minneapolis, Minnesota',
-      unit: '2B',
-    },
-    {
-      email: 'ravi.patel@example.com',
-      name: 'Ravi Patel',
-      address: '3712 Lake Harriet Pkwy, Minneapolis, Minnesota',
-      unit: '2B',
-    },
-    {
-      email: 'chukwuemeka.okonkwo@example.com',
-      name: 'Chukwuemeka Okonkwo',
-      address: '1845 Selby Avenue, Saint Paul, MN 55104',
-      unit: null,
-    },
-    {
-      email: 'sara.berg@example.com',
-      name: 'Sara Berg',
-      address: '1845 Selby Avenue, Saint Paul, MN 55104',
-      unit: null,
-    },
-    {
-      email: 'carlos.morales@example.com',
-      name: 'Carlos Morales',
-      address: '2214 Brentwood Street, Austin, TX 78757',
-      unit: null,
-    },
-    {
-      email: 'isabel.reyes@example.com',
-      name: 'Isabel Reyes',
-      address: '2214 Brentwood Street, Austin, TX 78757',
-      unit: null,
-    },
-    {
-      email: 'darnell.washington@example.com',
-      name: 'Darnell Washington',
-      address: '5522 Westheimer Road, Houston, TX 77056',
-      unit: '14C',
-    },
-    {
-      email: 'keisha.price@example.com',
-      name: 'Keisha Price',
-      address: '5522 Westheimer Road, Houston, TX 77056',
-      unit: '14C',
-    },
-  ]);
+export function getRun(emailId: string): Promise<RunDetailResponse> {
+  return request<RunDetailResponse>(`/runs/${emailId}`);
+}
 
-export type BuildInfo = {
+export function startRun(emailId: string): Promise<RunResponse> {
+  return request<RunResponse>('/runs', {
+    method: 'POST',
+    body: JSON.stringify({ email_id: emailId }),
+  });
+}
+
+export async function* streamRun(
+  emailId: string,
+  signal: AbortSignal,
+): AsyncGenerator<StreamEvent> {
+  const response = await fetch(`${BASE_URL}/runs/stream`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ email_id: emailId }),
+    cache: 'no-store',
+    signal,
+  });
+  if (!response.ok || response.body === null) {
+    throw new Error(`POST /runs/stream failed: ${response.status}`);
+  }
+
+  const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+  let buffer = '';
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += value;
+
+      let boundary = buffer.indexOf('\n\n');
+      while (boundary !== -1) {
+        const record = buffer.slice(0, boundary);
+        buffer = buffer.slice(boundary + 2);
+        const payload = record
+          .split('\n')
+          .filter((line) => line.startsWith('data:'))
+          .map((line) => line.slice(5).trim())
+          .join('');
+        if (payload) yield JSON.parse(payload) as StreamEvent;
+        boundary = buffer.indexOf('\n\n');
+      }
+    }
+  } finally {
+    reader.cancel().catch(() => {});
+  }
+}
+
+export function listApprovals(): Promise<ApprovalListResponse> {
+  return request<ApprovalListResponse>('/approvals');
+}
+
+export function approveRun(runId: string): Promise<RunResponse> {
+  return request<RunResponse>(`/approvals/${runId}/approve`, {
+    method: 'POST',
+  });
+}
+
+export function rejectRun(runId: string): Promise<RunResponse> {
+  return request<RunResponse>(`/approvals/${runId}/reject`, { method: 'POST' });
+}
+
+// Mocks — everything below has no backend endpoint yet
+
+export interface BuildInfo {
   evalsPassing: number;
   evalsTotal: number;
   version: string;
-  commit: string;
-};
+  build: string;
+}
 
-/**
- * MOCK — the sidebar footer in the design shows eval health and a build stamp.
- * `/evals` is postponed (SPEC Ch. 8) and no build endpoint exists.
- */
-export const getBuildInfo = async (): Promise<BuildInfo> =>
-  Promise.resolve({
+export function getBuildInfo(): BuildInfo {
+  return {
     evalsPassing: 42,
     evalsTotal: 42,
     version: 'v0.4.2-beta',
-    commit: '8f21a0c',
-  });
+    build: '8f21a0c',
+  };
+}
+
+export function senderDisplayName(sender: string): string {
+  const local = sender.split('@')[0] ?? sender;
+  return (
+    local
+      .split(/[._-]+/)
+      .filter(Boolean)
+      .map((part) =>
+        part.length <= 2 ? part.toUpperCase() : part.charAt(0).toUpperCase() + part.slice(1),
+      )
+      .join(' ') || sender
+  );
+}
