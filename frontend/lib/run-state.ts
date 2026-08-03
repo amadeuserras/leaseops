@@ -433,7 +433,9 @@ export function toDisplaySteps(state: RunState): DisplayStep[] {
         step.node === 'plan' && step.output
           ? (step.output as PlanOutput).actions.map(humVal).join(', ')
           : step.node === 'execute' && step.output
-            ? (step.output as ExecuteOutput).actions_taken.map(humVal).join(', ')
+            ? (step.output as ExecuteOutput).succeeded
+              ? 'Succeeded'
+              : 'Failed'
             : null,
       draft: step.node === 'draft' && step.output ? (step.output as DraftOutput).draft : null,
       note: step.note,

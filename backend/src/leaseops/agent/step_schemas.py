@@ -65,7 +65,7 @@ class ApprovalOutput(LeaseOpsModel):
 
 
 class ExecuteOutput(LeaseOpsModel):
-    actions_taken: list[PlanAction]
+    succeeded: bool
 
 
 StepOutput = (

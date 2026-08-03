@@ -85,8 +85,13 @@ async def test_list_inbox_includes_enrichment_fields(api_client, db_session) -> 
             ),
             Step(
                 run_id=run.id,
+                node_name="plan",
+                output={"actions": ["create_work_order", "send_reply"]},
+            ),
+            Step(
+                run_id=run.id,
                 node_name="execute",
-                output={"actions_taken": ["create_work_order", "send_reply"]},
+                output={"succeeded": True},
             ),
         ]
     )

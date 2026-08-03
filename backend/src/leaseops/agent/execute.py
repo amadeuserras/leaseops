@@ -49,7 +49,6 @@ async def _create_work_order(session: AsyncSession, state: AgentState) -> None:
 
 
 async def execute(state: AgentState) -> ExecuteOutput:
-    actions_taken: list[PlanAction] = []
     async with SessionLocal() as session:
         for action in state.actions:
             if action == PlanAction.SEND_REPLY:
@@ -58,8 +57,7 @@ async def execute(state: AgentState) -> ExecuteOutput:
                 await _create_work_order(session, state)
             else:
                 raise RuntimeError(f"unknown action: {action}")
-            actions_taken.append(action)
         await emails_repo.set_email_status(
             session, state.email_id, EmailStatus.PROCESSED
         )
-    return ExecuteOutput(actions_taken=actions_taken)
+    return ExecuteOutput(succeeded=True)

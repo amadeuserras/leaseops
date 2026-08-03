@@ -34,7 +34,7 @@ def _severity_from_output(output: dict[str, Any] | None) -> str | None:
 def _actions_from_output(output: dict[str, Any] | None) -> list[str]:
     if output is None:
         return []
-    raw = cast(list[Any], output.get("actions_taken") or [])
+    raw = cast(list[Any], output.get("actions") or [])
     return [str(action) for action in raw]
 
 
@@ -101,7 +101,7 @@ async def list_inbox_rows(
             await session.scalars(
                 select(Step).where(
                     Step.run_id.in_(run_ids),
-                    Step.node_name.in_(("extract", "execute")),
+                    Step.node_name.in_(("extract", "plan")),
                 )
             )
         ).all()
@@ -112,7 +112,7 @@ async def list_inbox_rows(
             email_id = email_id_by_run_id[step.run_id]
             if step.node_name == "extract":
                 severity_by_email_id[email_id] = _severity_from_output(step.output)
-            elif step.node_name == "execute":
+            elif step.node_name == "plan":
                 actions_by_email_id[email_id] = _actions_from_output(step.output)
 
     return [
@@ -120,7 +120,11 @@ async def list_inbox_rows(
             email=email,
             unit=unit_by_email_id.get(email.id),
             severity=severity_by_email_id.get(email.id),
-            actions_taken=actions_by_email_id.get(email.id, []),
+            actions_taken=(
+                actions_by_email_id.get(email.id, [])
+                if email.status == EmailStatus.PROCESSED
+                else []
+            ),
         )
         for email in emails
     ]
@@ -153,14 +157,16 @@ async def get_inbox_row(session: AsyncSession, email_id: UUID) -> InboxRow | Non
             await session.scalars(
                 select(Step).where(
                     Step.run_id == latest_run_id,
-                    Step.node_name.in_(("extract", "execute")),
+                    Step.node_name.in_(("extract", "plan")),
                 )
             )
         ).all()
         for step in steps:
             if step.node_name == "extract":
                 severity = _severity_from_output(step.output)
-            elif step.node_name == "execute":
+            elif (
+                step.node_name == "plan" and email.status == EmailStatus.PROCESSED
+            ):
                 actions_taken = _actions_from_output(step.output)
 
     return InboxRow(

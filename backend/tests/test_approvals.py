@@ -60,7 +60,7 @@ def _approval_node(state: AgentState) -> dict[str, Any]:
 
 
 def _execute_node(state: AgentState) -> dict[str, Any]:
-    return {"actions_taken": [action.value for action in state.actions]}
+    return {"succeeded": True}
 
 
 def build_test_graph(checkpointer: Any) -> Any:
@@ -142,12 +142,7 @@ async def test_list_approve_flow(api_client, db_session) -> None:
     steps = await steps_repo.list_steps_for_run(db_session, UUID(run["id"]))
     execute_steps = [step for step in steps if step.node_name == "execute"]
     assert len(execute_steps) == 1
-    assert execute_steps[0].output == {
-        "actions_taken": [
-            PlanAction.CREATE_WORK_ORDER,
-            PlanAction.SEND_REPLY,
-        ]
-    }
+    assert execute_steps[0].output == {"succeeded": True}
 
     approvals_response = await api_client.get("/approvals")
     assert approvals_response.json()["items"] == []
@@ -200,12 +195,7 @@ async def test_approve_after_stream_persists_execute(db_session, runner) -> None
 
     steps = await steps_repo.list_steps_for_run(db_session, run.id)
     assert [step.node_name for step in steps] == ["seed", "approval", "execute"]
-    assert steps[-1].output == {
-        "actions_taken": [
-            PlanAction.CREATE_WORK_ORDER,
-            PlanAction.SEND_REPLY,
-        ]
-    }
+    assert steps[-1].output == {"succeeded": True}
 
 
 async def test_approve_unknown_run_is_404(api_client) -> None:

@@ -224,7 +224,7 @@ class GraphRunner:
                 session,
                 run_id=run.id,
                 node_name="execute",
-                output=ExecuteOutput(actions_taken=state.actions_taken).model_dump(
+                output=ExecuteOutput(succeeded=state.succeeded).model_dump(
                     mode="json"
                 ),
             )

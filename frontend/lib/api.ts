@@ -81,7 +81,7 @@ export interface ApprovalCard {
 }
 
 export interface ExecuteOutput {
-  actions_taken: PlanAction[];
+  succeeded: boolean;
 }
 
 interface StepBase {
