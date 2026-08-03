@@ -130,7 +130,7 @@ function InboxRow({ email }: { email: EmailResponse }) {
   const status = STATUS_STYLE[email.status];
   const severity = email.severity ? SEVERITY_STYLE[email.severity] : null;
   const showSeverity = email.status !== 'pending' && severity !== null;
-  const actions = email.status === 'processed' ? email.actions_taken : [];
+  const actions = email.actions_taken;
 
   return (
     <Link

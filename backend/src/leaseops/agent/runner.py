@@ -224,14 +224,9 @@ class GraphRunner:
                 session,
                 run_id=run.id,
                 node_name="execute",
-                output=ExecuteOutput(succeeded=state.succeeded).model_dump(
-                    mode="json"
-                ),
+                output=ExecuteOutput(succeeded=state.succeeded).model_dump(mode="json"),
             )
-        else:
-            await emails_repo.set_email_status(
-                session, run.email_id, EmailStatus.PENDING
-            )
+        await emails_repo.set_email_status(session, run.email_id, EmailStatus.PROCESSED)
         return await runs_repo.set_run_status(session, run, RunStatus.DONE, ended=True)
 
     async def _pending_request(self, run_id: UUID) -> ApprovalCard | None:

@@ -38,6 +38,18 @@ def _actions_from_output(output: dict[str, Any] | None) -> list[str]:
     return [str(action) for action in raw]
 
 
+def _execute_succeeded(output: dict[str, Any] | None) -> bool:
+    return bool(output and output.get("succeeded") is True)
+
+
+def _actions_taken(
+    *,
+    planned: list[str],
+    executed: bool,
+) -> list[str]:
+    return planned if executed else []
+
+
 async def create_email(session: AsyncSession, payload: EmailCreate) -> Email:
     email = Email(
         sender=payload.sender,
@@ -95,13 +107,14 @@ async def list_inbox_rows(
     run_ids = list(run_id_by_email_id.values())
 
     severity_by_email_id: dict[UUID, str | None] = {}
-    actions_by_email_id: dict[UUID, list[str]] = {}
+    planned_by_email_id: dict[UUID, list[str]] = {}
+    executed_by_email_id: dict[UUID, bool] = {}
     if run_ids:
         steps = (
             await session.scalars(
                 select(Step).where(
                     Step.run_id.in_(run_ids),
-                    Step.node_name.in_(("extract", "plan")),
+                    Step.node_name.in_(("extract", "plan", "execute")),
                 )
             )
         ).all()
@@ -113,17 +126,18 @@ async def list_inbox_rows(
             if step.node_name == "extract":
                 severity_by_email_id[email_id] = _severity_from_output(step.output)
             elif step.node_name == "plan":
-                actions_by_email_id[email_id] = _actions_from_output(step.output)
+                planned_by_email_id[email_id] = _actions_from_output(step.output)
+            elif step.node_name == "execute":
+                executed_by_email_id[email_id] = _execute_succeeded(step.output)
 
     return [
         InboxRow(
             email=email,
             unit=unit_by_email_id.get(email.id),
             severity=severity_by_email_id.get(email.id),
-            actions_taken=(
-                actions_by_email_id.get(email.id, [])
-                if email.status == EmailStatus.PROCESSED
-                else []
+            actions_taken=_actions_taken(
+                planned=planned_by_email_id.get(email.id, []),
+                executed=executed_by_email_id.get(email.id, False),
             ),
         )
         for email in emails
@@ -151,29 +165,30 @@ async def get_inbox_row(session: AsyncSession, email_id: UUID) -> InboxRow | Non
     )
 
     severity: str | None = None
-    actions_taken: list[str] = []
+    planned: list[str] = []
+    executed = False
     if latest_run_id is not None:
         steps = (
             await session.scalars(
                 select(Step).where(
                     Step.run_id == latest_run_id,
-                    Step.node_name.in_(("extract", "plan")),
+                    Step.node_name.in_(("extract", "plan", "execute")),
                 )
             )
         ).all()
         for step in steps:
             if step.node_name == "extract":
                 severity = _severity_from_output(step.output)
-            elif (
-                step.node_name == "plan" and email.status == EmailStatus.PROCESSED
-            ):
-                actions_taken = _actions_from_output(step.output)
+            elif step.node_name == "plan":
+                planned = _actions_from_output(step.output)
+            elif step.node_name == "execute":
+                executed = _execute_succeeded(step.output)
 
     return InboxRow(
         email=email,
         unit=unit,
         severity=severity,
-        actions_taken=actions_taken,
+        actions_taken=_actions_taken(planned=planned, executed=executed),
     )
 
 

@@ -107,6 +107,52 @@ async def test_list_inbox_includes_enrichment_fields(api_client, db_session) -> 
     assert body["agent_last_ran_at"] == ended_at.isoformat().replace("+00:00", "Z")
 
 
+async def test_list_inbox_actions_taken_requires_execute_success(
+    api_client, db_session
+) -> None:
+    from leaseops.db.models import Run, Step
+    from leaseops.models.enums import RunStatus
+
+    create_response = await api_client.post(
+        "/inbox",
+        json=_email_payload(status=EmailStatus.PROCESSED),
+    )
+    email_id = create_response.json()["id"]
+
+    run = Run(email_id=email_id, status=RunStatus.DONE)
+    db_session.add(run)
+    await db_session.commit()
+    await db_session.refresh(run)
+
+    db_session.add(
+        Step(
+            run_id=run.id,
+            node_name="plan",
+            output={"actions": ["create_work_order", "send_reply"]},
+        )
+    )
+    await db_session.commit()
+
+    response = await api_client.get("/inbox")
+    assert response.status_code == 200
+    item = next(i for i in response.json()["items"] if i["id"] == email_id)
+    assert item["actions_taken"] == []
+
+    db_session.add(
+        Step(
+            run_id=run.id,
+            node_name="execute",
+            output={"succeeded": False},
+        )
+    )
+    await db_session.commit()
+
+    response = await api_client.get("/inbox")
+    assert response.status_code == 200
+    item = next(i for i in response.json()["items"] if i["id"] == email_id)
+    assert item["actions_taken"] == []
+
+
 async def test_get_email(api_client) -> None:
     create_response = await api_client.post("/inbox", json=_email_payload())
     email_id = create_response.json()["id"]

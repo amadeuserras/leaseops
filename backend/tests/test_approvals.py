@@ -137,7 +137,7 @@ async def test_list_approve_flow(api_client, db_session) -> None:
     assert approve_response.json()["status"] == RunStatus.DONE
 
     await db_session.refresh(email)
-    assert email.status == EmailStatus.PROCESSING
+    assert email.status == EmailStatus.PROCESSED
 
     steps = await steps_repo.list_steps_for_run(db_session, UUID(run["id"]))
     execute_steps = [step for step in steps if step.node_name == "execute"]
@@ -163,7 +163,7 @@ async def test_reject_completes(api_client, db_session) -> None:
     assert reject_response.json()["status"] == RunStatus.DONE
 
     await db_session.refresh(email)
-    assert email.status == EmailStatus.PENDING
+    assert email.status == EmailStatus.PROCESSED
 
 
 async def test_stream_persists_approval_step(db_session, runner) -> None:
