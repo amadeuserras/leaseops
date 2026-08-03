@@ -161,7 +161,7 @@ function leaseCallsFor(step: StepResponse): ToolCall[] {
 
 function gateNote(awaiting: boolean, executed: boolean): string {
   if (awaiting) return 'Waiting for human approval';
-  return executed ? 'Approved — actions executed' : 'Closed without executing actions';
+  return executed ? 'Approved' : 'Rejected';
 }
 
 function replaceStep(
@@ -366,26 +366,25 @@ function headerRight(step: TimelineStep): string {
   return step.at === null ? '' : `${step.at.toFixed(2)}s`;
 }
 
-function gateStyle(status: TimelineStatus) {
-  if (status === 'paused') {
+function gateStyle(kind: 'paused' | 'approved' | 'rejected') {
+  if (kind === 'paused') {
     return { bg: '#FCF3E3', border: '#EFDDB0', text: '#8A5A16', pulse: true };
   }
-  if (status === 'completed') {
+  if (kind === 'approved') {
     return { bg: '#E9F5EC', border: '#BFE2C8', text: '#256B3A', pulse: false };
   }
-  return {
-    bg: '#EDEEF1',
-    border: 'rgba(0,0,0,0.09)',
-    text: 'rgba(23,24,27,0.5)',
-    pulse: false,
-  };
+  return { bg: '#FBEAEA', border: 'rgba(178,58,50,0.25)', text: '#8E2A24', pulse: false };
 }
 
 export function toDisplaySteps(state: RunState): DisplayStep[] {
+  const approved = state.steps.some((step) => step.node === 'execute');
+
   return state.steps.map((step, index) => {
     const running = step.status === 'running';
     const isLease = step.node === 'lease_check';
     const lease = isLease ? (step.output as LeaseCheckOutput | null) : null;
+    const gateKind =
+      step.status === 'paused' ? 'paused' : approved ? 'approved' : 'rejected';
 
     return {
       key: step.key,
@@ -433,13 +432,11 @@ export function toDisplaySteps(state: RunState): DisplayStep[] {
         step.node === 'plan' && step.output
           ? (step.output as PlanOutput).actions.map(humVal).join(', ')
           : step.node === 'execute' && step.output
-            ? (step.output as ExecuteOutput).succeeded
-              ? 'Succeeded'
-              : 'Failed'
+            ? humVal((step.output as ExecuteOutput).succeeded)
             : null,
       draft: step.node === 'draft' && step.output ? (step.output as DraftOutput).draft : null,
       note: step.note,
-      gate: step.node === 'approval' ? gateStyle(step.status) : null,
+      gate: step.node === 'approval' ? gateStyle(gateKind) : null,
     };
   });
 }

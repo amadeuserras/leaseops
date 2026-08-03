@@ -1,7 +1,7 @@
 'use client';
 
 import { useApprovalActions } from '@/hooks/use-approval-actions';
-import type { ApprovalListResponse, ApprovalRequestResponse } from '@/lib/api';
+import type { ApprovalListResponse, ApprovalRequestResponse, PlanAction } from '@/lib/api';
 import { fmtRelative, humVal } from '@/lib/format';
 import { useState } from 'react';
 
@@ -50,19 +50,62 @@ const SEVERITY_DOT: Record<string, string> = {
   low: '#8B9099',
 };
 
+const ACTION_META: Record<string, { label: string; ink: string; icon: string }> = {
+  create_work_order: {
+    label: 'Create work order',
+    ink: 'rgba(23,24,27,0.35)',
+    icon: 'M14 3.3a3.6 3.6 0 01-4.6 4.4l-5.2 5.2a1.5 1.5 0 11-2.1-2.1l5.2-5.2A3.6 3.6 0 0111.7 1L9.8 3l1.2 2.1L13.2 5z',
+  },
+  send_reply: {
+    label: 'Send reply',
+    ink: 'rgba(23,24,27,0.35)',
+    icon: 'M14.6 1.6L1.6 6.9l5 2.1 2.1 5z M14.6 1.6L6.6 9',
+  },
+  call_tenant: {
+    label: 'Call tenant',
+    ink: '#A3352C',
+    icon: 'M3 3h3l1 3-1.8 1.2a8.5 8.5 0 004.6 4.6L11 10l3 1v3h-2.2A11.5 11.5 0 013 5.2z',
+  },
+  dispatch_emergency_vendor: {
+    label: 'Dispatch emergency vendor',
+    ink: '#A3352C',
+    icon: 'M8 2l6 11H2z M8 6.2v3.4 M8 11.2v.6',
+  },
+  schedule_inspection: {
+    label: 'Schedule inspection',
+    ink: '#2C7BC8',
+    icon: 'M2.5 3.5h11v10.5h-11z M2.5 7h11 M5.5 2v3 M10.5 2v3',
+  },
+  log_consent_request: {
+    label: 'Log consent request',
+    ink: 'rgba(23,24,27,0.35)',
+    icon: 'M3 8.5l3.2 3.2L13 5',
+  },
+};
+
+function actionMeta(action: string) {
+  return (
+    ACTION_META[action] ?? {
+      label: humVal(action),
+      ink: 'rgba(23,24,27,0.35)',
+      icon: 'M3 8h10',
+    }
+  );
+}
+
 type Filters = { category: string; severity: string; responsibility: string };
 
 const FILTER_GROUPS: { key: keyof Filters; label: string; options: string[] }[] = [
   {
     key: 'category',
     label: 'Category',
-    options: ['all', 'emergency', 'maintenance', 'lease_question', 'not_our_problem'],
+    options: ['all', 'emergency', 'maintenance', 'lease_question'],
   },
-  { key: 'severity', label: 'Severity', options: ['all', 'critical', 'high', 'medium', 'low'] },
+  { key: 'severity', label: 'Severity', options: ['all', 'high', 'medium', 'low'] },
   {
     key: 'responsibility',
     label: 'Responsibility',
-    options: ['all', 'landlord', 'tenant', 'shared', 'unclear'],
+    options: ['all', 'landlord', 'tenant'],
   },
 ];
 
@@ -154,10 +197,21 @@ function ApprovalCardView({
   const isEmergency = item.category === 'emergency';
   const busy = actions.isPending(item.run_id);
   const pendingAction = actions.pendingAction(item.run_id);
+  const showResponsibility = !isEmergency && !!item.responsibility;
+  const severityLabel = item.severity
+    ? humVal(item.severity)
+    : isEmergency
+      ? 'Critical'
+      : null;
+  const showSeverity = !!severityLabel;
 
   const cardBorder = isEmergency ? 'rgba(163,53,44,0.28)' : 'rgba(0,0,0,0.09)';
   const cardBg = isEmergency ? '#FDF6F5' : '#FFFFFF';
   const headerBg = isEmergency ? '#FBEFEE' : '#FFFFFF';
+
+  const tenantMeta = [item.unit ? `Unit ${item.unit}` : null, item.address]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <div className={`flex rounded-xl ${isEmergency ? 'pulse-red' : ''}`}>
@@ -181,11 +235,14 @@ function ApprovalCardView({
               {category.label}
             </span>
             <span className="min-w-0 truncate text-[13px] font-semibold">
-              {item.issue_summary ?? item.original_email.slice(0, 80)}
+              {item.tenant_name ?? 'Unknown'}
+              {tenantMeta ? (
+                <span className="text-ink-45 font-normal"> · {tenantMeta}</span>
+              ) : null}
             </span>
           </span>
-          <span className="text-ink-35 flex shrink-0 items-center gap-2.5 text-xs whitespace-nowrap">
-            {item.severity && (
+          <span className="text-ink-35 flex shrink-0 items-center gap-3 text-xs whitespace-nowrap">
+            {showSeverity && (
               <span
                 className="inline-flex items-center gap-1.5"
                 style={{
@@ -193,14 +250,15 @@ function ApprovalCardView({
                   fontWeight: isEmergency ? 600 : 400,
                 }}
               >
-                {!isEmergency && (
-                  <span
-                    className="inline-block h-1.5 w-1.5 rounded-full"
-                    style={{ background: SEVERITY_DOT[item.severity] }}
-                  />
-                )}
-                <span className="text-[13px]">{humVal(item.severity)}</span>
-                <span className="text-ink-28 px-[3px] font-normal">·</span>
+                <span
+                  className="inline-block h-1.5 w-1.5 shrink-0 rounded-full"
+                  style={{
+                    background: isEmergency
+                      ? '#A3352C'
+                      : SEVERITY_DOT[item.severity ?? 'low'],
+                  }}
+                />
+                <span className="text-[13px]">{severityLabel}</span>
               </span>
             )}
             {fmtRelative(item.received_at)}
@@ -211,37 +269,38 @@ function ApprovalCardView({
           className="flex flex-col gap-4 rounded-b-xl border border-t-0 p-4"
           style={{ background: cardBg, borderColor: cardBorder }}
         >
-          <div className="grid grid-cols-[max-content_minmax(0,1fr)] gap-x-2.5 gap-y-2 text-[13px]">
-            <div className="text-ink-45 min-w-0 whitespace-nowrap">Tenant</div>
-            <div className="min-w-0 break-words">
-              {item.tenant_name ?? 'Unknown'}
-              <span className="text-ink-45">
-                {item.unit ? ` · Unit ${item.unit}` : ''}
-                {item.address ? ` · ${item.address}` : ''}
-              </span>
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            className="-m-4 cursor-pointer p-4 text-left"
+          >
+            <div className="grid grid-cols-[max-content_minmax(0,1fr)] gap-x-2.5 gap-y-2 text-[13px]">
+              <div className="text-ink-45 min-w-0 whitespace-nowrap">Issue summary</div>
+              <div className="min-w-0 break-words">
+                {item.issue_summary ?? item.original_email.slice(0, 80)}
+                {item.appliance_or_system ? (
+                  <span className="text-ink-45"> · {humVal(item.appliance_or_system)}</span>
+                ) : null}
+              </div>
+
+              {showResponsibility && (
+                <>
+                  <div className="text-ink-45 min-w-0 whitespace-nowrap">Responsibility</div>
+                  <div className="flex min-w-0 flex-wrap items-center gap-[7px]">
+                    <span>{humVal(item.responsibility)}</span>
+                    {item.citation && (
+                      <span
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-ink-50 hover:text-ink inline-flex cursor-pointer items-center gap-1 rounded-[20px] bg-black/[0.055] px-2 py-px text-[11.5px] font-medium whitespace-nowrap hover:bg-black/10"
+                      >
+                        {item.citation.replace(/^\[|\]$/g, '')}
+                      </span>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
-
-            {item.responsibility && (
-              <>
-                <div className="text-ink-45 min-w-0 whitespace-nowrap">Responsibility</div>
-                <div className="flex min-w-0 flex-wrap items-center gap-[7px]">
-                  <span>{humVal(item.responsibility)}</span>
-                  {item.citation && (
-                    <span className="text-ink-50 hover:text-ink inline-flex cursor-pointer items-center gap-1 rounded-[20px] bg-black/[0.055] px-2 py-px text-[11.5px] font-medium whitespace-nowrap hover:bg-black/10">
-                      {item.citation.replace(/^\[|\]$/g, '')}
-                    </span>
-                  )}
-                </div>
-              </>
-            )}
-
-            {item.appliance_or_system && (
-              <>
-                <div className="text-ink-45 min-w-0 whitespace-nowrap">Issue type</div>
-                <div className="min-w-0 break-words">{humVal(item.appliance_or_system)}</div>
-              </>
-            )}
-          </div>
+          </button>
 
           {open && (
             <div className="flex flex-col gap-3.5">
@@ -259,29 +318,48 @@ function ApprovalCardView({
                   </div>
                 </div>
               )}
+              {item.actions.length > 0 && (
+                <div>
+                  <div className="text-ink-45 mb-2 text-[13px]">Actions</div>
+                  <div className="flex min-w-0 flex-wrap gap-1.5">
+                    {item.actions.map((action: PlanAction) => {
+                      const meta = actionMeta(action);
+                      return (
+                        <span
+                          key={action}
+                          className="inline-flex items-center gap-1.5 rounded-[20px] border border-black/[0.09] bg-[#F4F4F4] py-[3px] pr-[11px] pl-[9px] text-[11.5px] font-medium whitespace-nowrap text-[rgba(23,24,27,0.72)]"
+                        >
+                          <svg
+                            viewBox="0 0 16 16"
+                            width="12"
+                            height="12"
+                            fill="none"
+                            stroke={meta.ink}
+                            strokeWidth="1.4"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="shrink-0"
+                            aria-hidden
+                          >
+                            <path d={meta.icon} />
+                          </svg>
+                          {meta.label}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
           {open && (
             <div className="flex flex-wrap items-center gap-2">
-              {/*
-                The planned actions are what approving will execute — the backend
-                runs them all on POST /approvals/{run_id}/approve. There is no
-                per-action endpoint, so these are shown, not clicked.
-              */}
-              {item.actions.map((action) => (
-                <span
-                  key={action}
-                  className="border-hairline bg-page text-ink-60 flex items-center gap-1.5 rounded-lg border px-3.5 py-1.5 text-[12.5px] font-medium whitespace-nowrap"
-                >
-                  {humVal(action)}
-                </span>
-              ))}
               <button
                 type="button"
                 disabled={busy}
                 onClick={() => actions.approve(item.run_id)}
-                className="border-green-border bg-green-bg text-green-ink hover:border-green flex cursor-pointer items-center gap-1.5 rounded-lg border px-3.5 py-1.5 text-[12.5px] font-semibold whitespace-nowrap disabled:cursor-default disabled:opacity-50"
+                className="bg-accent border-accent hover:opacity-[0.87] flex cursor-pointer items-center gap-1.5 rounded-lg border px-4 py-[7px] text-[12.5px] font-semibold whitespace-nowrap text-white transition-opacity disabled:cursor-default disabled:opacity-50"
               >
                 {pendingAction === 'approve' ? 'Approving…' : 'Approve'}
               </button>
@@ -289,7 +367,7 @@ function ApprovalCardView({
                 type="button"
                 disabled={busy}
                 onClick={() => actions.reject(item.run_id)}
-                className="border-hairline bg-surface text-ink-60 hover:bg-raised flex cursor-pointer items-center gap-1.5 rounded-lg border px-3.5 py-1.5 text-[12.5px] font-medium whitespace-nowrap hover:border-black/16 disabled:cursor-default disabled:opacity-50"
+                className="border-black/14 text-[rgba(23,24,27,0.72)] hover:border-[rgba(178,58,50,0.35)] hover:bg-[#FBEAEA] hover:text-[#8E2A24] flex cursor-pointer items-center gap-1.5 rounded-lg border bg-white px-4 py-[7px] text-[12.5px] font-medium whitespace-nowrap transition-[background,border-color] disabled:cursor-default disabled:opacity-50"
               >
                 {pendingAction === 'reject' ? 'Rejecting…' : 'Reject'}
               </button>

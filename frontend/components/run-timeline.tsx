@@ -84,7 +84,7 @@ function StepRow({ step }: { step: DisplayStep }) {
               <FieldGrid
                 fields={[
                   {
-                    k: step.node === 'plan' ? 'Suggested actions' : 'Actions taken',
+                    k: step.node === 'plan' ? 'Suggested actions' : 'Succeeded',
                     v: step.actions,
                     muted: false,
                   },
@@ -110,12 +110,14 @@ function StepRow({ step }: { step: DisplayStep }) {
                 }}
               >
                 <span className="min-w-0">{step.note}</span>
-                <Link
-                  href="/approvals"
-                  className="flex shrink-0 items-center gap-1.5 text-xs font-semibold underline underline-offset-2 opacity-70 hover:opacity-100"
-                >
-                  Open →
-                </Link>
+                {step.status === 'paused' && (
+                  <Link
+                    href="/approvals"
+                    className="flex shrink-0 items-center gap-1.5 text-xs font-semibold underline underline-offset-2 opacity-70 hover:opacity-100"
+                  >
+                    Open →
+                  </Link>
+                )}
               </div>
             )}
           </div>

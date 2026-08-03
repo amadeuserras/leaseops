@@ -85,7 +85,7 @@
 
       <div style="border:1px solid rgba(0,0,0,0.09);border-radius:12px;overflow-x:auto;background:#FFFFFF;">
         <div style="display:grid;grid-template-columns:180px 1fr 110px 90px 150px 180px;gap:16px;padding:10px 18px;background:#F4F5F7;border-bottom:1px solid rgba(0,0,0,0.09);font-size:11px;font-weight:600;color:rgba(23,24,27,0.45);text-transform:uppercase;letter-spacing:0.03em;min-width:960px;">
-          <div>Sender</div><div>Subject</div><div>Received</div><div>Severity</div><div>Status</div><div>Actions taken</div>
+          <div>Sender</div><div>Subject</div><div>Received</div><div>Urgency</div><div>Status</div><div>Actions taken</div>
         </div>
         <sc-for list="{{ filteredEmails }}" as="em" hint-placeholder-count="8">
           <div onClick="{{ em.onClick }}" style="display:grid;grid-template-columns:180px 1fr 110px 90px 150px 180px;gap:16px;padding:14px 18px;border-bottom:1px solid rgba(0,0,0,0.07);cursor:pointer;align-items:center;min-width:960px;" style-hover="background:#F7F8FA;">
@@ -99,13 +99,13 @@
             </div>
             <div style="font-size:12px;color:rgba(23,24,27,0.55);">{{ em.time }}</div>
             <div>
-              <sc-if value="{{ em.showSeverity }}" hint-placeholder-val="{{ true }}">
-                <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:{{ em.severityColor }};font-weight:500;">
-                  <div style="width:6px;height:6px;border-radius:50%;background:{{ em.severityColor }};flex-shrink:0;"></div>
-                  {{ em.severityLabel }}
+              <sc-if value="{{ em.showUrgency }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:{{ em.urgencyColor }};font-weight:500;">
+                  <div style="width:6px;height:6px;border-radius:50%;background:{{ em.urgencyColor }};flex-shrink:0;"></div>
+                  {{ em.urgencyLabel }}
                 </div>
               </sc-if>
-              <sc-if value="{{ em.noSeverity }}" hint-placeholder-val="{{ false }}">
+              <sc-if value="{{ em.noUrgency }}" hint-placeholder-val="{{ false }}">
                 <div style="font-size:12px;color:rgba(23,24,27,0.28);">—</div>
               </sc-if>
             </div>
@@ -307,41 +307,38 @@
           <div style="padding:34px;text-align:center;font-size:12.5px;color:rgba(23,24,27,0.35);border:1px dashed rgba(0,0,0,0.12);border-radius:12px;">{{ emptyLabel }}</div>
         </sc-if>
         <sc-for list="{{ shown }}" as="card" hint-placeholder-count="5">
-          <div onClick="{{ card.onToggle }}" style="display:flex;border-radius:12px;cursor:pointer;animation:{{ card.cardAnim }};">
+          <div style="display:flex;border-radius:12px;animation:{{ card.cardAnim }};">
             <div style="flex:1;min-width:0;">
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 14px;background:{{ card.cardHeaderBg }};border:1px solid {{ card.cardBorder }};border-radius:12px 12px 0 0;">
+              <div onClick="{{ card.onToggle }}" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 14px;background:{{ card.cardHeaderBg }};border:1px solid {{ card.cardBorder }};border-radius:12px 12px 0 0;">
                 <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 auto;overflow:hidden;">
                   <span style="display:inline-flex;align-items:center;border-radius:20px;padding:2px 9px;font-size:11.5px;font-weight:500;white-space:nowrap;flex-shrink:0;background:{{ card.catBg }};color:{{ card.catInk }};border:1px solid {{ card.catBorder }};">{{ card.categoryLabel }}</span>
-                  <div style="font-size:13px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ card.issue_summary }}</div>
+                  <div style="font-size:13px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ card.tenantName }}<span style="font-weight:400;color:rgba(23,24,27,0.45);"> · Unit {{ card.unit }} · {{ card.address }}</span></div>
                 </div>
-                <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;font-size:12px;color:rgba(23,24,27,0.35);white-space:nowrap;">
+                <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;font-size:12px;color:rgba(23,24,27,0.35);white-space:nowrap;">
                   <sc-if value="{{ card.hasSeverity }}" hint-placeholder-val="{{ true }}">
-                    <span style="display:inline-flex;align-items:center;gap:6px;color:{{ card.sevInk }};font-weight:{{ card.sevWeight }};">
-                      <sc-if value="{{ card.showSevDot }}" hint-placeholder-val="{{ true }}">
-                        <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:{{ card.sevDotColor }};"></span>
-                      </sc-if>
-                      <span style="font-size:13px;">{{ card.severityLabel }}</span><span style="padding:0 3px;color:rgba(23,24,27,0.3);font-weight:400;">·</span>
-                    </span>
+                    <div style="display:flex;align-items:center;gap:6px;color:{{ card.sevInk }};font-weight:{{ card.sevWeight }};">
+                      <span style="width:6px;height:6px;border-radius:50%;background:{{ card.sevDotColor }};flex-shrink:0;"></span>{{ card.severityLabel }}
+                    </div>
                   </sc-if>
                   {{ card.receivedAt }}
                 </div>
               </div>
 
               <div style="background:{{ card.cardBg }};border:1px solid {{ card.cardBorder }};border-top:none;border-radius:0 0 12px 12px;padding:16px;display:flex;flex-direction:column;gap:16px;">
-                <div style="display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 10px;font-size:13px;">
-                  <div style="color:rgba(23,24,27,0.45);min-width:0;white-space:nowrap;">Tenant</div>
-                  <div style="min-width:0;overflow-wrap:break-word;">{{ card.tenantName }}<span style="color:rgba(23,24,27,0.45);"> · Unit {{ card.unit }} · {{ card.address }}</span></div>
-                  <sc-if value="{{ card.hasResponsibility }}" hint-placeholder-val="{{ true }}">
-                    <div style="color:rgba(23,24,27,0.45);min-width:0;white-space:nowrap;">Responsibility</div>
-                  </sc-if>
-                  <sc-if value="{{ card.hasResponsibility }}" hint-placeholder-val="{{ true }}">
-                    <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-width:0;">
-                      <span>{{ card.responsibility }}</span>
-                      <span onClick="{{ card.onCitation }}" style="display:inline-flex;align-items:center;gap:4px;border-radius:20px;background:rgba(0,0,0,0.055);padding:1px 8px;font-family:'Inter',sans-serif;font-size:11.5px;font-weight:500;white-space:nowrap;vertical-align:middle;color:rgba(23,24,27,0.5);cursor:pointer;" style-hover="background:rgba(0,0,0,0.1);color:#17181B;">{{ card.citation }}</span>
-                    </div>
-                  </sc-if>
-                  <div style="color:rgba(23,24,27,0.45);min-width:0;white-space:nowrap;">Issue type</div>
-                  <div style="min-width:0;overflow-wrap:break-word;">{{ card.issueCategory }}</div>
+                <div onClick="{{ card.onToggle }}" style="cursor:pointer;margin:-16px -16px -16px;padding:16px;display:grid;grid-template-columns:minmax(0,1fr);gap:8px 32px;font-size:13px;align-items:start;">
+                  <div style="display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 10px;min-width:0;">
+                    <div style="color:rgba(23,24,27,0.45);white-space:nowrap;">Issue summary</div>
+                    <div style="min-width:0;overflow-wrap:break-word;">{{ card.issue_summary }}<span style="color:rgba(23,24,27,0.45);"> · {{ card.issueCategory }}</span></div>
+                    <sc-if value="{{ card.hasResponsibility }}" hint-placeholder-val="{{ true }}">
+                      <div style="color:rgba(23,24,27,0.45);white-space:nowrap;">Responsibility</div>
+                    </sc-if>
+                    <sc-if value="{{ card.hasResponsibility }}" hint-placeholder-val="{{ true }}">
+                      <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-width:0;">
+                        <span>{{ card.responsibility }}</span>
+                        <span onClick="{{ card.onCitation }}" style="display:inline-flex;align-items:center;gap:4px;border-radius:20px;background:rgba(0,0,0,0.055);padding:1px 8px;font-size:11.5px;font-weight:500;white-space:nowrap;color:rgba(23,24,27,0.5);cursor:pointer;" style-hover="background:rgba(0,0,0,0.1);color:#17181B;">{{ card.citation }}</span>
+                      </div>
+                    </sc-if>
+                  </div>
                 </div>
 
                 <sc-if value="{{ card.isOpen }}" hint-placeholder-val="{{ false }}">
@@ -354,19 +351,35 @@
                       <div style="font-size:13px;color:rgba(23,24,27,0.45);margin-bottom:8px;">Reply draft</div>
                       <div style="font-size:13px;line-height:1.7;color:rgba(23,24,27,0.82);white-space:pre-line;border-left:1.5px solid rgba(0,0,0,0.12);padding-left:12px;">{{ card.draft }}</div>
                     </div>
+                    <div>
+                      <div style="font-size:13px;color:rgba(23,24,27,0.45);margin-bottom:8px;">Actions</div>
+                      <div style="display:flex;flex-wrap:wrap;gap:6px;min-width:0;">
+                        <sc-for list="{{ card.actionBadges }}" as="act" hint-placeholder-count="2">
+                          <span style="display:inline-flex;align-items:center;gap:6px;border-radius:20px;padding:3px 11px 3px 9px;font-size:11.5px;font-weight:500;white-space:nowrap;background:rgba(0,0,0,0.045);border:1px solid rgba(0,0,0,0.09);color:rgba(23,24,27,0.72);">
+                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="{{ act.ink }}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="{{ act.icon }}"></path></svg>{{ act.label }}
+                          </span>
+                        </sc-for>
+                      </div>
+                    </div>
                   </div>
                 </sc-if>
 
                 <sc-if value="{{ card.isOpen }}" hint-placeholder-val="{{ false }}">
                 <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
-                  <sc-for list="{{ card.actions }}" as="act" hint-placeholder-count="2">
-                    <div onClick="{{ act.onClick }}" style="display:flex;align-items:center;gap:6px;padding:6px 13px;border-radius:8px;font-size:12.5px;font-weight:500;background:{{ act.bgA }};border:1px solid {{ act.borderA }};color:{{ act.inkA }};cursor:{{ act.cursorA }};white-space:nowrap;" style-hover="{{ act.hoverA }}">
-                      <sc-if value="{{ act.isDone }}" hint-placeholder-val="{{ false }}">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;"><path d="M5 13l4 4L19 7" stroke="#2E8B4F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                      </sc-if>
-                      {{ act.label }}
+                  <sc-if value="{{ card.undecided }}" hint-placeholder-val="{{ true }}">
+                    <div onClick="{{ card.onApprove }}" style="display:flex;align-items:center;gap:6px;padding:7px 16px;border-radius:8px;font-size:12.5px;font-weight:600;background:{{ accent }};border:1px solid {{ accent }};color:#FFFFFF;cursor:pointer;white-space:nowrap;transition:opacity 0.13s ease;" style-hover="opacity:0.87;">Approve</div>
+                  </sc-if>
+                  <sc-if value="{{ card.undecided }}" hint-placeholder-val="{{ true }}">
+                    <div onClick="{{ card.onReject }}" style="display:flex;align-items:center;gap:6px;padding:7px 16px;border-radius:8px;font-size:12.5px;font-weight:500;background:#FFFFFF;border:1px solid rgba(0,0,0,0.14);color:rgba(23,24,27,0.72);cursor:pointer;white-space:nowrap;transition:background 0.13s ease,border-color 0.13s ease;" style-hover="background:#FBEAEA;border-color:rgba(178,58,50,0.35);color:#8E2A24;">Reject</div>
+                  </sc-if>
+                  <sc-if value="{{ card.apDecided }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;align-items:center;gap:8px;padding:7px 13px;border-radius:8px;font-size:12.5px;font-weight:500;background:{{ card.apDecidedBg }};border:1px solid {{ card.apDecidedBorder }};color:{{ card.apDecidedInk }};white-space:nowrap;">
+                      <span style="width:6px;height:6px;border-radius:50%;background:{{ card.apDecidedDot }};flex-shrink:0;"></span>{{ card.apDecidedLabel }}
                     </div>
-                  </sc-for>
+                  </sc-if>
+                  <sc-if value="{{ card.apDecided }}" hint-placeholder-val="{{ false }}">
+                    <div onClick="{{ card.onUndo }}" style="font-size:12.5px;color:rgba(23,24,27,0.42);cursor:pointer;text-decoration:underline;text-underline-offset:2px;" style-hover="color:#17181B;">Undo</div>
+                  </sc-if>
                 </div>
                 </sc-if>
               </div>
@@ -399,22 +412,22 @@ class Component extends DCLogic {
   };
 
   emails = [
-    { id:'maria', sender:'Maria Martinez', email:'m.martinez@tenantmail.com', unit:'4B', subject:'Gas smell in kitchen', preview:'There\'s a strong gas smell coming from the kitchen stove, please send someone ASAP…', time:'08:12', status:'Awaiting approval', severity:'emergency', body:'Hi, I need someone urgently — there\'s a strong gas smell coming from around the kitchen stove. It\'s been getting stronger over the last hour. I\'ve turned off the stove and cracked a window but I\'m worried. Can someone come check this today? — Maria, Unit 4B' },
-    { id:'james', sender:'James Okafor', email:'j.okafor@tenantmail.com', unit:'12A', subject:'Radiator leaking onto bedroom floor', preview:'The radiator in the back bedroom has been leaking onto the floor since last night…', time:'09:05', status:'Awaiting approval', severity:'high', body:'Hello, the radiator in the back bedroom has been leaking onto the floor since last night. I\'ve put towels down but it keeps coming back. Could someone take a look this week? Thanks, James, Unit 12A' },
-    { id:'priya', sender:'Priya Chandrasekaran', email:'p.chandra@tenantmail.com', unit:'7C', subject:'Intercom not buzzing guests in', preview:'Front door intercom isn\'t buzzing guests in, been broken for 3 days now…', time:'07:48', status:'Processed', actions:["Work order created","Reply sent"], severity:'low', body:'Hi there, the front door intercom panel isn\'t buzzing guests in — it\'s been broken for about 3 days now. My guests have had to call me to come down and let them in. Could this get fixed? Thank you, Priya, Unit 7C' },
-    { id:'david', sender:'David Chen', email:'d.chen@tenantmail.com', unit:'3A', subject:'Dishwasher not draining', preview:'Dishwasher fills but won\'t drain, water pooling at the bottom after every cycle…', time:'10:22', status:'Processing', severity:'medium', body:'Hi, my dishwasher fills with water but won\'t drain — there\'s standing water pooling at the bottom after every cycle. Started two days ago. Let me know when someone can come take a look. David, Unit 3A' },
-    { id:'aisha', sender:'Aisha Bello', email:'a.bello@tenantmail.com', unit:'9D', subject:'Noise complaint — upstairs neighbor', preview:'The neighbors upstairs have been really loud at night again, wondering if…', time:'10:41', status:'Pending', severity:'low', body:'Hi, the neighbors upstairs have been really loud again late at night this week. Wondering if building management could send a reminder about quiet hours? Thanks, Aisha, Unit 9D' },
-    { id:'tom', sender:'Tom Reilly', email:'t.reilly@tenantmail.com', unit:'2B', subject:'Parking spot reassignment request', preview:'Is it possible to switch my parking spot? Mine is quite far from the entrance…', time:'06:55', status:'Processed', actions:["Reply sent"], severity:'low', body:'Hi, is it possible to switch my assigned parking spot? Mine is quite far from the entrance and I noticed a few closer spots seem to be open. Thanks, Tom, Unit 2B' },
-    { id:'sophie', sender:'Sophie Laurent', email:'s.laurent@tenantmail.com', unit:'5A', subject:'AC unit not cooling', preview:'AC has stopped cooling properly the past two days, it\'s just blowing warm air…', time:'09:37', status:'Awaiting approval', severity:'medium', body:'Hello, the AC unit has stopped cooling properly over the past two days — it\'s just blowing warm air now. It\'s been quite uncomfortable. Could someone take a look soon? Sophie, Unit 5A' },
-    { id:'marcus', sender:'Marcus Webb', email:'m.webb@tenantmail.com', unit:'15C', subject:'Mailbox lock broken', preview:'Mailbox key won\'t turn, think the lock mechanism is broken…', time:'11:03', status:'Pending', severity:'low', body:'Hi, my mailbox key won\'t turn anymore — I think the lock mechanism itself is broken. Could someone from maintenance take a look? Marcus, Unit 15C' },
-    { id:'linda', sender:'Linda Foster', email:'l.foster@tenantmail.com', unit:'6B', subject:'Front door lock not latching', preview:'Front door isn\'t latching properly anymore, has to be slammed shut to lock…', time:'06:20', status:'Processed', actions:["Work order created","Reply sent"], severity:'medium', body:'Hi, my front door isn\'t latching properly anymore — I have to slam it to get it to lock. Worried about security. Could someone fix the latch mechanism? Linda, Unit 6B' },
-    { id:'priya2', sender:'Priya Nadkarni', email:'p.nadkarni@tenantmail.com', unit:'3C', subject:'Can I paint the living room?', preview:'The lease doesn\'t specify any restrictions on paint colors, wondering if I can paint it light blue…', time:'11:20', status:'Awaiting approval', severity:'low', body:'Hi, I was hoping to paint the living room a light blue. I noticed the lease doesn\'t specify any restrictions on paint colors. I\'m happy to restore it to the original color when I move out. Let me know if that\'s alright. Thanks, Priya, Unit 3C' }
+    { id:'maria', sender:'Maria Martinez', email:'m.martinez@tenantmail.com', unit:'4B', subject:'Gas smell in kitchen', preview:'There\'s a strong gas smell coming from the kitchen stove, please send someone ASAP…', time:'08:12', status:'Awaiting approval', urgency:'emergency', body:'Hi, I need someone urgently — there\'s a strong gas smell coming from around the kitchen stove. It\'s been getting stronger over the last hour. I\'ve turned off the stove and cracked a window but I\'m worried. Can someone come check this today? — Maria, Unit 4B' },
+    { id:'james', sender:'James Okafor', email:'j.okafor@tenantmail.com', unit:'12A', subject:'Radiator leaking onto bedroom floor', preview:'The radiator in the back bedroom has been leaking onto the floor since last night…', time:'09:05', status:'Awaiting approval', urgency:'high', body:'Hello, the radiator in the back bedroom has been leaking onto the floor since last night. I\'ve put towels down but it keeps coming back. Could someone take a look this week? Thanks, James, Unit 12A' },
+    { id:'priya', sender:'Priya Chandrasekaran', email:'p.chandra@tenantmail.com', unit:'7C', subject:'Intercom not buzzing guests in', preview:'Front door intercom isn\'t buzzing guests in, been broken for 3 days now…', time:'07:48', status:'Processed', actions:["Work order created","Reply sent"], urgency:'low', body:'Hi there, the front door intercom panel isn\'t buzzing guests in — it\'s been broken for about 3 days now. My guests have had to call me to come down and let them in. Could this get fixed? Thank you, Priya, Unit 7C' },
+    { id:'david', sender:'David Chen', email:'d.chen@tenantmail.com', unit:'3A', subject:'Dishwasher not draining', preview:'Dishwasher fills but won\'t drain, water pooling at the bottom after every cycle…', time:'10:22', status:'Processing', urgency:'medium', body:'Hi, my dishwasher fills with water but won\'t drain — there\'s standing water pooling at the bottom after every cycle. Started two days ago. Let me know when someone can come take a look. David, Unit 3A' },
+    { id:'aisha', sender:'Aisha Bello', email:'a.bello@tenantmail.com', unit:'9D', subject:'Noise complaint — upstairs neighbor', preview:'The neighbors upstairs have been really loud at night again, wondering if…', time:'10:41', status:'Pending', urgency:'low', body:'Hi, the neighbors upstairs have been really loud again late at night this week. Wondering if building management could send a reminder about quiet hours? Thanks, Aisha, Unit 9D' },
+    { id:'tom', sender:'Tom Reilly', email:'t.reilly@tenantmail.com', unit:'2B', subject:'Parking spot reassignment request', preview:'Is it possible to switch my parking spot? Mine is quite far from the entrance…', time:'06:55', status:'Processed', actions:["Reply sent"], urgency:'low', body:'Hi, is it possible to switch my assigned parking spot? Mine is quite far from the entrance and I noticed a few closer spots seem to be open. Thanks, Tom, Unit 2B' },
+    { id:'sophie', sender:'Sophie Laurent', email:'s.laurent@tenantmail.com', unit:'5A', subject:'AC unit not cooling', preview:'AC has stopped cooling properly the past two days, it\'s just blowing warm air…', time:'09:37', status:'Awaiting approval', urgency:'medium', body:'Hello, the AC unit has stopped cooling properly over the past two days — it\'s just blowing warm air now. It\'s been quite uncomfortable. Could someone take a look soon? Sophie, Unit 5A' },
+    { id:'marcus', sender:'Marcus Webb', email:'m.webb@tenantmail.com', unit:'15C', subject:'Mailbox lock broken', preview:'Mailbox key won\'t turn, think the lock mechanism is broken…', time:'11:03', status:'Pending', urgency:'low', body:'Hi, my mailbox key won\'t turn anymore — I think the lock mechanism itself is broken. Could someone from maintenance take a look? Marcus, Unit 15C' },
+    { id:'linda', sender:'Linda Foster', email:'l.foster@tenantmail.com', unit:'6B', subject:'Front door lock not latching', preview:'Front door isn\'t latching properly anymore, has to be slammed shut to lock…', time:'06:20', status:'Processed', actions:["Work order created","Reply sent"], urgency:'medium', body:'Hi, my front door isn\'t latching properly anymore — I have to slam it to get it to lock. Worried about security. Could someone fix the latch mechanism? Linda, Unit 6B' },
+    { id:'priya2', sender:'Priya Nadkarni', email:'p.nadkarni@tenantmail.com', unit:'3C', subject:'Can I paint the living room?', preview:'The lease doesn\'t specify any restrictions on paint colors, wondering if I can paint it light blue…', time:'11:20', status:'Awaiting approval', urgency:'low', body:'Hi, I was hoping to paint the living room a light blue. I noticed the lease doesn\'t specify any restrictions on paint colors. I\'m happy to restore it to the original color when I move out. Let me know if that\'s alright. Thanks, Priya, Unit 3C' }
   ];
 
   traces = {
     maria: { tokens:'4,812', cost:'$0.0142', elapsed:'1.8s', steps:[
       { name:'classify', status:'completed', duration:'118ms', type:'classify', category:'emergency_maintenance' },
-      { name:'extract', status:'completed', duration:'342ms', type:'extract', fields:[{k:'tenant',v:'Maria Martinez'},{k:'unit',v:'4B'},{k:'issue',v:'Gas smell reported in kitchen'},{k:'severity',v:'critical'}] },
+      { name:'extract', status:'completed', duration:'342ms', type:'extract', fields:[{k:'tenant',v:'Maria Martinez'},{k:'unit',v:'4B'},{k:'issue',v:'Gas smell reported in kitchen'},{k:'urgency',v:'critical'}] },
       { name:'lease_check', status:'completed', duration:'891ms', type:'lease_check', calls:[
         { reasoning:'Gas safety is a landlord duty in most leases — confirming the responsibility and the response window.', tool:'lease_qa', question:'Is gas appliance repair a landlord responsibility, and what is the emergency response SLA?', answer:'Landlord is responsible for gas line and appliance safety issues. Emergency response is required within 2 hours of report.', citations:['martinez-lease §8.2'] },
         { reasoning:'Responsibility and SLA are both established — submitting a verdict.', tool:'submit_verdict', argsText:'lease_addresses_issue: true, responsibility: "landlord"' }
@@ -425,7 +438,7 @@ class Component extends DCLogic {
     ]},
     james: { tokens:'3,980', cost:'$0.0121', elapsed:'1.4s', steps:[
       { name:'classify', status:'completed', duration:'95ms', type:'classify', category:'routine_maintenance' },
-      { name:'extract', status:'completed', duration:'288ms', type:'extract', fields:[{k:'tenant',v:'James Okafor'},{k:'unit',v:'12A'},{k:'issue',v:'Radiator leaking onto bedroom floor'},{k:'severity',v:'high'}] },
+      { name:'extract', status:'completed', duration:'288ms', type:'extract', fields:[{k:'tenant',v:'James Okafor'},{k:'unit',v:'12A'},{k:'issue',v:'Radiator leaking onto bedroom floor'},{k:'urgency',v:'high'}] },
       { name:'lease_check', status:'completed', duration:'654ms', type:'lease_check', calls:[
         { reasoning:'Checking who carries radiator repair costs before committing to a dispatch.', tool:'lease_qa', question:'Who is responsible for radiator repair costs, and is there a maintenance dispatch fee?', answer:'Landlord covers radiator repair; a standard $85 dispatch fee applies if tenant-caused damage is ruled out.', citations:['okafor-lease §5.4'] },
         { reasoning:'Responsibility is clear — submitting a verdict.', tool:'submit_verdict', argsText:'lease_addresses_issue: true, responsibility: "landlord"' }
@@ -436,7 +449,7 @@ class Component extends DCLogic {
     ]},
     sophie: { tokens:'3,510', cost:'$0.0104', elapsed:'1.2s', steps:[
       { name:'classify', status:'completed', duration:'102ms', type:'classify', category:'routine_maintenance' },
-      { name:'extract', status:'completed', duration:'265ms', type:'extract', fields:[{k:'tenant',v:'Sophie Laurent'},{k:'unit',v:'5A'},{k:'issue',v:'AC unit not cooling'},{k:'severity',v:'medium'}] },
+      { name:'extract', status:'completed', duration:'265ms', type:'extract', fields:[{k:'tenant',v:'Sophie Laurent'},{k:'unit',v:'5A'},{k:'issue',v:'AC unit not cooling'},{k:'urgency',v:'medium'}] },
       { name:'lease_check', status:'completed', duration:'588ms', type:'lease_check', calls:[
         { reasoning:'Confirming HVAC coverage and whether a vendor is named in the lease.', tool:'lease_qa', question:'Is HVAC repair covered under the lease, and is there a preferred vendor?', answer:'HVAC repairs are landlord-covered; preferred vendor is Coastal Air Systems with a standard $150 callout fee.', citations:['laurent-lease §6.1'] },
         { reasoning:'Coverage and vendor are established — submitting a verdict.', tool:'submit_verdict', argsText:'lease_addresses_issue: true, responsibility: "landlord", vendor: "Coastal Air Systems"' }
@@ -447,7 +460,7 @@ class Component extends DCLogic {
     ]},
     priya: { tokens:'3,120', cost:'$0.0089', elapsed:'0.9s', steps:[
       { name:'classify', status:'completed', duration:'88ms', type:'classify', category:'routine_maintenance' },
-      { name:'extract', status:'completed', duration:'240ms', type:'extract', fields:[{k:'tenant',v:'Priya Chandrasekaran'},{k:'unit',v:'7C'},{k:'issue',v:'Intercom not buzzing in guests'},{k:'severity',v:'low'}] },
+      { name:'extract', status:'completed', duration:'240ms', type:'extract', fields:[{k:'tenant',v:'Priya Chandrasekaran'},{k:'unit',v:'7C'},{k:'issue',v:'Intercom not buzzing in guests'},{k:'urgency',v:'low'}] },
       { name:'lease_check', status:'completed', duration:'402ms', type:'lease_check', calls:[
         { reasoning:'The intercom may be a shared system — checking whether repairs are pre-approved.', tool:'lease_qa', question:'Is intercom repair a shared building system, and can it be auto-approved?', answer:'Intercom is a shared building system; repairs under $200 are pre-approved per building ops policy.', citations:['building-ops-policy §2.3'] },
         { reasoning:'Repair falls under pre-approved building maintenance — submitting a verdict.', tool:'submit_verdict', argsText:'lease_addresses_issue: true, responsibility: "landlord", pre_approved: true' }
@@ -458,7 +471,7 @@ class Component extends DCLogic {
     ]},
     tom: { tokens:'2,640', cost:'$0.0071', elapsed:'0.7s', steps:[
       { name:'classify', status:'completed', duration:'76ms', type:'classify', category:'admin_request' },
-      { name:'extract', status:'completed', duration:'198ms', type:'extract', fields:[{k:'tenant',v:'Tom Reilly'},{k:'unit',v:'2B'},{k:'issue',v:'Requesting closer parking spot'},{k:'severity',v:'low'}] },
+      { name:'extract', status:'completed', duration:'198ms', type:'extract', fields:[{k:'tenant',v:'Tom Reilly'},{k:'unit',v:'2B'},{k:'issue',v:'Requesting closer parking spot'},{k:'urgency',v:'low'}] },
       { name:'lease_check', status:'completed', duration:'320ms', type:'lease_check', calls:[
         { reasoning:'Checking whether reassignment is permitted and whether a fee applies.', tool:'lease_qa', question:'Does the lease allow parking spot reassignment requests, and is there an admin fee?', answer:'Parking reassignment is permitted subject to availability; no fee for the first request per tenancy.', citations:['reilly-lease §11.0'] },
         { reasoning:'Request is permitted at no cost — submitting a verdict.', tool:'submit_verdict', argsText:'lease_addresses_issue: true, responsibility: "landlord", fee: "$0"' }
@@ -469,7 +482,7 @@ class Component extends DCLogic {
     ]},
     david: { tokens:'1,240', cost:'$0.0038', elapsed:'0.6s', steps:[
       { name:'classify', status:'completed', duration:'91ms', type:'classify', category:'routine_maintenance' },
-      { name:'extract', status:'completed', duration:'250ms', type:'extract', fields:[{k:'tenant',v:'David Chen'},{k:'unit',v:'3A'},{k:'issue',v:'Dishwasher not draining'},{k:'severity',v:'medium'}] },
+      { name:'extract', status:'completed', duration:'250ms', type:'extract', fields:[{k:'tenant',v:'David Chen'},{k:'unit',v:'3A'},{k:'issue',v:'Dishwasher not draining'},{k:'urgency',v:'medium'}] },
       { name:'lease_check', status:'running', duration:null, type:'lease_check', calls:[
         { reasoning:'Checking whether appliance repair is landlord-covered before drafting a response.', tool:'lease_qa', question:'Is appliance repair landlord-covered, and what is the standard vendor lead time?', answer:'…', citations:[] }
       ], verdictFields:[] },
@@ -495,7 +508,7 @@ class Component extends DCLogic {
     ]},
     linda: { tokens:'3,340', cost:'$0.0098', elapsed:'1.0s', steps:[
       { name:'classify', status:'completed', duration:'84ms', type:'classify', category:'routine_maintenance' },
-      { name:'extract', status:'completed', duration:'230ms', type:'extract', fields:[{k:'tenant',v:'Linda Foster'},{k:'unit',v:'6B'},{k:'issue',v:'Front door lock not latching'},{k:'severity',v:'medium'}] },
+      { name:'extract', status:'completed', duration:'230ms', type:'extract', fields:[{k:'tenant',v:'Linda Foster'},{k:'unit',v:'6B'},{k:'issue',v:'Front door lock not latching'},{k:'urgency',v:'medium'}] },
       { name:'lease_check', status:'completed', duration:'410ms', type:'lease_check', calls:[
         { reasoning:'Door hardware is usually landlord-covered — confirming, plus dispatch fee terms.', tool:'lease_qa', question:'Is lock repair a landlord responsibility, and is locksmith dispatch covered?', answer:'Landlord covers lock and door hardware repairs; a locksmith dispatch fee applies for after-hours calls.', citations:['foster-lease §5.4'] },
         { reasoning:'Coverage confirmed — submitting a verdict.', tool:'submit_verdict', argsText:'lease_addresses_issue: true, responsibility: "landlord"' }
@@ -549,17 +562,17 @@ class Component extends DCLogic {
   ];
 
   approvalItems = [
-    { suggestedActions:['call_tenant', 'dispatch_emergency_vendor', 'send_reply'], id:'v2', category:'Emergency', severity:null, receivedAt:'4 min ago', tenant_name:'Dana Whitfield', unit:'4B', address:'840 Marlow St',
+    { suggestedActions:['send_reply', 'create_work_order'], id:'v2', category:'Emergency', severity:null, receivedAt:'4 min ago', tenant_name:'Dana Whitfield', unit:'4B', address:'840 Marlow St',
       issue_summary:'Gas smell in kitchen, worsening since this morning',
       issueCategory:'Gas / utilities', responsibility:null, citation:null,
       original_email:"There's a strong smell of gas in the kitchen — it was faint when I woke up and it's much worse now. I've opened the windows but it isn't clearing. What should I do?",
       draft:"Dana — please leave the building immediately and do not switch anything electrical on or off on your way out. Once you're outside, call the gas emergency line on 0800 111 999.\n\nI'm contacting our on-call engineer now and will call you within the next few minutes." },
-    { suggestedActions:['create_work_order', 'send_reply'], id:'v1', category:'Maintenance', severity:'Medium', receivedAt:'22 min ago', tenant_name:'James Okoro', unit:'12A', address:'840 Marlow St',
+    { suggestedActions:['send_reply', 'create_work_order'], id:'v1', category:'Maintenance', severity:'Medium', receivedAt:'22 min ago', tenant_name:'James Okoro', unit:'12A', address:'840 Marlow St',
       issue_summary:'Blocked kitchen sink after tenant used drain cleaner',
       issueCategory:'Plumbing', responsibility:'Landlord', citation:'marlow-st-okoro §7.2',
       original_email:"The kitchen sink has been draining slowly for a few days and now it's completely blocked. I tried a bottle of drain cleaner last night and it didn't help. Can someone come look at it?",
       draft:"Hi James, thanks for flagging this. Clearing a blocked drain falls to us as landlord under §7.2 of your lease, so we'll cover the callout. One note for next time — pouring drain cleaner can damage the trap, so please hold off on that and let us handle it.\n\nI can get a plumber out tomorrow between 10am and 2pm. Does that window work for you?" },
-    { suggestedActions:['create_work_order', 'schedule_inspection', 'send_reply'], id:'v4', category:'Maintenance', severity:'High', receivedAt:'1 hr ago', tenant_name:'Marcus Bell', unit:'9D', address:'12 Ardsley Row',
+    { suggestedActions:['send_reply', 'create_work_order'], id:'v4', category:'Maintenance', severity:'High', receivedAt:'1 hr ago', tenant_name:'Marcus Bell', unit:'9D', address:'12 Ardsley Row',
       issue_summary:'Water through bedroom ceiling when flat above runs a bath',
       issueCategory:'Plumbing / structural', responsibility:'Landlord', citation:'ardsley-row-bell §7.1',
       original_email:"Every time the flat above runs a bath, water comes through my bedroom ceiling. There's a brown stain spreading and it dripped onto the bed last night.",
@@ -569,7 +582,7 @@ class Component extends DCLogic {
       issueCategory:'Fixtures', responsibility:'Tenant', citation:'marlow-st-lindqvist §7.4',
       original_email:"The toilet seat in the main bathroom has cracked right along the hinge. Nothing unusual happened, it just went. Is that something you replace?",
       draft:"Hi Sofia, this one falls to you under the lease (§7.4 covers tenant fixtures), but we can arrange it through our handyman and bill it at cost — around £45 including fitting — if that's easier than sourcing it yourself. Just let me know which you'd prefer." },
-    { suggestedActions:['send_reply', 'log_consent_request'], id:'v3', category:'Lease question', severity:'Low', receivedAt:'3 hr ago', tenant_name:'Priya Nadkarni', unit:'3C', address:'12 Ardsley Row',
+    { suggestedActions:['send_reply'], id:'v3', category:'Lease question', severity:'Low', receivedAt:'3 hr ago', tenant_name:'Priya Nadkarni', unit:'3C', address:'12 Ardsley Row',
       issue_summary:'Asking whether she can repaint the living room light blue',
       issueCategory:'Alterations', responsibility:'Tenant', citation:'ardsley-row-nadkarni §6.1',
       original_email:"Quick question — am I allowed to repaint the living room? I was thinking a light blue. Happy to paint it back before I move out if that's needed.",
@@ -591,35 +604,19 @@ class Component extends DCLogic {
   setApFilter = (key, val) => this.setState({ apFilters: { ...this.apFilters(), [key]: val } });
   toggleApproval = (id) => this.setState(s => ({ apOpen: { ...(s.apOpen || {}), [id]: !(s.apOpen || {})[id] } }));
 
-  apMarkDone = (id, label) => this.setState(s => ({ apDone: { ...(s.apDone || {}), [id + '|' + label]: true } }));
-  apComplete = (id) => this.setState(s => ({ apCleared: { ...(s.apCleared || {}), [id]: true } }));
+  apDecide = (id, verdict) => this.setState(s => ({ apDecision: { ...(s.apDecision || {}), [id]: verdict } }));
+  apUndo = (id) => this.setState(s => { const d = { ...(s.apDecision || {}) }; delete d[id]; return { apDecision: d }; });
 
-  apActions(item) {
-    const done = this.state.apDone || {};
-    const mk = (label, ink) => {
-      const isDone = !!done[item.id + '|' + label];
-      return {
-        label,
-        isDone,
-        pending: !isDone,
-        inkA: isDone ? 'rgba(23,24,27,0.4)' : (ink || 'rgba(23,24,27,0.72)'),
-        bgA: isDone ? 'transparent' : '#F4F5F7',
-        borderA: isDone ? 'rgba(0,0,0,0.07)' : 'rgba(0,0,0,0.09)',
-        hoverA: isDone ? '' : 'background:#EDEEF1;border-color:rgba(0,0,0,0.16);',
-        cursorA: isDone ? 'default' : 'pointer',
-        onClick: (e) => {
-          e.stopPropagation();
-          if (isDone) return;
-          if (label === 'Mark complete') this.apComplete(item.id);
-          else this.apMarkDone(item.id, label);
-        }
-      };
+  actionMeta(key) {
+    const map = {
+      create_work_order: { label:'Create work order', dot:'rgba(23,24,27,0.35)', icon:'M14 3.3a3.6 3.6 0 01-4.6 4.4l-5.2 5.2a1.5 1.5 0 11-2.1-2.1l5.2-5.2A3.6 3.6 0 0111.7 1L9.8 3l1.2 2.1L13.2 5z' },
+      send_reply: { label:'Send reply', dot:'rgba(23,24,27,0.35)', icon:'M14.6 1.6L1.6 6.9l5 2.1 2.1 5z M14.6 1.6L6.6 9' },
+      call_tenant: { label:'Call tenant', dot:'#A3352C', icon:'M3 3h3l1 3-1.8 1.2a8.5 8.5 0 004.6 4.6L11 10l3 1v3h-2.2A11.5 11.5 0 013 5.2z' },
+      dispatch_emergency_vendor: { label:'Dispatch emergency vendor', dot:'#A3352C', icon:'M8 2l6 11H2z M8 6.2v3.4 M8 11.2v.6' },
+      schedule_inspection: { label:'Schedule inspection', dot:'#2C7BC8', icon:'M2.5 3.5h11v10.5h-11z M2.5 7h11 M5.5 2v3 M10.5 2v3' },
+      log_consent_request: { label:'Log consent request', dot:'rgba(23,24,27,0.35)', icon:'M3 8.5l3.2 3.2L13 5' }
     };
-    if (item.category === 'Emergency') return [ mk('Create work order', '#A3352C'), mk('Send reply'), mk('Mark complete') ];
-    const acts = [ mk('Send reply', '#2C7BC8') ];
-    if (item.category === 'Maintenance' && item.responsibility === 'Landlord') acts.push(mk('Create work order'));
-    acts.push(mk('Mark complete'));
-    return acts;
+    return map[key] || { label:key.replace(/_/g,' '), dot:'rgba(23,24,27,0.35)', icon:'M3 8h10' };
   }
 
   statusStyle(status) {
@@ -643,7 +640,7 @@ class Component extends DCLogic {
     return map[status] || map.pending;
   }
 
-  severityStyle(u) {
+  urgencyStyle(u) {
     const map = {
       emergency: { color:'#963226', label:'Emergency' },
       high: { color:'#8A5A16', label:'High' },
@@ -728,8 +725,8 @@ class Component extends DCLogic {
       .filter(em => s.filter === 'all' || em.status === s.filter)
       .map(em => {
         const st = this.statusStyle(em.status);
-        const sev = this.severityStyle(em.severity);
-        return { ...em, statusBg:st.bg, statusText:st.text, statusBorder:st.border, severityColor:sev.color, severityLabel:sev.label, showSeverity: em.status !== 'Pending', noSeverity: em.status === 'Pending', actionsText: (em.status === 'Processed' ? (em.actions || []) : []).join(', '), hasActions: !!(em.status === 'Processed' && em.actions && em.actions.length), noActions: !(em.status === 'Processed' && em.actions && em.actions.length), onClick:() => this.selectRun(em.id) };
+        const ug = this.urgencyStyle(em.urgency);
+        return { ...em, statusBg:st.bg, statusText:st.text, statusBorder:st.border, urgencyColor:ug.color, urgencyLabel:ug.label, showUrgency: em.status !== 'Pending', noUrgency: em.status === 'Pending', actionsText: (em.status === 'Processed' ? (em.actions || []) : []).join(', '), hasActions: !!(em.status === 'Processed' && em.actions && em.actions.length), noActions: !(em.status === 'Processed' && em.actions && em.actions.length), onClick:() => this.selectRun(em.id) };
       });
 
     const activeEmailRaw = this.emails.find(e => e.id === s.activeRunId) || this.emails[0];
@@ -760,7 +757,7 @@ class Component extends DCLogic {
       const pick = keys => keys.map(k => allFields.find(f => f.k === this.hum(k))).filter(Boolean);
       const specLeft = pick(['tenant_name', 'address', 'unit']);
       const fieldsLeft = specLeft.length ? specLeft : allFields.slice(0, Math.ceil(allFields.length / 2));
-      const fieldsRight = specLeft.length ? pick(['appliance_or_system', 'severity', 'issue_category', 'issue_summary']) : allFields.slice(Math.ceil(allFields.length / 2));
+      const fieldsRight = specLeft.length ? pick(['appliance_or_system', 'severity', 'urgency', 'issue_category', 'issue_summary']) : allFields.slice(Math.ceil(allFields.length / 2));
       const leaseCalls = (step.calls || []).map((call, callIdx) => {
         const key = s.activeRunId + '-' + idx + '-' + callIdx;
         const done = call.tool === 'submit_verdict' || (!!call.answer && call.answer !== '…');
@@ -838,6 +835,8 @@ class Component extends DCLogic {
     const approvalCards = this.approvalItems.map(item => {
       const b = this.apBadgeStyle(item.category);
       const isOpen = !!apOpen[item.id];
+      const decision = (this.state.apDecision || {})[item.id];
+      const actionsCount = (item.suggestedActions || []).length;
       return {
         ...item,
         categoryLabel: item.category,
@@ -866,7 +865,18 @@ class Component extends DCLogic {
         onToggle: () => this.toggleApproval(item.id),
         onCitation: (e) => { e.stopPropagation(); },
         suggestedList: (item.suggestedActions || []).join(', '),
-        actions: this.apActions(item)
+        actionsText: (item.suggestedActions || []).map(k => this.actionMeta(k).label).join(', '),
+        actionBadges: (item.suggestedActions || []).map(k => ({ label: this.actionMeta(k).label, icon: this.actionMeta(k).icon, ink: this.actionMeta(k).dot })),
+        undecided: !decision,
+        apDecided: !!decision,
+        apDecidedLabel: decision === 'approved' ? 'Approved — ' + actionsCount + ' action' + (actionsCount === 1 ? '' : 's') + ' executed' : 'Rejected — no actions taken',
+        apDecidedBg: decision === 'approved' ? '#EAF6EE' : '#FBEAEA',
+        apDecidedBorder: decision === 'approved' ? 'rgba(46,139,79,0.25)' : 'rgba(178,58,50,0.25)',
+        apDecidedInk: decision === 'approved' ? '#1E6B3A' : '#8E2A24',
+        apDecidedDot: decision === 'approved' ? '#2E8B4F' : '#B23A32',
+        onApprove: (e) => { e.stopPropagation(); this.setState(s => ({ apCleared: { ...(s.apCleared || {}), [item.id]: true } })); },
+        onReject: (e) => { e.stopPropagation(); this.apDecide(item.id, 'rejected'); },
+        onUndo: (e) => { e.stopPropagation(); this.apUndo(item.id); }
       };
     });
     const af = this.apFilters();
