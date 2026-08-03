@@ -1,10 +1,12 @@
 'use client';
 
+import { useAppContext } from '@/context/app-context';
 import { streamRun } from '@/lib/api';
 import { applyStreamEvent, emptyRunState, type RunState } from '@/lib/run-state';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export function useRunStream(emailId: string, initial: RunState) {
+  const { triggerApprovalsCount } = useAppContext();
   const [state, setState] = useState<RunState>(initial);
   const abortRef = useRef<AbortController | null>(null);
   const startedAtRef = useRef(0);
@@ -30,6 +32,9 @@ export function useRunStream(emailId: string, initial: RunState) {
         for await (const event of streamRun(emailId, controller.signal)) {
           const elapsed = (Date.now() - startedAtRef.current) / 1000;
           setState((current) => applyStreamEvent(current, event, elapsed));
+          if (event.type === 'paused') {
+            triggerApprovalsCount();
+          }
         }
       } catch (error) {
         if (controller.signal.aborted) return;
@@ -43,7 +48,7 @@ export function useRunStream(emailId: string, initial: RunState) {
         if (abortRef.current === controller) abortRef.current = null;
       }
     })();
-  }, [emailId, stop]);
+  }, [emailId, stop, triggerApprovalsCount]);
 
   useEffect(() => {
     if (!state.live) return;

@@ -1,8 +1,10 @@
 'use client';
 
-import type { BuildInfo } from '@/lib/api';
+import { useAppContext } from '@/context/app-context';
+import { getBuildInfo, listApprovals } from '@/lib/api';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const NAV = [
   { href: '/inbox', label: 'Inbox' },
@@ -10,14 +12,25 @@ const NAV = [
   { href: '/approvals', label: 'Approvals' },
 ] as const;
 
-export function Sidebar({
-  pendingCount,
-  buildInfo,
-}: {
-  pendingCount: number;
-  buildInfo: BuildInfo;
-}) {
+export function Sidebar() {
   const pathname = usePathname();
+  const { approvalsCountTrigger } = useAppContext();
+  const buildInfo = getBuildInfo();
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    listApprovals()
+      .then((data) => {
+        if (!cancelled) setPendingCount(data.items.length);
+      })
+      .catch(() => {
+        if (!cancelled) setPendingCount(0);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname, approvalsCountTrigger]);
 
   return (
     <aside className="border-hairline flex w-60 shrink-0 flex-col overflow-y-auto border-r px-4 py-5">

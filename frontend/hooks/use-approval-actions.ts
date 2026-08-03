@@ -1,5 +1,6 @@
 'use client';
 
+import { useAppContext } from '@/context/app-context';
 import { approveRun, rejectRun } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
@@ -8,6 +9,7 @@ type Pending = { runId: string; action: 'approve' | 'reject' } | null;
 
 export function useApprovalActions() {
   const router = useRouter();
+  const { triggerApprovalsCount } = useAppContext();
   const [pending, setPending] = useState<Pending>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,6 +19,7 @@ export function useApprovalActions() {
       setError(null);
       try {
         await (action === 'approve' ? approveRun(runId) : rejectRun(runId));
+        triggerApprovalsCount();
         router.refresh();
       } catch (cause) {
         setError(cause instanceof Error ? cause.message : String(cause));
@@ -24,7 +27,7 @@ export function useApprovalActions() {
         setPending(null);
       }
     },
-    [router],
+    [router, triggerApprovalsCount],
   );
 
   return {
