@@ -13,6 +13,7 @@ from leaseops.agent.runner import GraphRunner
 from leaseops.agent.step_schemas import StepResponse, StepResponseAdapter
 from leaseops.api.schemas import (
     EmailResponse,
+    LatestRunResponse,
     RunCreate,
     RunDetailResponse,
     RunResponse,
@@ -75,6 +76,12 @@ def _stats(run: Run | None, steps: list[Step]) -> RunStats:
     if run is None:
         return RunStats()
     return RunStats.model_validate(runs_repo.run_aggregates(run, steps))
+
+
+@router.get("/latest", response_model=LatestRunResponse)
+async def get_latest_run(session: SessionDep) -> LatestRunResponse:
+    run = await runs_repo.get_latest_run(session)
+    return LatestRunResponse(email_id=run.email_id if run is not None else None)
 
 
 @router.post("", response_model=RunResponse, status_code=status.HTTP_201_CREATED)

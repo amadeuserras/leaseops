@@ -126,6 +126,10 @@ export interface RunResponse {
   ended_at: string | null;
 }
 
+export interface LatestRunResponse {
+  email_id: string | null;
+}
+
 export interface ApprovalRequestResponse extends ApprovalCard {
   run_id: string;
 }
@@ -179,6 +183,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export function listEmails(): Promise<EmailListResponse> {
   return request<EmailListResponse>('/inbox');
+}
+
+export function getLatestRun(): Promise<LatestRunResponse> {
+  return request<LatestRunResponse>('/runs/latest');
 }
 
 export function getRun(emailId: string): Promise<RunDetailResponse> {

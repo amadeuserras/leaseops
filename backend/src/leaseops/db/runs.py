@@ -57,6 +57,12 @@ async def list_runs(
     return list((await session.scalars(stmt)).all())
 
 
+async def get_latest_run(session: AsyncSession) -> Run | None:
+    return (
+        await session.scalars(select(Run).order_by(Run.started_at.desc()).limit(1))
+    ).first()
+
+
 async def get_latest_run_for_email(session: AsyncSession, email_id: UUID) -> Run | None:
     return (
         await session.scalars(

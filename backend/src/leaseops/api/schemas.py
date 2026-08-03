@@ -50,6 +50,10 @@ class RunResponse(LeaseOpsModel):
     ended_at: datetime | None
 
 
+class LatestRunResponse(LeaseOpsModel):
+    email_id: UUID | None = None
+
+
 class RunStats(LeaseOpsModel):
     tokens: int = 0
     cost: float = 0.0
