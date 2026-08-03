@@ -1,422 +1,72 @@
 [
   {
-    "sender": "deshawn.johnson@example.com",
-    "subject": "Kitchen sink leaking again",
-    "body": "Hi, the kitchen sink under the cabinet is dripping steadily since yesterday. Can someone take a look?",
-    "received_at": "2026-07-18T14:32:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "yuna.kim@example.com",
-    "subject": "HEATING BROKEN AGAIN!!",
-    "body": "heating broken again!!",
-    "received_at": "2026-07-19T07:14:00Z",
-    "status": "pending"
-  },
-  {
     "sender": "maria.vega@example.com",
-    "subject": "I smell gas",
-    "body": "Hi. Strong gas smell in the kitchen this morning. I opened the windows and turned off the stove. Please send someone NOW. This is not a joke.",
-    "received_at": "2026-07-20T08:03:00Z",
+    "subject": "Gas smell in kitchen",
+    "body": "Hi, I need someone urgently. There's a strong gas smell coming from around the kitchen stove. It's been getting stronger over the last hour. I've turned off the stove and cracked a window but I'm worried. Can someone come check this today? — Maria, Pelican Court",
+    "received_at": "2026-08-03T08:12:00Z",
     "status": "pending"
   },
   {
     "sender": "james.whitfield@example.com",
-    "subject": "Toilet and AC",
-    "body": "Two things. The guest bathroom toilet keeps running after flush, and the AC upstairs hasn't cooled below 78 even on the lowest setting. Been like this since Friday. Thanks, James",
-    "received_at": "2026-07-17T16:45:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "priya.nadkarni@example.com",
-    "subject": "Can we paint the living room?",
-    "body": "Hi there, I wanted to ask if we're allowed to paint the living room a light blue. The lease doesn't say anything about paint colors that I can find. Happy to restore it when we move if needed.",
-    "received_at": "2026-07-15T11:20:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "daniel.osei@example.com",
-    "subject": "dishwasher",
-    "body": "dishwasher not draining",
-    "received_at": "2026-07-21T09:05:00Z",
+    "subject": "Radiator leaking onto bedroom floor",
+    "body": "Hello, the radiator in the back bedroom has been leaking onto the floor since last night. I've put towels down but it keeps coming back. Could someone take a look this week? Thanks, James, Pelican Court",
+    "received_at": "2026-08-03T09:05:00Z",
     "status": "pending"
   },
   {
     "sender": "soojin.park@example.com",
-    "subject": "This is ridiculous",
-    "body": "I've emailed THREE times about the broken bedroom window latch and nobody has even acknowledged me. It's been almost two weeks. I work from home and the draft is freezing at night. Please stop ignoring this.",
-    "received_at": "2026-07-19T18:40:00Z",
+    "subject": "Intercom not buzzing guests in",
+    "body": "Hi there, the front door intercom panel isn't buzzing guests in. It's been broken for about 3 days now. My guests have had to call me to come down and let them in. Could this get fixed? Thank you, Soo-Jin, Unit 8B",
+    "received_at": "2026-08-03T07:48:00Z",
     "status": "pending"
   },
   {
     "sender": "kevin.chen@example.com",
-    "subject": "Water coming through ceiling",
-    "body": "Urgent - water is pouring through the bathroom ceiling. Floor is getting soaked. I put buckets down but it's still coming. Please call me, Kevin Chen, 8B.",
-    "received_at": "2026-07-21T22:17:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "astrid.lindqvist@example.com",
-    "subject": "Garbage disposal + bathroom fan",
-    "body": "Hello, the kitchen garbage disposal is jammed and making a horrible grinding sound, and separately the bathroom exhaust fan just rattles and doesn't pull air. Not sure if these are related. Astrid",
-    "received_at": "2026-07-16T13:10:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "ravi.patel@example.com",
-    "subject": "Parking permit?",
-    "body": "Hey, do we get a visitor parking permit with the unit? My parents are coming next weekend and I couldn't find anything about guest parking in the lease.",
-    "received_at": "2026-07-14T10:02:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "chukwuemeka.okonkwo@example.com",
-    "subject": "Fridge not cold",
-    "body": "Fridge has been warm for two days. Food is going bad. Please send a tech.",
-    "received_at": "2026-07-18T08:55:00Z",
+    "subject": "Dishwasher not draining",
+    "body": "Hi, my dishwasher fills with water but won't drain — there's standing water pooling at the bottom after every cycle. Started two days ago. Let me know when someone can come take a look. Kevin, Unit 8B",
+    "received_at": "2026-08-03T10:22:00Z",
     "status": "pending"
   },
   {
     "sender": "sara.berg@example.com",
-    "subject": "Re: rent receipt",
-    "body": "Hi, can you resend July's rent receipt? I need it for my employer reimbursement. Thanks! Sara",
-    "received_at": "2026-07-12T15:30:00Z",
+    "subject": "Noise complaint – upstairs neighbor",
+    "body": "Hi, the neighbors upstairs have been really loud again late at night this week. Wondering if building management could send a reminder about quiet hours? Thanks, Sara",
+    "received_at": "2026-08-03T10:41:00Z",
     "status": "pending"
   },
   {
-    "sender": "carlos.morales@example.com",
-    "subject": "SMOKE DETECTOR BEEPING ALL NIGHT",
-    "body": "The hallway smoke detector has been chirping every 30 seconds since 2am. I changed nothing. I cannot sleep. Fix this today please.",
-    "received_at": "2026-07-20T06:12:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "isabel.reyes@example.com",
-    "subject": "Washer leaking",
-    "body": "Hi, there's a small puddle under the washer after every cycle. Started last week. Isabel",
-    "received_at": "2026-07-17T19:22:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "darnell.washington@example.com",
-    "subject": "Can I install a camera?",
-    "body": "Wanted to check if doorbell cameras are allowed. Ring style, just on our door. Lease is silent on it as far as I can tell.",
-    "received_at": "2026-07-13T12:48:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "keisha.price@example.com",
-    "subject": "Oven won't heat",
-    "body": "Oven turns on but never gets hot. Broiler works weirdly. Need this fixed before the weekend if possible.",
-    "received_at": "2026-07-19T14:05:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "deshawn.johnson@example.com",
-    "subject": "outlet sparking",
-    "body": "kitchen outlet next to the fridge sparked when I plugged in the toaster. not using that outlet anymore. please check asap",
-    "received_at": "2026-07-21T11:33:00Z",
+    "sender": "astrid.lindqvist@example.com",
+    "subject": "Parking spot reassignment request",
+    "body": "Hi, is it possible to switch my assigned parking spot? Mine is quite far from the entrance and I noticed a few closer spots seem to be open. Thanks, Astrid, Unit 2B",
+    "received_at": "2026-08-03T06:55:00Z",
     "status": "pending"
   },
   {
     "sender": "yuna.kim@example.com",
-    "subject": "Bathroom mold and clogged shower",
-    "body": "There's black mold forming around the tub caulk and the shower drain is almost completely clogged. Water sits for like 10 minutes. Also the vanity light flickers. A lot going on in that bathroom.",
-    "received_at": "2026-07-16T09:40:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "maria.vega@example.com",
-    "subject": "Front door lock sticking",
-    "body": "Key sticks in the deadbolt and sometimes I have to jiggle it for a while. Worried I'll get locked out. Can maintenance come look?",
-    "received_at": "2026-07-15T17:18:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "james.whitfield@example.com",
-    "subject": "FLOODING IN BASEMENT",
-    "body": "There's standing water in the basement utility area, maybe 2 inches and rising. I shut off what I could. Need emergency help right now.",
-    "received_at": "2026-07-22T03:41:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "priya.nadkarni@example.com",
-    "subject": "??",
-    "body": "ac weird",
-    "received_at": "2026-07-20T20:09:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "daniel.osei@example.com",
-    "subject": "Early termination options",
-    "body": "Hi, I may need to break the lease in September for a job transfer. Is there an early termination clause or buyout option? I don't see it spelled out clearly.",
-    "received_at": "2026-07-14T08:25:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "soojin.park@example.com",
-    "subject": "Hot water is lukewarm",
-    "body": "Hot water never gets properly hot anymore, just lukewarm. Started maybe 4 days ago. Soo-Jin Park",
-    "received_at": "2026-07-18T07:50:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "kevin.chen@example.com",
-    "subject": "I'm done waiting",
-    "body": "You said someone would come Tuesday about the loose balcony railing. Nobody showed. It's a safety issue and I'm honestly furious. Either send someone tomorrow or I'm calling the city.",
-    "received_at": "2026-07-16T21:05:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "astrid.lindqvist@example.com",
-    "subject": "Package delivery",
-    "body": "FedEx says they left a package with the office yesterday but I never got a notice. Can you check if it's there? Tracking ends in 4821.",
-    "received_at": "2026-07-13T14:55:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "ravi.patel@example.com",
-    "subject": "Toilet overflowing",
-    "body": "Main bathroom toilet is overflowing onto the floor. I shut the valve. Need someone ASAP. Ravi",
-    "received_at": "2026-07-21T17:28:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "chukwuemeka.okonkwo@example.com",
-    "subject": "Noise from upstairs?",
-    "body": "Is the unit above me vacant? There's been stomping and moving furniture at 1am the last three nights. Not sure if this is your department but thought I'd ask.",
-    "received_at": "2026-07-15T09:12:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "sara.berg@example.com",
-    "subject": "Kitchen cabinet hinge broken",
-    "body": "Upper cabinet door above the stove won't stay closed, hinge looks snapped. Small fix hopefully.",
-    "received_at": "2026-07-17T12:00:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "carlos.morales@example.com",
-    "subject": "Gas smell near stove",
-    "body": "I keep smelling gas near the stove even when burners are off. Mild but constant since last night. Should I leave the unit?",
-    "received_at": "2026-07-19T23:48:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "isabel.reyes@example.com",
-    "subject": "Subletting for August",
-    "body": "Would it be ok to sublet for three weeks in August while I'm traveling? Friend of mine, fully responsible. Lease doesn't seem to cover short-term sublets.",
-    "received_at": "2026-07-12T10:40:00Z",
+    "subject": "AC unit not cooling",
+    "body": "Hello, the AC unit has stopped cooling properly over the past two days. It's just blowing warm air now. It's been quite uncomfortable. Could someone take a look soon? Yuna, Unit 5",
+    "received_at": "2026-08-03T09:37:00Z",
     "status": "pending"
   },
   {
     "sender": "darnell.washington@example.com",
-    "subject": "blinds broken + thermostat",
-    "body": "Bedroom blinds won't close on the left side, and the thermostat display is blank so we can't change the temp. Both started this week.",
-    "received_at": "2026-07-18T15:16:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "keisha.price@example.com",
-    "subject": "help",
-    "body": "no hot water",
-    "received_at": "2026-07-22T06:02:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "deshawn.johnson@example.com",
-    "subject": "Can we get a second parking spot?",
-    "body": "Is there any way to add a second assigned parking space? My partner just got a car. Didn't see anything about additional spots in our paperwork.",
-    "received_at": "2026-07-14T19:33:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "yuna.kim@example.com",
-    "subject": "Ceiling stain growing",
-    "body": "There's a brown water stain on the living room ceiling that keeps getting bigger. No active drip yet but I'm worried.",
-    "received_at": "2026-07-17T08:20:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "maria.vega@example.com",
-    "subject": "Seriously??",
-    "body": "Maintenance came, said they'd fix the screen door, left without doing anything, and now the door doesn't even latch. This is the third visit for the same issue. I'm exhausted.",
-    "received_at": "2026-07-21T13:47:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "james.whitfield@example.com",
-    "subject": "Dryer not spinning",
-    "body": "Dryer runs but drum doesn't turn. Clothes come out damp. James W.",
-    "received_at": "2026-07-16T11:05:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "priya.nadkarni@example.com",
-    "subject": "Adding a roommate",
-    "body": "Hi, can we add my sister to the lease starting August 1? She's visiting for a few months and might stay. Not sure what the process is since the lease only lists the two of us.",
-    "received_at": "2026-07-13T16:22:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "daniel.osei@example.com",
-    "subject": "Light switch dead",
-    "body": "Hallway light switch does nothing. Bulb is fine, tried two. Daniel",
-    "received_at": "2026-07-19T10:11:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "soojin.park@example.com",
-    "subject": "Water heater leaking onto floor",
-    "body": "There's a steady leak from the bottom of the water heater. Floor is wet. I put towels down. Please send someone today.",
-    "received_at": "2026-07-20T15:55:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "kevin.chen@example.com",
-    "subject": "fwd: pest control?",
-    "body": "Saw a few cockroaches in the kitchen last night. First time. Do you handle pest control or do we call someone ourselves?",
-    "received_at": "2026-07-15T22:30:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "astrid.lindqvist@example.com",
-    "subject": "I AM SO ANGRY",
-    "body": "The heat has been out for FIVE DAYS in July which somehow still means nights in the 50s here and you keep saying 'soon'. My kid is cold. This is unacceptable. Call me back today or I'm documenting everything for housing court.",
-    "received_at": "2026-07-18T20:14:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "ravi.patel@example.com",
-    "subject": "sink / dishwasher / garbage disposal",
-    "body": "Kitchen sink backs up whenever the dishwasher runs, and the disposal trips the breaker. Pretty sure it's all connected. Need a plumber.",
-    "received_at": "2026-07-14T13:08:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "chukwuemeka.okonkwo@example.com",
-    "subject": "Window won't open",
-    "body": "Bedroom window is stuck shut. Tried both sides. Not urgent but would like it fixed before it gets hotter.",
-    "received_at": "2026-07-16T18:42:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "sara.berg@example.com",
-    "subject": "Move-in walkthrough notes",
-    "body": "Just realizing I never got a copy of our move-in condition report. Can you email it over? Thanks",
-    "received_at": "2026-07-12T09:15:00Z",
+    "subject": "Mailbox lock broken",
+    "body": "Hi, my mailbox key won't turn anymore. I think the lock mechanism itself is broken. Could someone from maintenance take a look? Darnell, Unit 14C",
+    "received_at": "2026-08-03T11:03:00Z",
     "status": "pending"
   },
   {
     "sender": "carlos.morales@example.com",
-    "subject": "shower pressure",
-    "body": "barely any water pressure in the shower",
-    "received_at": "2026-07-21T08:00:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "isabel.reyes@example.com",
-    "subject": "Smell of burning wires?",
-    "body": "There's a burning electrical smell near the panel in the hallway closet. No smoke that I can see but it's strong. Please treat this as urgent.",
-    "received_at": "2026-07-22T01:19:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "darnell.washington@example.com",
-    "subject": "Pet deposit question",
-    "body": "Thinking about getting a cat. What's the pet deposit / monthly pet rent? I don't see a fee schedule in the lease PDF we have.",
-    "received_at": "2026-07-13T11:27:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "keisha.price@example.com",
-    "subject": "Closet door off track + bathroom leak",
-    "body": "Master closet sliding door came off the track, and there's a slow drip under the bathroom sink. Can you schedule both?",
-    "received_at": "2026-07-17T14:50:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "unknown.tenant.1142@gmail.com",
-    "subject": "Broken mailbox",
-    "body": "Hi, mailbox for unit 5 won't open. I live at Sunset Ridge. Can someone fix the lock?",
-    "received_at": "2026-07-16T10:33:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "jwhitfield.personal@gmail.com",
-    "subject": "Using my personal email",
-    "body": "Hey this is James from Pelican Court, using my gmail because work email is down. The patio light fixture is hanging by one screw. Please send someone.",
-    "received_at": "2026-07-18T09:41:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "maintenance.vendor.quotes@proflowplumbing.com",
-    "subject": "Invoice #88421 - June service",
-    "body": "Attached please find invoice for June drain clearing at multiple properties. Net 30. Reply to ap@proflowplumbing.com with questions.",
-    "received_at": "2026-07-12T07:05:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "linda.m.vega88@yahoo.com",
-    "subject": "My sister's unit",
-    "body": "This is Linda, Maria Vega's sister. She's at work and asked me to tell you the kitchen faucet is spraying sideways. Can you schedule a repair for 884 Pelican Court?",
-    "received_at": "2026-07-19T12:16:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "random.promo@dealblast.biz",
-    "subject": "50% OFF HVAC tune-ups this week!!!",
-    "body": "Limited time offer for property managers! Book 3 tune-ups get 1 free. Call now 1-800-555-0199. Reply STOP to unsubscribe.",
-    "received_at": "2026-07-15T06:00:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "unit3c.larkspur@outlook.com",
-    "subject": "Who do I talk to about heating?",
-    "body": "Heat doesn't work in apt 3C. Not sure if I have the right email for the landlord. Someone please help.",
-    "received_at": "2026-07-20T18:22:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "neighbor.complaints@example.net",
-    "subject": "Complaint about 14C",
-    "body": "The people in 14C at Westheimer keep leaving trash in the hallway. Please deal with your tenants. I'm in 14A.",
-    "received_at": "2026-07-17T21:09:00Z",
+    "subject": "Front door lock not latching",
+    "body": "Hi, my front door isn't latching properly anymore. I have to slam it to get it to lock. Worried about security. Could someone fix the latch mechanism? Carlos",
+    "received_at": "2026-08-03T06:20:00Z",
     "status": "pending"
   },
   {
     "sender": "priya.nadkarni@example.com",
-    "subject": "Intercom buzzes randomly",
-    "body": "Front door intercom buzzes by itself a few times a day. Nobody there when I check. Annoying more than urgent.",
-    "received_at": "2026-07-21T16:04:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "kevin.chen@example.com",
-    "subject": "floors wet after rain",
-    "body": "Every time it rains hard water seeps under the balcony door onto the living room floor. Happened again last night.",
-    "received_at": "2026-07-14T07:45:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "sara.berg@example.com",
-    "subject": "PLEASE READ - carbon monoxide detector",
-    "body": "CO detector in the hallway went off for about a minute then stopped. No smell of gas that I notice but I'm spooked. Do we evacuate? What do I do?",
-    "received_at": "2026-07-22T04:58:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "deshawn.johnson@example.com",
-    "subject": "fan",
-    "body": "bathroom fan loud",
-    "received_at": "2026-07-13T20:18:00Z",
-    "status": "pending"
-  },
-  {
-    "sender": "keisha.price@example.com",
-    "subject": "You have got to be kidding me",
-    "body": "I took a half day off work for the plumber appointment YOU scheduled and nobody showed up. No call, no text, nothing. I am livid. Reschedule this properly and confirm in writing.",
-    "received_at": "2026-07-20T19:01:00Z",
+    "subject": "Can I paint the living room?",
+    "body": "Hi, I was hoping to paint the living room a light blue. I noticed the lease doesn't specify any restrictions on paint colors. I'm happy to restore it to the original color when I move out. Let me know if that's alright. Thanks, Priya, Unit 3C",
+    "received_at": "2026-08-03T11:20:00Z",
     "status": "pending"
   }
 ]
