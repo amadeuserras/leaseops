@@ -173,8 +173,10 @@ export function ApprovalsPage({ data }: { data: ApprovalListResponse }) {
 
       <div className="flex min-h-0 flex-1 flex-col gap-[18px] overflow-y-auto px-9 pt-[18px] pb-10">
         {shown.length === 0 && (
-          <div className="text-ink-35 rounded-xl border border-dashed border-black/12 p-[34px] text-center text-[12.5px]">
-            {data.items.length === 0 ? 'All approvals cleared' : 'No approvals match these filters'}
+          <div className="text-ink-40 text-[12.5px]">
+            {data.items.length === 0
+              ? 'All approvals cleared.'
+              : 'No approvals match these filters.'}
           </div>
         )}
         {shown.map((item) => (
@@ -198,11 +200,7 @@ function ApprovalCardView({
   const busy = actions.isPending(item.run_id);
   const pendingAction = actions.pendingAction(item.run_id);
   const showResponsibility = !isEmergency && !!item.responsibility;
-  const severityLabel = item.severity
-    ? humVal(item.severity)
-    : isEmergency
-      ? 'Critical'
-      : null;
+  const severityLabel = item.severity ? humVal(item.severity) : isEmergency ? 'Critical' : null;
   const showSeverity = !!severityLabel;
 
   const cardBorder = isEmergency ? 'rgba(163,53,44,0.28)' : 'rgba(0,0,0,0.09)';
@@ -236,9 +234,7 @@ function ApprovalCardView({
             </span>
             <span className="min-w-0 truncate text-[13px] font-semibold">
               {item.tenant_name ?? 'Unknown'}
-              {tenantMeta ? (
-                <span className="text-ink-45 font-normal"> · {tenantMeta}</span>
-              ) : null}
+              {tenantMeta ? <span className="text-ink-45 font-normal"> · {tenantMeta}</span> : null}
             </span>
           </span>
           <span className="text-ink-35 flex shrink-0 items-center gap-3 text-xs whitespace-nowrap">
@@ -253,9 +249,7 @@ function ApprovalCardView({
                 <span
                   className="inline-block h-1.5 w-1.5 shrink-0 rounded-full"
                   style={{
-                    background: isEmergency
-                      ? '#A3352C'
-                      : SEVERITY_DOT[item.severity ?? 'low'],
+                    background: isEmergency ? '#A3352C' : SEVERITY_DOT[item.severity ?? 'low'],
                   }}
                 />
                 <span className="text-[13px]">{severityLabel}</span>
@@ -359,7 +353,7 @@ function ApprovalCardView({
                 type="button"
                 disabled={busy}
                 onClick={() => actions.approve(item.run_id)}
-                className="bg-accent border-accent hover:opacity-[0.87] flex cursor-pointer items-center gap-1.5 rounded-lg border px-4 py-[7px] text-[12.5px] font-semibold whitespace-nowrap text-white transition-opacity disabled:cursor-default disabled:opacity-50"
+                className="bg-accent border-accent flex cursor-pointer items-center gap-1.5 rounded-lg border px-4 py-[7px] text-[12.5px] font-semibold whitespace-nowrap text-white transition-opacity hover:opacity-[0.87] disabled:cursor-default disabled:opacity-50"
               >
                 {pendingAction === 'approve' ? 'Approving…' : 'Approve'}
               </button>
@@ -367,7 +361,7 @@ function ApprovalCardView({
                 type="button"
                 disabled={busy}
                 onClick={() => actions.reject(item.run_id)}
-                className="border-black/14 text-[rgba(23,24,27,0.72)] hover:border-[rgba(178,58,50,0.35)] hover:bg-[#FBEAEA] hover:text-[#8E2A24] flex cursor-pointer items-center gap-1.5 rounded-lg border bg-white px-4 py-[7px] text-[12.5px] font-medium whitespace-nowrap transition-[background,border-color] disabled:cursor-default disabled:opacity-50"
+                className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-black/14 bg-white px-4 py-[7px] text-[12.5px] font-medium whitespace-nowrap text-[rgba(23,24,27,0.72)] transition-[background,border-color] hover:border-[rgba(178,58,50,0.35)] hover:bg-[#FBEAEA] hover:text-[#8E2A24] disabled:cursor-default disabled:opacity-50"
               >
                 {pendingAction === 'reject' ? 'Rejecting…' : 'Reject'}
               </button>
