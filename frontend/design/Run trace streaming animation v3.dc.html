@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#F4F5F7;height:100vh;overflow:hidden;}
+  *{box-sizing:border-box;}
+  a{color:#2C7BC8;}
+  a:hover{color:#1F5F9E;}
+  ::selection{background:rgba(44,123,200,0.16);}
+  @keyframes pulseAmber { 0%,100% { box-shadow: 0 0 0 0 rgba(138,90,22,0.35); } 50% { box-shadow: 0 0 0 6px rgba(138,90,22,0); } }
+  @keyframes pulseRing { 0% { box-shadow: 0 0 0 0 rgba(44,123,200,0.45); } 70% { box-shadow: 0 0 0 8px rgba(44,123,200,0); } 100% { box-shadow: 0 0 0 0 rgba(44,123,200,0); } }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @keyframes shimmer { 0% { background-position:-220px 0; } 100% { background-position:220px 0; } }
+  @keyframes caret { 0%,45% { opacity:1; } 50%,100% { opacity:0; } }
+</style>
+</helmet>
+
+<div style="width:100%;height:100vh;display:flex;font-family:'Inter',ui-sans-serif,system-ui,sans-serif;color:#17181B;overflow:hidden;background:#F4F5F7;">
+
+  <aside style="width:240px;flex-shrink:0;background:transparent;border-right:1px solid rgba(0,0,0,0.09);display:flex;flex-direction:column;padding:20px 16px;overflow-y:auto;">
+    <div style="display:flex;align-items:center;gap:10px;padding:4px 8px 22px 8px;">
+      <div style="width:32px;height:26px;border-radius:12px 10px 10px 3px;background:#4C9EEB;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div style="font-weight:600;font-size:15px;letter-spacing:-0.01em;">LeaseOps</div>
+    </div>
+    <nav style="display:flex;flex-direction:column;gap:2px;">
+      <div title="Not in this page" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;font-size:13.5px;font-weight:500;color:rgba(23,24,27,0.4);cursor:default;">
+        <div style="width:6px;height:6px;border-radius:2px;background:rgba(0,0,0,0.12);"></div>
+        Inbox
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;font-size:13.5px;font-weight:500;background:#EDEEF1;color:#17181B;">
+        <div style="width:6px;height:6px;border-radius:2px;background:#4C9EEB;"></div>
+        Runs
+      </div>
+      <div title="Not in this page" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;font-size:13.5px;font-weight:500;color:rgba(23,24,27,0.4);cursor:default;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:6px;height:6px;border-radius:2px;background:rgba(0,0,0,0.12);"></div>
+          Approvals
+        </div>
+        <div style="background:rgba(23,24,27,0.08);color:rgba(23,24,27,0.55);font-size:10.5px;font-weight:600;border-radius:50%;width:18px;height:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">5</div>
+      </div>
+    </nav>
+    <div style="margin-top:auto;padding:12px 10px 4px 10px;border-top:1px solid rgba(0,0,0,0.09);display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(23,24,27,0.55);">
+        <div style="width:6px;height:6px;border-radius:50%;background:#2E8B4F;"></div>
+        42/42 evals passing
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:rgba(23,24,27,0.4);">v0.4.2-beta · build 8f21a0c</div>
+    </div>
+  </aside>
+
+  <main style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;">
+    <div style="display:flex;flex-direction:column;height:100%;min-height:0;">
+      <div style="display:flex;flex:1;min-height:0;">
+
+        <div style="width:420px;flex:0 1 420px;min-width:280px;border-right:1px solid rgba(0,0,0,0.09);padding:24px;background:#F4F5F7;overflow-y:auto;">
+          <div style="font-size:12.5px;color:rgba(23,24,27,0.4);margin-bottom:10px;">Original message</div>
+          <div style="background:#FFFFFF;border:1px solid rgba(0,0,0,0.09);border-radius:12px;padding:20px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+              <div style="width:34px;height:34px;border-radius:50%;background:#EAF3FC;color:#2C7BC8;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">{{ activeEmail.initials }}</div>
+              <div style="min-width:0;">
+                <div style="font-size:13.5px;font-weight:600;">{{ activeEmail.sender }}</div>
+                <div style="font-size:11.5px;color:rgba(23,24,27,0.5);">{{ activeEmail.email }}</div>
+              </div>
+            </div>
+            <div style="font-size:14.5px;font-weight:700;margin-bottom:4px;">{{ activeEmail.subject }}</div>
+            <div style="font-size:12.5px;color:rgba(23,24,27,0.4);margin-bottom:14px;">Received {{ activeEmail.time }}</div>
+            <div style="font-size:13px;line-height:1.7;color:rgba(23,24,27,0.82);white-space:pre-line;">{{ activeEmail.body }}</div>
+          </div>
+        </div>
+
+        <div ref="{{ setScrollEl }}" style="flex:1 1 480px;min-width:380px;padding:24px 28px;overflow-y:auto;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:4px;">
+            <h1 style="font-size:18px;font-weight:700;margin:0;letter-spacing:-0.01em;">Agent run trace</h1>
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+              <div onClick="{{ onReplay }}" style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;border:1px solid rgba(0,0,0,0.1);background:#FFFFFF;font-size:12.5px;font-weight:500;color:rgba(23,24,27,0.6);cursor:pointer;user-select:none;" style-hover="background:#EDEEF1;color:#17181B;">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v4h-4" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Replay
+              </div>
+              <div onClick="{{ onCycleSpeed }}" style="padding:5px 11px;border-radius:999px;border:1px solid rgba(0,0,0,0.1);background:#FFFFFF;font-size:12.5px;font-weight:500;color:rgba(23,24,27,0.6);cursor:pointer;user-select:none;" style-hover="background:#EDEEF1;color:#17181B;">{{ speedLabel }}</div>
+            </div>
+          </div>
+          <div style="font-size:12.5px;color:rgba(23,24,27,0.4);margin-bottom:22px;">run_priya2 · {{ streamLabel }}</div>
+
+          <div style="position:relative;">
+            <sc-for list="{{ displaySteps }}" as="step" hint-placeholder-count="6">
+              <div style="display:flex;gap:14px;">
+                <div style="display:flex;flex-direction:column;align-items:center;width:14px;flex-shrink:0;">
+                  <sc-if value="{{ step.isRunning }}" hint-placeholder-val="{{ false }}">
+                    <div style="width:11px;height:11px;border-radius:50%;background:#2C7BC8;margin-top:6px;flex-shrink:0;animation:pulseRing 1.5s ease-out infinite;"></div>
+                  </sc-if>
+                  <sc-if value="{{ step.isSettled }}" hint-placeholder-val="{{ true }}">
+                    <div style="width:11px;height:11px;border-radius:50%;background:{{ step.dotColor }};margin-top:6px;flex-shrink:0;"></div>
+                  </sc-if>
+                  <sc-if value="{{ step.hasNext }}" hint-placeholder-val="{{ true }}"><div style="width:1.5px;flex:1;background:rgba(0,0,0,0.1);min-height:20px;"></div></sc-if>
+                </div>
+                <div style="flex:1;min-width:0;padding-bottom:18px;">
+                  <div onClick="{{ step.onToggle }}" style="display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;padding:9px 14px;background:#FFFFFF;border:1px solid rgba(0,0,0,0.09);border-radius:12px 12px 0 0;">
+                    <div style="display:flex;align-items:center;gap:10px;flex:0 0 auto;">
+                      <div style="font-size:13px;font-weight:600;white-space:nowrap;">{{ step.name }}</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:0 3 auto;overflow:hidden;">
+                      <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:rgba(23,24,27,0.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;">{{ step.headerRight }}</div>
+                    </div>
+                  </div>
+                  <sc-if value="{{ step.expanded }}" hint-placeholder-val="{{ false }}">
+                    <div style="background:#FFFFFF;border:1px solid rgba(0,0,0,0.09);border-top:none;border-radius:0 0 12px 12px;padding:16px;">
+
+                      <sc-if value="{{ step.showSkeleton }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex;flex-direction:column;gap:9px;">
+                          <div style="height:9px;width:62%;border-radius:4px;background:linear-gradient(90deg,#EDEEF1 0%,#E1E3E8 40%,#EDEEF1 80%);background-size:220px 100%;animation:shimmer 1.1s linear infinite;"></div>
+                          <div style="height:9px;width:38%;border-radius:4px;background:linear-gradient(90deg,#EDEEF1 0%,#E1E3E8 40%,#EDEEF1 80%);background-size:220px 100%;animation:shimmer 1.1s linear infinite 0.15s;"></div>
+                        </div>
+                      </sc-if>
+
+                      <sc-if value="{{ step.isClassify }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:8px 10px;font-size:13px;">
+                          <div style="color:rgba(23,24,27,0.45);min-width:0;white-space:nowrap;">Category</div><div style="font-weight:400;min-width:0;overflow-wrap:break-word;">{{ step.category }}</div>
+                        </div>
+                      </sc-if>
+
+                      <sc-if value="{{ step.isExtract }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex;align-items:flex-start;flex-wrap:wrap;gap:9px 24px;">
+                          <div style="flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:9px;">
+                            <sc-for list="{{ step.fieldsLeft }}" as="f" hint-placeholder-count="3">
+                              <div style="display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:8px 10px;font-size:13px;min-width:0;">
+                                <div style="color:rgba(23,24,27,0.45);min-width:0;white-space:nowrap;">{{ f.k }}</div><div style="font-weight:400;min-width:0;overflow-wrap:break-word;color:{{ f.color }};">{{ f.v }}</div>
+                              </div>
+                            </sc-for>
+                          </div>
+                          <sc-if value="{{ step.hasRightCol }}" hint-placeholder-val="{{ true }}">
+                            <div style="flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:9px;">
+                              <sc-for list="{{ step.fieldsRight }}" as="f" hint-placeholder-count="3">
+                                <div style="display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:8px 10px;font-size:13px;min-width:0;">
+                                  <div style="color:rgba(23,24,27,0.45);min-width:0;white-space:nowrap;">{{ f.k }}</div><div style="font-weight:400;min-width:0;overflow-wrap:break-word;color:{{ f.color }};">{{ f.v }}</div>
+                                </div>
+                              </sc-for>
+                            </div>
+                          </sc-if>
+                        </div>
+                      </sc-if>
+
+                      <sc-if value="{{ step.isLease }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex;flex-direction:column;gap:14px;">
+                          <sc-for list="{{ step.leaseCalls }}" as="call" hint-placeholder-count="1">
+                            <div>
+                              <div style="font-size:13px;color:rgba(23,24,27,0.82);margin-bottom:8px;">{{ call.reasoning }}</div>
+                              <div style="border:1px solid rgba(0,0,0,0.09);border-radius:8px;overflow:hidden;">
+                                <div onClick="{{ call.onToggle }}" style="display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;padding:9px 12px;background:#F4F5F7;">
+                                  <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+                                    <sc-if value="{{ call.pending }}" hint-placeholder-val="{{ false }}">
+                                      <div style="width:11px;height:11px;border-radius:50%;border:1.8px solid rgba(44,123,200,0.22);border-top-color:#2C7BC8;animation:spin 0.7s linear infinite;flex-shrink:0;"></div>
+                                    </sc-if>
+                                    <sc-if value="{{ call.done }}" hint-placeholder-val="{{ true }}">
+                                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;"><path d="M5 13l4 4L19 7" stroke="#2E8B4F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    </sc-if>
+                                    <div style="font-size:12px;color:rgba(23,24,27,0.5);white-space:nowrap;">Tool call<span style="padding:0 5px;">·</span>{{ call.tool }}</div>
+                                  </div>
+                                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style="transform:rotate({{ call.chevronRotate }});transition:transform 0.15s;flex-shrink:0;"><path d="M9 6l6 6-6 6" stroke="rgba(23,24,27,0.4)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                                <sc-if value="{{ call.expanded }}" hint-placeholder-val="{{ false }}">
+                                  <div style="padding:12px;background:#FFFFFF;border-top:1px solid rgba(0,0,0,0.07);display:flex;flex-direction:column;gap:10px;">
+                                    <sc-if value="{{ call.isQA }}" hint-placeholder-val="{{ false }}">
+                                      <div style="font-size:12.5px;color:rgba(23,24,27,0.55);line-height:1.6;">question:&quot;{{ call.question }}&quot;</div>
+                                      <sc-if value="{{ call.done }}" hint-placeholder-val="{{ true }}">
+                                        <div style="font-size:12.5px;color:#17181B;line-height:1.7;">{{ call.answer }}
+                                          <sc-for list="{{ call.citations }}" as="cite" hint-placeholder-count="1">
+                                            <span style="display:inline-flex;align-items:center;gap:4px;border-radius:20px;background:rgba(0,0,0,0.055);padding:1px 8px;font-size:11.5px;font-weight:500;white-space:nowrap;vertical-align:middle;color:rgba(23,24,27,0.5);margin:0 2px;cursor:pointer;" style-hover="background:rgba(0,0,0,0.1);color:#17181B;">{{ cite }}</span>
+                                          </sc-for>
+                                        </div>
+                                      </sc-if>
+                                    </sc-if>
+                                    <sc-if value="{{ call.isVerdict }}" hint-placeholder-val="{{ false }}">
+                                      <div style="font-size:12.5px;color:rgba(23,24,27,0.55);line-height:1.6;">{{ call.argsText }}</div>
+                                    </sc-if>
+                                  </div>
+                                </sc-if>
+                              </div>
+                            </div>
+                          </sc-for>
+
+                          <div style="display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:8px 10px;font-size:13px;margin-top:4px;">
+                            <sc-for list="{{ step.verdictFields }}" as="v" hint-placeholder-count="2">
+                              <div style="color:rgba(23,24,27,0.45);min-width:0;white-space:nowrap;">{{ v.k }}</div><div style="font-weight:400;min-width:0;overflow-wrap:break-word;">{{ v.v }}</div>
+                            </sc-for>
+                          </div>
+                        </div>
+                      </sc-if>
+
+                      <sc-if value="{{ step.isDecide }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:8px 10px;font-size:13px;">
+                          <div style="color:rgba(23,24,27,0.45);min-width:0;white-space:nowrap;">Suggested actions</div><div style="font-weight:400;min-width:0;overflow-wrap:break-word;">{{ step.actionType }}</div>
+                        </div>
+                      </sc-if>
+
+                      <sc-if value="{{ step.isDraft }}" hint-placeholder-val="{{ false }}">
+                        <div style="font-size:13px;line-height:1.6;color:rgba(23,24,27,0.82);white-space:pre-line;">{{ step.typedDraft }}<sc-if value="{{ step.typing }}" hint-placeholder-val="{{ false }}"><span style="display:inline-block;width:7px;height:14px;vertical-align:-2px;background:#2C7BC8;margin-left:1px;animation:caret 0.9s steps(1) infinite;"></span></sc-if></div>
+                      </sc-if>
+
+                      <sc-if value="{{ step.isGate }}" hint-placeholder-val="{{ false }}">
+                        <div style="padding:12px 14px;border-radius:7px;background:{{ step.gateBg }};border:1px solid {{ step.gateBorder }};color:{{ step.gateText }};font-size:13px;line-height:1.5;display:flex;align-items:center;justify-content:space-between;gap:14px;{{ step.gateAnim }}">
+                          <div style="min-width:0;">{{ step.note }}</div>
+                          <div style="flex-shrink:0;display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;opacity:0.7;cursor:pointer;text-decoration:underline;text-underline-offset:2px;" style-hover="opacity:1;">Open →</div>
+                        </div>
+                      </sc-if>
+
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:28px;padding:12px 28px;border-top:1px solid rgba(0,0,0,0.09);background:#F4F5F7;font-family:'JetBrains Mono',monospace;font-size:12px;color:rgba(23,24,27,0.55);flex-shrink:0;">
+        <div><span style="color:rgba(23,24,27,0.4);">tokens</span> &nbsp;{{ footTokens }}</div>
+        <div><span style="color:rgba(23,24,27,0.4);">cost</span> &nbsp;{{ footCost }}</div>
+        <div><span style="color:rgba(23,24,27,0.4);">elapsed</span> &nbsp;{{ footElapsed }}</div>
+        <div><span style="color:rgba(23,24,27,0.4);">steps</span> &nbsp;{{ footSteps }}</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;autoplay&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Streaming&quot;},&quot;speed&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:1,&quot;min&quot;:0.25,&quot;max&quot;:3,&quot;step&quot;:0.25,&quot;unit&quot;:&quot;×&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Streaming&quot;},&quot;typeDraft&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Streaming&quot;}}">
+class Component extends DCLogic {
+  state = {
+    steps: [], cursor: 0, running: false, runStatus: 'idle',
+    tokensIn: 0, tokensOut: 0, cost: 0, elapsed: 0,
+    typed: 0, typing: false,
+    collapsed: {}, callCollapsed: {}, speed: 1
+  };
+
+  activeEmail = {
+    sender: 'Priya Nadkarni', email: 'p.nadkarni@tenantmail.com', unit: '3C',
+    subject: 'Can I paint the living room?', time: '11:20',
+    body: "Hi, I was hoping to paint the living room a light blue. I noticed the lease doesn't specify any restrictions on paint colors. I'm happy to restore it to the original color when I move out. Let me know if that's alright. Thanks, Priya, Unit 3C"
+  };
+
+  draftText = "Hi Priya, thanks for asking \u2014 the lease requires the landlord's prior written consent before painting (\u00a76(1)), so you'd need approval before proceeding. Let me know if you'd like me to submit that request on your behalf.";
+
+  events = [
+    { d: 120, e: { type: 'run_started', run_id: 'e4ca3d5f-8b50-486a-972a-599d519a26ab' } },
+    { d: 300, e: { type: 'node_started', node: 'classify' } },
+    { d: 460, e: { type: 'cost', node: 'classify', model: 'gpt-4o-mini', input_tokens: 282, output_tokens: 6, cost_usd: 4.59e-5 } },
+    { d: 200, e: { type: 'node_finished', node: 'classify', output: { category: 'lease_question' } } },
+    { d: 260, e: { type: 'node_started', node: 'extract' } },
+    { d: 620, e: { type: 'cost', node: 'extract', model: 'gpt-4o-mini', input_tokens: 539, output_tokens: 78, cost_usd: 0.00012765 } },
+    { d: 240, e: { type: 'node_finished', node: 'extract', output: {
+        tenant_name: 'Priya Nadkarni', address: '12 Ardsley Row, Port Marlow, CA 94066', unit: '3C',
+        appliance_or_system: null, severity: 'low', issue_category: 'alterations',
+        issue_summary: 'Tenant is asking permission to paint the living room light blue, and is willing to restore the original color on move-out.' } } },
+    { d: 280, e: { type: 'node_started', node: 'lease_check' } },
+    { d: 500, e: { type: 'cost', node: 'lease_check', model: 'claude-sonnet-4-5', input_tokens: 1292, output_tokens: 100, cost_usd: 0.005376 } },
+    { d: 180, e: { type: 'tool_call', node: 'lease_check', tool: 'lease_qa',
+        reasoning: 'Checking whether the lease restricts painting before responding.',
+        question: 'Who is responsible for painting and what are the rules or restrictions regarding the tenant painting or altering the paint color of the unit?' } },
+    { d: 1050, e: { type: 'tool_result', node: 'lease_check',
+        result: "Tenant may not paint the unit without Landlord's prior written consent [lease-agreement-final-v3-1 \u00a76(1)]. If Tenant deducts the cost of any painting from Rent without such consent, that deduction will be treated as unpaid Rent [lease-agreement-final-v3-1 \u00a76(1)]." } },
+    { d: 420, e: { type: 'cost', node: 'lease_check', model: 'claude-sonnet-4-5', input_tokens: 891, output_tokens: 128, cost_usd: 0.004593 } },
+    { d: 180, e: { type: 'tool_call', node: 'lease_check', tool: 'lease_qa',
+        reasoning: 'Consent is required \u2014 confirming who holds that authority.',
+        question: 'Who holds the authority to grant written consent for painting or altering the unit?' } },
+    { d: 820, e: { type: 'tool_result', node: 'lease_check',
+        result: 'Authority to grant consent rests with the Landlord [lease-agreement-final-v3-1 \u00a76(1)].' } },
+    { d: 420, e: { type: 'cost', node: 'lease_check', model: 'claude-sonnet-4-5', input_tokens: 592, output_tokens: 112, cost_usd: 0.003456 } },
+    { d: 180, e: { type: 'tool_call', node: 'lease_check', tool: 'submit_verdict',
+        reasoning: 'The lease fully addresses this \u2014 submitting a verdict.',
+        argsText: 'lease_addresses_issue: true, responsibility: "landlord"' } },
+    { d: 420, e: { type: 'tool_result', node: 'lease_check', result: null } },
+    { d: 220, e: { type: 'node_finished', node: 'lease_check', verdict: [{ k: 'lease_addresses_issue', v: 'true' }, { k: 'responsibility', v: 'landlord' }] } },
+    { d: 260, e: { type: 'node_started', node: 'plan' } },
+    { d: 300, e: { type: 'node_finished', node: 'plan', output: { action_type: 'send_reply' } } },
+    { d: 260, e: { type: 'node_started', node: 'draft' } },
+    { d: 560, e: { type: 'cost', node: 'draft', model: 'gpt-4o-mini', input_tokens: 587, output_tokens: 126, cost_usd: 0.00016365 } },
+    { d: 160, e: { type: 'node_finished', node: 'draft', output: { draft: true } } },
+    { d: 400, e: { type: 'node_started', node: 'approval_gate' } },
+    { d: 180, e: { type: 'paused', summary: 'Waiting for human approval' } },
+    { d: 250, e: { type: 'run_finished', status: 'paused' } }
+  ];
+
+  typeMap = { classify: 'classify', extract: 'extract', lease_check: 'lease_check', plan: 'decide', draft: 'draft', approval_gate: 'gate' };
+
+  componentDidMount() {
+    this.setState({ speed: this.props.speed ?? 1 }, () => {
+      if (this.props.autoplay !== false) this.start();
+    });
+  }
+  componentWillUnmount() { this.stop(); }
+
+  componentDidUpdate() {
+    const el = this.scrollEl;
+    if (el && this.state.running) el.scrollTop = el.scrollHeight;
+  }
+
+  setScrollEl = el => { this.scrollEl = el; };
+
+  stop() {
+    clearTimeout(this.timer); clearInterval(this.clock); clearInterval(this.typer);
+    this.timer = this.clock = this.typer = null;
+  }
+
+  start = () => {
+    this.stop();
+    this.t0 = Date.now();
+    this.setState({
+      steps: [], cursor: 0, running: true, runStatus: 'running',
+      tokensIn: 0, tokensOut: 0, cost: 0, elapsed: 0, typed: 0, typing: false,
+      collapsed: {}, callCollapsed: {}
+    }, () => {
+      this.clock = setInterval(() => {
+        if (this.state.running) this.setState({ elapsed: Date.now() - this.t0 });
+      }, 60);
+      this.next();
+    });
+  };
+
+  next = () => {
+    const i = this.state.cursor;
+    if (i >= this.events.length) return;
+    const ev = this.events[i];
+    this.timer = setTimeout(() => {
+      this.apply(ev.e);
+      this.setState({ cursor: i + 1 }, () => {
+        if (ev.e.type === 'node_finished' && ev.e.node === 'draft' && this.props.typeDraft !== false) this.runTyper();
+        else this.next();
+      });
+    }, ev.d / (this.state.speed || 1));
+  };
+
+  runTyper() {
+    this.setState({ typing: true, typed: 0 });
+    this.typer = setInterval(() => {
+      const n = this.state.typed + 3;
+      if (n >= this.draftText.length) {
+        clearInterval(this.typer); this.typer = null;
+        this.setState({ typed: this.draftText.length, typing: false }, this.next);
+      } else {
+        this.setState({ typed: n });
+        if (this.scrollEl) this.scrollEl.scrollTop = this.scrollEl.scrollHeight;
+      }
+    }, 14 / (this.state.speed || 1));
+  }
+
+  apply(e) {
+    if (e.type === 'run_started') { this.setState({ runId: e.run_id }); return; }
+    if (e.type === 'node_started') {
+      this.setState(s => ({ steps: [...s.steps, { name: e.node, type: this.typeMap[e.node], status: 'running', fields: [], calls: [], verdict: [], usage: null, note: null, category: null, actionType: null }] }));
+      return;
+    }
+    if (e.type === 'cost') {
+      this.setState(s => ({
+        tokensIn: s.tokensIn + e.input_tokens, tokensOut: s.tokensOut + e.output_tokens, cost: s.cost + e.cost_usd,
+        steps: s.steps.map(st => st.name !== e.node ? st : {
+          ...st, usage: { model: e.model, inTok: (st.usage ? st.usage.inTok : 0) + e.input_tokens, outTok: (st.usage ? st.usage.outTok : 0) + e.output_tokens, cost: (st.usage ? st.usage.cost : 0) + e.cost_usd }
+        })
+      }));
+      return;
+    }
+    if (e.type === 'tool_call') {
+      this.setState(s => ({ steps: s.steps.map(st => st.name !== e.node ? st : {
+        ...st, calls: [...st.calls, { tool: e.tool, reasoning: e.reasoning, question: e.question || null, argsText: e.argsText || null, answer: null, citations: [], done: false }]
+      }) }));
+      return;
+    }
+    if (e.type === 'tool_result') {
+      const cites = [];
+      const answer = e.result ? e.result.replace(/\s*\[([^\]]+)\]/g, (m, c) => { if (cites.indexOf(c) < 0) cites.push(c); return ''; }) : null;
+      this.setState(s => ({ steps: s.steps.map(st => st.name !== e.node ? st : {
+        ...st, calls: st.calls.map((c, i) => i !== st.calls.length - 1 ? c : { ...c, answer, citations: cites, done: true })
+      }) }));
+      return;
+    }
+    if (e.type === 'node_finished') {
+      const ms = Date.now() - this.t0;
+      const out = e.output || {};
+      this.setState(s => ({ steps: s.steps.map(st => st.name !== e.node ? st : {
+        ...st, status: 'completed', fields: this.toFields(e.output), verdict: e.verdict || [], at: ms,
+        category: out.category || null, actionType: out.action_type || null
+      }) }));
+      return;
+    }
+    if (e.type === 'paused') {
+      this.setState(s => ({ steps: s.steps.map((st, i) => i !== s.steps.length - 1 ? st : { ...st, status: 'paused', note: e.summary }) }));
+      return;
+    }
+    if (e.type === 'run_finished') this.setState({ running: false, runStatus: 'paused' });
+  }
+
+  toFields(output) {
+    if (!output || output.draft || output.category || output.action_type) return [];
+    return Object.keys(output).map(k => {
+      const raw = output[k];
+      return { k, v: raw === null ? 'None' : String(raw), isNull: raw === null };
+    });
+  }
+
+  hum(k) {
+    if (!k) return k;
+    const s = String(k).replace(/_/g, ' ').trim();
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+  humVal(v) {
+    if (v === null || v === undefined) return v;
+    const s = String(v);
+    if (s === 'true') return 'Yes';
+    if (s === 'false') return 'No';
+    if (/^[$£€\d]/.test(s) || /[A-Z]/.test(s.charAt(0))) return s;
+    const t = s.replace(/_/g, ' ');
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  }
+  humArgs(txt) {
+    if (!txt) return txt;
+    return txt.split(', ').map(pair => {
+      const i = pair.indexOf(':');
+      if (i < 0) return pair;
+      const k = pair.slice(0, i).trim();
+      const v = pair.slice(i + 1).trim().replace(/^"|"$/g, '');
+      return this.hum(k) + ': ' + this.humVal(v);
+    }).join('  ·  ');
+  }
+
+  fmtCost(n) {
+    if (!n) return '$0.00';
+    return '$' + (n < 0.001 ? n.toFixed(7).replace(/0+$/, '').replace(/\.$/, '') : n.toFixed(5));
+  }
+
+  badge(status) {
+    const map = {
+      completed: { dot: '#2E8B4F' },
+      running: { dot: '#2C7BC8' },
+      paused: { dot: '#C68A2E' }
+    };
+    return map[status] || map.running;
+  }
+
+  toggleStep = i => this.setState(s => ({ collapsed: { ...s.collapsed, [i]: !s.collapsed[i] } }));
+  toggleCall = k => this.setState(s => ({ callCollapsed: { ...s.callCollapsed, [k]: !s.callCollapsed[k] } }));
+  cycleSpeed = () => this.setState(s => ({ speed: s.speed === 1 ? 2 : s.speed === 2 ? 0.5 : 1 }));
+
+  renderVals() {
+    const s = this.state;
+    const initials = this.activeEmail.sender.split(' ').map(p => p[0]).join('').slice(0, 2);
+
+    const displaySteps = s.steps.map((st, idx) => {
+      const b = this.badge(st.status);
+      const running = st.status === 'running';
+      const gate = st.status === 'paused'
+        ? { bg: '#FCF3E3', border: '#EFDDB0', text: '#8A5A16', anim: 'animation:pulseAmber 2s ease-in-out infinite;' }
+        : { bg: '#EDEEF1', border: 'rgba(0,0,0,0.09)', text: 'rgba(23,24,27,0.5)', anim: '' };
+      const headerRight = st.usage
+        ? st.usage.model + ' · ' + st.usage.inTok + ' in / ' + st.usage.outTok + ' out tok · ' + this.fmtCost(st.usage.cost)
+        : running ? 'streaming…' : (st.at ? (st.at / 1000).toFixed(2) + 's' : '');
+      const fmt = f => ({ k: this.hum(f.k), v: this.humVal(f.v), color: f.isNull ? 'rgba(23,24,27,0.35)' : '#17181B' });
+      const allFields = st.fields.map(fmt);
+      const pick = keys => keys.map(k => allFields.find(f => f.k === this.hum(k))).filter(Boolean);
+      const fieldsLeft = pick(['tenant_name', 'address', 'unit']);
+      const fieldsRight = pick(['appliance_or_system', 'severity', 'issue_category', 'issue_summary']);
+      const leaseCalls = st.calls.map((c, ci) => {
+        const key = idx + '-' + ci;
+        const open = !!s.callCollapsed[key];
+        return {
+          ...c, argsText: this.humArgs(c.argsText),
+          isQA: c.tool === 'lease_qa', isVerdict: c.tool === 'submit_verdict',
+          pending: !c.done, expanded: open, chevronRotate: open ? '90deg' : '0deg',
+          onToggle: () => this.toggleCall(key)
+        };
+      });
+      return {
+        name: this.hum(st.name),
+        dotColor: b.dot,
+        isRunning: running, isSettled: !running,
+        hasNext: idx < s.steps.length - 1,
+        headerRight,
+        expanded: !s.collapsed[idx] && (st.type !== 'gate' || !!st.note),
+        onToggle: () => this.toggleStep(idx),
+        showSkeleton: running && st.type !== 'gate' && st.type !== 'lease_check' && !st.fields.length && !st.category,
+        isClassify: st.type === 'classify' && !!st.category,
+        category: this.humVal(st.category),
+        isExtract: st.type === 'extract' && allFields.length > 0,
+        fieldsLeft, fieldsRight, hasRightCol: fieldsRight.length > 0,
+        isLease: st.type === 'lease_check' && leaseCalls.length > 0,
+        leaseCalls,
+        verdictFields: (st.verdict || []).map(v => ({ k: this.hum(v.k), v: this.humVal(v.v) })),
+        isDecide: st.type === 'decide' && !!st.actionType,
+        actionType: this.humVal(st.actionType),
+        isDraft: st.type === 'draft' && st.status === 'completed',
+        typedDraft: this.props.typeDraft === false ? this.draftText : this.draftText.slice(0, s.typed),
+        typing: s.typing,
+        isGate: st.type === 'gate' && !!st.note,
+        note: st.note, gateBg: gate.bg, gateBorder: gate.border, gateText: gate.text, gateAnim: gate.anim
+      };
+    });
+
+    return {
+      activeEmail: { ...this.activeEmail, initials },
+      displaySteps,
+      runIdShort: (s.runId || 'e4ca3d5f').slice(0, 8),
+      streamLabel: 'started ' + this.activeEmail.time,
+      speedLabel: s.speed + '×',
+      onReplay: this.start,
+      onCycleSpeed: this.cycleSpeed,
+      setScrollEl: this.setScrollEl,
+      footTokens: (s.tokensIn + s.tokensOut).toLocaleString(),
+      footCost: this.fmtCost(s.cost),
+      footElapsed: (s.elapsed / 1000).toFixed(2) + 's',
+      footSteps: String(s.steps.length)
+    };
+  }
+}
+
+</script>
+</body>
+</html>
