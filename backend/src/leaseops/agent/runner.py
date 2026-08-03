@@ -19,7 +19,7 @@ from leaseops.agent.events import (
     RunStartedEvent,
 )
 from leaseops.agent.state import AgentState
-from leaseops.agent.step_schemas import ApprovalCard, ApprovalOutput
+from leaseops.agent.step_schemas import ApprovalCard, ApprovalOutput, ExecuteOutput
 from leaseops.db import emails as emails_repo
 from leaseops.db import runs as runs_repo
 from leaseops.db import steps as steps_repo
@@ -209,15 +209,26 @@ class GraphRunner:
 
         config = self._thread_config(run_id)
         try:
-            await self.graph.ainvoke(
-                Command(resume=decision.model_dump()),
-                config,
+            state = AgentState.model_validate(
+                await self.graph.ainvoke(
+                    Command(resume=decision.model_dump()),
+                    config,
+                )
             )
         except Exception:
             await runs_repo.set_run_status(session, run, RunStatus.FAILED, ended=True)
             raise
 
-        if not decision.approved:
+        if decision.approved:
+            await steps_repo.create_step(
+                session,
+                run_id=run.id,
+                node_name="execute",
+                output=ExecuteOutput(actions_taken=state.actions_taken).model_dump(
+                    mode="json"
+                ),
+            )
+        else:
             await emails_repo.set_email_status(
                 session, run.email_id, EmailStatus.PENDING
             )

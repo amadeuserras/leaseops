@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from typing import Any
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 from langgraph.checkpoint.memory import InMemorySaver
@@ -60,8 +60,7 @@ def _approval_node(state: AgentState) -> dict[str, Any]:
 
 
 def _execute_node(state: AgentState) -> dict[str, Any]:
-    _ = state
-    return {}
+    return {"actions_taken": [action.value for action in state.actions]}
 
 
 def build_test_graph(checkpointer: Any) -> Any:
@@ -140,6 +139,16 @@ async def test_list_approve_flow(api_client, db_session) -> None:
     await db_session.refresh(email)
     assert email.status == EmailStatus.PROCESSING
 
+    steps = await steps_repo.list_steps_for_run(db_session, UUID(run["id"]))
+    execute_steps = [step for step in steps if step.node_name == "execute"]
+    assert len(execute_steps) == 1
+    assert execute_steps[0].output == {
+        "actions_taken": [
+            PlanAction.CREATE_WORK_ORDER,
+            PlanAction.SEND_REPLY,
+        ]
+    }
+
     approvals_response = await api_client.get("/approvals")
     assert approvals_response.json()["items"] == []
 
@@ -177,6 +186,26 @@ async def test_stream_persists_approval_step(db_session, runner) -> None:
     assert [step.node_name for step in steps] == ["seed", "approval"]
     assert steps[-1].output is not None
     assert steps[-1].output["draft"] == "We'll send someone out tomorrow."
+
+
+async def test_approve_after_stream_persists_execute(db_session, runner) -> None:
+    email = await _seed_email(db_session)
+    async for _ in runner.stream(db_session, email):
+        pass
+
+    run = await runs_repo.get_latest_run_for_email(db_session, email.id)
+    assert run is not None
+
+    await runner.approve(db_session, run.id)
+
+    steps = await steps_repo.list_steps_for_run(db_session, run.id)
+    assert [step.node_name for step in steps] == ["seed", "approval", "execute"]
+    assert steps[-1].output == {
+        "actions_taken": [
+            PlanAction.CREATE_WORK_ORDER,
+            PlanAction.SEND_REPLY,
+        ]
+    }
 
 
 async def test_approve_unknown_run_is_404(api_client) -> None:
