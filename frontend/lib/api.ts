@@ -10,7 +10,7 @@ export type Responsibility = 'landlord' | 'tenant' | 'shared' | 'unclear';
 
 export type EmailCategory = 'maintenance' | 'lease_question' | 'not_our_problem' | 'emergency';
 
-export type PlanAction = 'send_reply' | 'create_work_order' | 'call_tenant';
+export type PlanAction = 'send_reply' | 'create_work_order';
 
 export interface EmailResponse {
   id: string;

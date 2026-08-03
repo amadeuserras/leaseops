@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import logging
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from leaseops.agent.state import AgentState, PlanAction
@@ -14,8 +12,6 @@ from leaseops.db import work_orders as work_orders_repo
 from leaseops.db.models import Tenant
 from leaseops.db.session import SessionLocal
 from leaseops.models.enums import EmailStatus, OutboxStatus, WorkOrderStatus
-
-logger = logging.getLogger(__name__)
 
 
 async def _resolve_tenant(session: AsyncSession, state: AgentState) -> Tenant:
@@ -52,18 +48,6 @@ async def _create_work_order(session: AsyncSession, state: AgentState) -> None:
     )
 
 
-def _call_tenant(state: AgentState) -> None:
-    logger.info(
-        "call_tenant",
-        extra={
-            "email_id": str(state.email_id),
-            "tenant_name": state.tenant_name,
-            "unit": state.unit,
-            "address": state.address,
-        },
-    )
-
-
 async def execute(state: AgentState) -> ExecuteOutput:
     actions_taken: list[PlanAction] = []
     async with SessionLocal() as session:
@@ -72,8 +56,6 @@ async def execute(state: AgentState) -> ExecuteOutput:
                 await _send_reply(session, state)
             elif action == PlanAction.CREATE_WORK_ORDER:
                 await _create_work_order(session, state)
-            elif action == PlanAction.CALL_TENANT:
-                _call_tenant(state)
             else:
                 raise RuntimeError(f"unknown action: {action}")
             actions_taken.append(action)

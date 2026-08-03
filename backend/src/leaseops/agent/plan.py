@@ -11,9 +11,7 @@ from leaseops.agent.step_schemas import PlanOutput
 
 def plan(state: AgentState) -> PlanOutput:
     if state.category == EmailCategory.EMERGENCY:
-        return PlanOutput(
-            actions=[PlanAction.CALL_TENANT, PlanAction.SEND_REPLY],
-        )
+        return PlanOutput(actions=[PlanAction.SEND_REPLY])
 
     actions = [PlanAction.SEND_REPLY]
     if (

@@ -31,7 +31,6 @@ class Responsibility(StrEnum):
 class PlanAction(StrEnum):
     SEND_REPLY = "send_reply"
     CREATE_WORK_ORDER = "create_work_order"
-    CALL_TENANT = "call_tenant"
 
 
 class QAResultSchema(LeaseOpsModel):
