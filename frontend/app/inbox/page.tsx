@@ -1,7 +1,7 @@
-import { InboxPage } from "@/components/inbox-page";
-import { listEmails } from "@/lib/api";
+import { InboxPage } from '@/components/inbox-page';
+import { listEmails } from '@/lib/api';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export default async function Page() {
   const data = await listEmails();

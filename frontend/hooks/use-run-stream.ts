@@ -1,9 +1,8 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useRef, useState } from "react";
-
-import { streamRun } from "@/lib/api";
-import { applyStreamEvent, emptyRunState, type RunState } from "@/lib/run-state";
+import { streamRun } from '@/lib/api';
+import { applyStreamEvent, emptyRunState, type RunState } from '@/lib/run-state';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export function useRunStream(emailId: string, initial: RunState) {
   const [state, setState] = useState<RunState>(initial);
@@ -24,7 +23,7 @@ export function useRunStream(emailId: string, initial: RunState) {
     const controller = new AbortController();
     abortRef.current = controller;
     startedAtRef.current = Date.now();
-    setState({ ...emptyRunState(), live: true, phase: "running" });
+    setState({ ...emptyRunState(), live: true, phase: 'running' });
 
     void (async () => {
       try {
@@ -37,7 +36,7 @@ export function useRunStream(emailId: string, initial: RunState) {
         setState((current) => ({
           ...current,
           live: false,
-          phase: "failed",
+          phase: 'failed',
           error: error instanceof Error ? error.message : String(error),
         }));
       } finally {

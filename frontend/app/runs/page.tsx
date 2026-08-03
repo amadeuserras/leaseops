@@ -1,8 +1,7 @@
-import { redirect } from "next/navigation";
+import { listEmails } from '@/lib/api';
+import { redirect } from 'next/navigation';
 
-import { listEmails } from "@/lib/api";
-
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 /**
  * A run is always opened for a specific email, so `/runs` has nothing of its
@@ -11,5 +10,5 @@ export const dynamic = "force-dynamic";
 export default async function Page() {
   const data = await listEmails();
   const newest = data.items[0];
-  redirect(newest ? `/runs/${newest.id}` : "/inbox");
+  redirect(newest ? `/runs/${newest.id}` : '/inbox');
 }

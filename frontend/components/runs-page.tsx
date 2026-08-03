@@ -1,13 +1,11 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useRef } from "react";
-
-import { useRunStream } from "@/hooks/use-run-stream";
-import { type RunDetailResponse, senderDisplayName } from "@/lib/api";
-import { fmtClock, fmtCost, fmtElapsed, fmtTokens, initials } from "@/lib/format";
-import { fromRunDetail, runLabel, toDisplaySteps } from "@/lib/run-state";
-
-import { RunTimeline } from "./run-timeline";
+import { RunTimeline } from './run-timeline';
+import { useRunStream } from '@/hooks/use-run-stream';
+import { type RunDetailResponse, senderDisplayName } from '@/lib/api';
+import { fmtClock, fmtCost, fmtElapsed, fmtTokens, initials } from '@/lib/format';
+import { fromRunDetail, runLabel, toDisplaySteps } from '@/lib/run-state';
+import { useEffect, useMemo, useRef } from 'react';
 
 export function RunsPage({ data }: { data: RunDetailResponse }) {
   const initial = useMemo(() => fromRunDetail(data), [data]);
@@ -18,7 +16,7 @@ export function RunsPage({ data }: { data: RunDetailResponse }) {
   // is an explicit call from this flow, fired once, never on later re-renders.
   useEffect(() => {
     if (autoStarted.current) return;
-    if (data.steps.length === 0 && data.email.status === "pending") {
+    if (data.steps.length === 0 && data.email.status === 'pending') {
       autoStarted.current = true;
       start();
     }
@@ -40,23 +38,23 @@ export function RunsPage({ data }: { data: RunDetailResponse }) {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex min-h-0 flex-1">
-        <div className="w-[420px] min-w-[280px] shrink basis-[420px] overflow-y-auto border-r border-hairline bg-page p-6">
-          <div className="mb-2.5 text-[12.5px] text-ink-40">Original message</div>
-          <div className="rounded-xl border border-hairline bg-surface p-5">
+        <div className="border-hairline bg-page w-[420px] min-w-[280px] shrink basis-[420px] overflow-y-auto border-r p-6">
+          <div className="text-ink-40 mb-2.5 text-[12.5px]">Original message</div>
+          <div className="border-hairline bg-surface rounded-xl border p-5">
             <div className="mb-3.5 flex items-center gap-2">
-              <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-blue-bg text-[13px] font-bold text-blue">
+              <div className="bg-blue-bg text-blue flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full text-[13px] font-bold">
                 {initials(senderName)}
               </div>
               <div className="min-w-0">
                 <div className="text-[13.5px] font-semibold">{senderName}</div>
-                <div className="text-[11.5px] text-ink-50">{email.sender}</div>
+                <div className="text-ink-50 text-[11.5px]">{email.sender}</div>
               </div>
             </div>
             <div className="mb-1 text-[14.5px] font-bold">{email.subject}</div>
-            <div className="mb-3.5 text-[12.5px] text-ink-40">
+            <div className="text-ink-40 mb-3.5 text-[12.5px]">
               Received {fmtClock(email.received_at)}
             </div>
-            <div className="text-[13px] leading-[1.7] whitespace-pre-line text-ink-82">
+            <div className="text-ink-82 text-[13px] leading-[1.7] whitespace-pre-line">
               {email.body}
             </div>
           </div>
@@ -67,14 +65,12 @@ export function RunsPage({ data }: { data: RunDetailResponse }) {
           className="min-w-[380px] flex-1 basis-[480px] overflow-y-auto px-7 py-6"
         >
           <div className="mb-1 flex items-start justify-between gap-4">
-            <h1 className="m-0 text-lg font-bold tracking-[-0.01em]">
-              Agent run trace
-            </h1>
+            <h1 className="m-0 text-lg font-bold tracking-[-0.01em]">Agent run trace</h1>
             <button
               type="button"
               onClick={start}
               disabled={state.live}
-              className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-black/10 bg-surface px-3 py-[5px] text-[12.5px] font-medium text-ink-60 select-none hover:bg-raised hover:text-ink disabled:cursor-default disabled:opacity-50 disabled:hover:bg-surface disabled:hover:text-ink-60"
+              className="bg-surface text-ink-60 hover:bg-raised hover:text-ink disabled:hover:bg-surface disabled:hover:text-ink-60 flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-black/10 px-3 py-[5px] text-[12.5px] font-medium select-none disabled:cursor-default disabled:opacity-50"
             >
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
                 <path
@@ -85,23 +81,23 @@ export function RunsPage({ data }: { data: RunDetailResponse }) {
                   strokeLinejoin="round"
                 />
               </svg>
-              {state.live ? "Running…" : state.steps.length > 0 ? "Re-run" : "Run agent"}
+              {state.live ? 'Running…' : state.steps.length > 0 ? 'Re-run' : 'Run agent'}
             </button>
           </div>
 
-          <div className="mb-[22px] text-[12.5px] text-ink-40">
-            {state.runId ? `run_${state.runId.slice(0, 8)}` : "no run yet"} ·{" "}
+          <div className="text-ink-40 mb-[22px] text-[12.5px]">
+            {state.runId ? `run_${state.runId.slice(0, 8)}` : 'no run yet'} ·{' '}
             {runLabel(state, email.status)}
           </div>
 
           {state.error && (
-            <div className="mb-4 rounded-lg border border-red-border bg-red-bg px-3.5 py-3 text-[13px] text-red">
+            <div className="border-red-border bg-red-bg text-red mb-4 rounded-lg border px-3.5 py-3 text-[13px]">
               {state.error}
             </div>
           )}
 
           {steps.length === 0 && !state.live ? (
-            <div className="rounded-xl border border-dashed border-black/12 px-4 py-9 text-center text-[12.5px] text-ink-35">
+            <div className="text-ink-35 rounded-xl border border-dashed border-black/12 px-4 py-9 text-center text-[12.5px]">
               The agent has not processed this email yet.
             </div>
           ) : (
@@ -110,7 +106,7 @@ export function RunsPage({ data }: { data: RunDetailResponse }) {
         </div>
       </div>
 
-      <div className="flex shrink-0 items-center gap-7 border-t border-hairline bg-page px-7 py-3 font-mono text-xs text-ink-55">
+      <div className="border-hairline bg-page text-ink-55 flex shrink-0 items-center gap-7 border-t px-7 py-3 font-mono text-xs">
         <div>
           <span className="text-ink-40">tokens</span>&nbsp;&nbsp;
           {fmtTokens(state.stats.tokens)}

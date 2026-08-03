@@ -20,7 +20,7 @@ Three real discrepancies are handled there and documented in-file:
   so gate state is derived from the email status instead.
 - **`submit_verdict` is never emitted or persisted** — only its result lands on the step
   output. The design shows it as a tool row, so it is reconstructed from the real verdict
-  fields on *both* paths. `reasoning` stays null rather than invented.
+  fields on _both_ paths. `reasoning` stays null rather than invented.
 
 The streamed run and the reloaded run render an identical timeline.
 

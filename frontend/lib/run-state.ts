@@ -1,5 +1,4 @@
 /** Turns live stream events and saved run data into the timeline the UI draws. */
-
 import {
   type ApprovalCard,
   type ClassifyOutput,
@@ -14,12 +13,12 @@ import {
   type RunStats,
   type StepResponse,
   type StreamEvent,
-} from "./api";
-import { fmtCost, hum, humArgs, humVal } from "./format";
+} from './api';
+import { fmtCost, hum, humArgs, humVal } from './format';
 
-export type TimelineStatus = "pending" | "running" | "completed" | "paused";
+export type TimelineStatus = 'pending' | 'running' | 'completed' | 'paused';
 
-export type RunPhase = "idle" | "running" | "paused" | "done" | "failed";
+export type RunPhase = 'idle' | 'running' | 'paused' | 'done' | 'failed';
 
 export interface ToolCall {
   tool: string;
@@ -65,7 +64,7 @@ const EMPTY_STATS: RunStats = { tokens: 0, cost: 0, elapsed: 0, step_count: 0 };
 export function emptyRunState(): RunState {
   return {
     runId: null,
-    phase: "idle",
+    phase: 'idle',
     live: false,
     steps: [],
     stats: EMPTY_STATS,
@@ -78,24 +77,21 @@ const CITATION_RE = /\s*\[([a-z0-9-]+) (§[^\]]+|p\d+(?:\(\d+\))?)\]/g;
 
 function splitCitations(text: string): { text: string; citations: string[] } {
   const citations: string[] = [];
-  const stripped = text.replace(
-    CITATION_RE,
-    (_match, doc: string, ref: string) => {
-      const id = `${doc} ${ref}`;
-      if (!citations.includes(id)) citations.push(id);
-      return "";
-    },
-  );
+  const stripped = text.replace(CITATION_RE, (_match, doc: string, ref: string) => {
+    const id = `${doc} ${ref}`;
+    if (!citations.includes(id)) citations.push(id);
+    return '';
+  });
   return { text: stripped.trim(), citations };
 }
 
 function unbracket(citation: string): string {
-  return citation.replace(/^\[|\]$/g, "");
+  return citation.replace(/^\[|\]$/g, '');
 }
 
 function verdictCall(output: LeaseCheckOutput): ToolCall {
   return {
-    tool: "submit_verdict",
+    tool: 'submit_verdict',
     reasoning: null,
     question: null,
     argsText: `lease_addresses_issue: ${output.lease_addresses_issue}, responsibility: "${output.responsibility}"`,
@@ -110,7 +106,7 @@ function qaCalls(output: LeaseCheckOutput): ToolCall[] {
   return output.qa_results.map((qa) => {
     const { text } = splitCitations(qa.answer);
     return {
-      tool: "lease_qa",
+      tool: 'lease_qa',
       reasoning: qa.reasoning || null,
       question: qa.question,
       argsText: null,
@@ -123,13 +119,13 @@ function qaCalls(output: LeaseCheckOutput): ToolCall[] {
 }
 
 export function fromRunDetail(data: RunDetailResponse): RunState {
-  const awaiting = data.email.status === "awaiting_approval";
-  const executed = data.steps.some((step) => step.node_name === "execute");
+  const awaiting = data.email.status === 'awaiting_approval';
+  const executed = data.steps.some((step) => step.node_name === 'execute');
 
   const steps = data.steps.map<TimelineStep>((step) => ({
     key: step.id,
     node: step.node_name,
-    status: step.node_name === "approval" && awaiting ? "paused" : "completed",
+    status: step.node_name === 'approval' && awaiting ? 'paused' : 'completed',
     usage:
       step.model === null
         ? null
@@ -142,14 +138,14 @@ export function fromRunDetail(data: RunDetailResponse): RunState {
     at: null,
     output: step.output,
     calls: leaseCallsFor(step),
-    note: step.node_name === "approval" ? gateNote(awaiting, executed) : null,
+    note: step.node_name === 'approval' ? gateNote(awaiting, executed) : null,
   }));
 
-  const approvalStep = data.steps.find((step) => step.node_name === "approval");
+  const approvalStep = data.steps.find((step) => step.node_name === 'approval');
 
   return {
     runId: data.steps[0]?.run_id ?? null,
-    phase: awaiting ? "paused" : steps.length > 0 ? "done" : "idle",
+    phase: awaiting ? 'paused' : steps.length > 0 ? 'done' : 'idle',
     live: false,
     steps,
     stats: data.stats,
@@ -159,15 +155,13 @@ export function fromRunDetail(data: RunDetailResponse): RunState {
 }
 
 function leaseCallsFor(step: StepResponse): ToolCall[] {
-  if (step.node_name !== "lease_check" || step.output === null) return [];
+  if (step.node_name !== 'lease_check' || step.output === null) return [];
   return [...qaCalls(step.output), verdictCall(step.output)];
 }
 
 function gateNote(awaiting: boolean, executed: boolean): string {
-  if (awaiting) return "Waiting for human approval";
-  return executed
-    ? "Approved — actions executed"
-    : "Closed without executing actions";
+  if (awaiting) return 'Waiting for human approval';
+  return executed ? 'Approved — actions executed' : 'Closed without executing actions';
 }
 
 function replaceStep(
@@ -180,22 +174,18 @@ function replaceStep(
   return steps.map((step, i) => (i === index ? update(step) : step));
 }
 
-export function applyStreamEvent(
-  state: RunState,
-  event: StreamEvent,
-  elapsed: number,
-): RunState {
+export function applyStreamEvent(state: RunState, event: StreamEvent, elapsed: number): RunState {
   switch (event.type) {
-    case "run_started":
-      return { ...state, runId: event.run_id, phase: "running", live: true };
+    case 'run_started':
+      return { ...state, runId: event.run_id, phase: 'running', live: true };
 
-    case "node_started": {
+    case 'node_started': {
       const steps = [
         ...state.steps,
         {
           key: `${event.node}-${state.steps.length}`,
           node: event.node,
-          status: "running" as const,
+          status: 'running' as const,
           usage: null,
           at: null,
           output: null,
@@ -210,7 +200,7 @@ export function applyStreamEvent(
       };
     }
 
-    case "cost": {
+    case 'cost': {
       const steps = replaceStep(state.steps, event.node, (step) => ({
         ...step,
         usage: {
@@ -231,7 +221,7 @@ export function applyStreamEvent(
       };
     }
 
-    case "tool_call": {
+    case 'tool_call': {
       const steps = replaceStep(state.steps, event.node, (step) => ({
         ...step,
         calls: [
@@ -251,8 +241,8 @@ export function applyStreamEvent(
       return { ...state, steps };
     }
 
-    case "tool_result": {
-      const raw = typeof event.result === "string" ? event.result : null;
+    case 'tool_result': {
+      const raw = typeof event.result === 'string' ? event.result : null;
       const parsed = raw === null ? null : splitCitations(raw);
       const steps = replaceStep(state.steps, event.node, (step) => ({
         ...step,
@@ -271,47 +261,42 @@ export function applyStreamEvent(
       return { ...state, steps };
     }
 
-    case "node_finished": {
+    case 'node_finished': {
       const steps = replaceStep(state.steps, event.node, (step) => ({
         ...step,
-        status: "completed" as const,
+        status: 'completed' as const,
         output: event.output,
         at: elapsed,
         calls:
-          event.node === "lease_check" && event.output
+          event.node === 'lease_check' && event.output
             ? [...step.calls, verdictCall(event.output as LeaseCheckOutput)]
             : step.calls,
       }));
       return { ...state, steps };
     }
 
-    case "paused": {
+    case 'paused': {
       const steps = state.steps.map((step, i) =>
         i === state.steps.length - 1
           ? {
               ...step,
-              status: "paused" as const,
+              status: 'paused' as const,
               output: event.request,
-              note: "Waiting for human approval",
+              note: 'Waiting for human approval',
             }
           : step,
       );
-      return { ...state, steps, approval: event.request, phase: "paused" };
+      return { ...state, steps, approval: event.request, phase: 'paused' };
     }
 
-    case "error":
-      return { ...state, phase: "failed", live: false, error: event.message };
+    case 'error':
+      return { ...state, phase: 'failed', live: false, error: event.message };
 
-    case "run_finished":
+    case 'run_finished':
       return {
         ...state,
         live: false,
-        phase:
-          event.status === "paused"
-            ? "paused"
-            : event.status === "failed"
-              ? "failed"
-              : "done",
+        phase: event.status === 'paused' ? 'paused' : event.status === 'failed' ? 'failed' : 'done',
         stats: { ...state.stats, elapsed },
       };
 
@@ -354,31 +339,20 @@ export interface DisplayStep {
 }
 
 const DOT: Record<TimelineStatus, string> = {
-  completed: "#2E8B4F",
-  running: "#2C7BC8",
-  paused: "#C68A2E",
-  pending: "rgba(0,0,0,0.12)",
+  completed: '#2E8B4F',
+  running: '#2C7BC8',
+  paused: '#C68A2E',
+  pending: 'rgba(0,0,0,0.12)',
 };
 
-const EXTRACT_LEFT: (keyof ExtractOutput)[] = [
-  "tenant_name",
-  "address",
-  "unit",
-];
-const EXTRACT_RIGHT: (keyof ExtractOutput)[] = [
-  "appliance_or_system",
-  "severity",
-  "issue_summary",
-];
+const EXTRACT_LEFT: (keyof ExtractOutput)[] = ['tenant_name', 'address', 'unit'];
+const EXTRACT_RIGHT: (keyof ExtractOutput)[] = ['appliance_or_system', 'severity', 'issue_summary'];
 
-function extractFields(
-  output: ExtractOutput | null,
-  keys: (keyof ExtractOutput)[],
-): Field[] {
+function extractFields(output: ExtractOutput | null, keys: (keyof ExtractOutput)[]): Field[] {
   if (!output) return [];
   return keys.map((key) => ({
     k: hum(key),
-    v: output[key] === null ? "None" : humVal(output[key]),
+    v: output[key] === null ? 'None' : humVal(output[key]),
     muted: output[key] === null,
   }));
 }
@@ -388,29 +362,29 @@ function headerRight(step: TimelineStep): string {
     const { model, inputTokens, outputTokens, cost } = step.usage;
     return `${model} · ${inputTokens} in / ${outputTokens} out tok · ${fmtCost(cost)}`;
   }
-  if (step.status === "running") return "streaming…";
-  return step.at === null ? "" : `${step.at.toFixed(2)}s`;
+  if (step.status === 'running') return 'streaming…';
+  return step.at === null ? '' : `${step.at.toFixed(2)}s`;
 }
 
 function gateStyle(status: TimelineStatus) {
-  if (status === "paused") {
-    return { bg: "#FCF3E3", border: "#EFDDB0", text: "#8A5A16", pulse: true };
+  if (status === 'paused') {
+    return { bg: '#FCF3E3', border: '#EFDDB0', text: '#8A5A16', pulse: true };
   }
-  if (status === "completed") {
-    return { bg: "#E9F5EC", border: "#BFE2C8", text: "#256B3A", pulse: false };
+  if (status === 'completed') {
+    return { bg: '#E9F5EC', border: '#BFE2C8', text: '#256B3A', pulse: false };
   }
   return {
-    bg: "#EDEEF1",
-    border: "rgba(0,0,0,0.09)",
-    text: "rgba(23,24,27,0.5)",
+    bg: '#EDEEF1',
+    border: 'rgba(0,0,0,0.09)',
+    text: 'rgba(23,24,27,0.5)',
     pulse: false,
   };
 }
 
 export function toDisplaySteps(state: RunState): DisplayStep[] {
   return state.steps.map((step, index) => {
-    const running = step.status === "running";
-    const isLease = step.node === "lease_check";
+    const running = step.status === 'running';
+    const isLease = step.node === 'lease_check';
     const lease = isLease ? (step.output as LeaseCheckOutput | null) : null;
 
     return {
@@ -421,69 +395,63 @@ export function toDisplaySteps(state: RunState): DisplayStep[] {
       dotColor: DOT[step.status],
       headerRight: headerRight(step),
       hasNext: index < state.steps.length - 1,
-      showSkeleton:
-        running && !isLease && step.node !== "approval" && !step.output,
+      showSkeleton: running && !isLease && step.node !== 'approval' && !step.output,
       category:
-        step.node === "classify" && step.output
+        step.node === 'classify' && step.output
           ? humVal((step.output as ClassifyOutput).category)
           : null,
       fieldsLeft:
-        step.node === "extract"
+        step.node === 'extract'
           ? extractFields(step.output as ExtractOutput | null, EXTRACT_LEFT)
           : [],
       fieldsRight:
-        step.node === "extract"
+        step.node === 'extract'
           ? extractFields(step.output as ExtractOutput | null, EXTRACT_RIGHT)
           : [],
       calls: step.calls.map((call, i) => ({
         ...call,
         key: `${step.key}-${i}`,
-        isQa: call.tool === "lease_qa",
-        isVerdict: call.tool === "submit_verdict",
+        isQa: call.tool === 'lease_qa',
+        isVerdict: call.tool === 'submit_verdict',
         argsLabel: humArgs(call.argsText),
       })),
       verdictFields: lease
         ? [
             {
-              k: hum("lease_addresses_issue"),
+              k: hum('lease_addresses_issue'),
               v: humVal(lease.lease_addresses_issue),
               muted: false,
             },
             {
-              k: hum("responsibility"),
+              k: hum('responsibility'),
               v: humVal(lease.responsibility),
               muted: false,
             },
           ]
         : [],
       actions:
-        step.node === "plan" && step.output
-          ? (step.output as PlanOutput).actions.map(humVal).join(", ")
-          : step.node === "execute" && step.output
-            ? (step.output as ExecuteOutput).actions_taken
-                .map(humVal)
-                .join(", ")
+        step.node === 'plan' && step.output
+          ? (step.output as PlanOutput).actions.map(humVal).join(', ')
+          : step.node === 'execute' && step.output
+            ? (step.output as ExecuteOutput).actions_taken.map(humVal).join(', ')
             : null,
-      draft:
-        step.node === "draft" && step.output
-          ? (step.output as DraftOutput).draft
-          : null,
+      draft: step.node === 'draft' && step.output ? (step.output as DraftOutput).draft : null,
       note: step.note,
-      gate: step.node === "approval" ? gateStyle(step.status) : null,
+      gate: step.node === 'approval' ? gateStyle(step.status) : null,
     };
   });
 }
 
 export function runLabel(state: RunState, emailStatus: EmailStatus): string {
-  if (state.live) return "streaming live";
+  if (state.live) return 'streaming live';
   switch (state.phase) {
-    case "paused":
-      return "paused at approval gate";
-    case "failed":
-      return `failed${state.error ? ` · ${state.error}` : ""}`;
-    case "done":
-      return "finished";
+    case 'paused':
+      return 'paused at approval gate';
+    case 'failed':
+      return `failed${state.error ? ` · ${state.error}` : ''}`;
+    case 'done':
+      return 'finished';
     default:
-      return emailStatus === "pending" ? "not started" : humVal(emailStatus);
+      return emailStatus === 'pending' ? 'not started' : humVal(emailStatus);
   }
 }

@@ -1,25 +1,16 @@
-const BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000';
 
-export type EmailStatus =
-  | "pending"
-  | "processing"
-  | "awaiting_approval"
-  | "processed";
+export type EmailStatus = 'pending' | 'processing' | 'awaiting_approval' | 'processed';
 
-export type RunStatus = "running" | "paused" | "done" | "failed";
+export type RunStatus = 'running' | 'paused' | 'done' | 'failed';
 
-export type Severity = "low" | "medium" | "high" | "critical";
+export type Severity = 'low' | 'medium' | 'high' | 'critical';
 
-export type Responsibility = "landlord" | "tenant" | "shared" | "unclear";
+export type Responsibility = 'landlord' | 'tenant' | 'shared' | 'unclear';
 
-export type EmailCategory =
-  | "maintenance"
-  | "lease_question"
-  | "not_our_problem"
-  | "emergency";
+export type EmailCategory = 'maintenance' | 'lease_question' | 'not_our_problem' | 'emergency';
 
-export type PlanAction = "send_reply" | "create_work_order" | "call_tenant";
+export type PlanAction = 'send_reply' | 'create_work_order' | 'call_tenant';
 
 export interface EmailResponse {
   id: string;
@@ -104,15 +95,15 @@ interface StepBase {
 }
 
 export type StepResponse =
-  | (StepBase & { node_name: "classify"; output: ClassifyOutput | null })
-  | (StepBase & { node_name: "extract"; output: ExtractOutput | null })
-  | (StepBase & { node_name: "lease_check"; output: LeaseCheckOutput | null })
-  | (StepBase & { node_name: "plan"; output: PlanOutput | null })
-  | (StepBase & { node_name: "draft"; output: DraftOutput | null })
-  | (StepBase & { node_name: "approval"; output: ApprovalCard | null })
-  | (StepBase & { node_name: "execute"; output: ExecuteOutput | null });
+  | (StepBase & { node_name: 'classify'; output: ClassifyOutput | null })
+  | (StepBase & { node_name: 'extract'; output: ExtractOutput | null })
+  | (StepBase & { node_name: 'lease_check'; output: LeaseCheckOutput | null })
+  | (StepBase & { node_name: 'plan'; output: PlanOutput | null })
+  | (StepBase & { node_name: 'draft'; output: DraftOutput | null })
+  | (StepBase & { node_name: 'approval'; output: ApprovalCard | null })
+  | (StepBase & { node_name: 'execute'; output: ExecuteOutput | null });
 
-export type NodeName = StepResponse["node_name"];
+export type NodeName = StepResponse['node_name'];
 
 export interface RunStats {
   tokens: number;
@@ -144,28 +135,28 @@ export interface ApprovalListResponse {
 }
 
 export type StreamEvent =
-  | { type: "run_started"; run_id: string }
-  | { type: "node_started"; node: NodeName }
-  | { type: "node_finished"; node: NodeName; output: unknown }
-  | { type: "paused"; request: ApprovalCard }
-  | { type: "error"; message: string }
-  | { type: "run_finished"; status: RunStatus }
+  | { type: 'run_started'; run_id: string }
+  | { type: 'node_started'; node: NodeName }
+  | { type: 'node_finished'; node: NodeName; output: unknown }
+  | { type: 'paused'; request: ApprovalCard }
+  | { type: 'error'; message: string }
+  | { type: 'run_finished'; status: RunStatus }
   | {
-      type: "tool_call";
+      type: 'tool_call';
       node: NodeName;
       tool: string;
       arguments: Record<string, unknown>;
       reasoning: string;
     }
   | {
-      type: "tool_result";
+      type: 'tool_result';
       node: NodeName;
       tool: string;
       result: unknown;
       is_error: boolean;
     }
   | {
-      type: "cost";
+      type: 'cost';
       node: NodeName;
       model: string;
       input_tokens: number;
@@ -176,20 +167,18 @@ export type StreamEvent =
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${BASE_URL}${path}`, {
     ...init,
-    cache: "no-store",
-    headers: { "content-type": "application/json", ...init?.headers },
+    cache: 'no-store',
+    headers: { 'content-type': 'application/json', ...init?.headers },
   });
   if (!response.ok) {
-    const detail = await response.text().catch(() => "");
-    throw new Error(
-      `${init?.method ?? "GET"} ${path} failed: ${response.status} ${detail}`,
-    );
+    const detail = await response.text().catch(() => '');
+    throw new Error(`${init?.method ?? 'GET'} ${path} failed: ${response.status} ${detail}`);
   }
   return (await response.json()) as T;
 }
 
 export function listEmails(): Promise<EmailListResponse> {
-  return request<EmailListResponse>("/inbox");
+  return request<EmailListResponse>('/inbox');
 }
 
 export function getRun(emailId: string): Promise<RunDetailResponse> {
@@ -197,8 +186,8 @@ export function getRun(emailId: string): Promise<RunDetailResponse> {
 }
 
 export function startRun(emailId: string): Promise<RunResponse> {
-  return request<RunResponse>("/runs", {
-    method: "POST",
+  return request<RunResponse>('/runs', {
+    method: 'POST',
     body: JSON.stringify({ email_id: emailId }),
   });
 }
@@ -208,10 +197,10 @@ export async function* streamRun(
   signal: AbortSignal,
 ): AsyncGenerator<StreamEvent> {
   const response = await fetch(`${BASE_URL}/runs/stream`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ email_id: emailId }),
-    cache: "no-store",
+    cache: 'no-store',
     signal,
   });
   if (!response.ok || response.body === null) {
@@ -219,24 +208,24 @@ export async function* streamRun(
   }
 
   const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
-  let buffer = "";
+  let buffer = '';
   try {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
       buffer += value;
 
-      let boundary = buffer.indexOf("\n\n");
+      let boundary = buffer.indexOf('\n\n');
       while (boundary !== -1) {
         const record = buffer.slice(0, boundary);
         buffer = buffer.slice(boundary + 2);
         const payload = record
-          .split("\n")
-          .filter((line) => line.startsWith("data:"))
+          .split('\n')
+          .filter((line) => line.startsWith('data:'))
           .map((line) => line.slice(5).trim())
-          .join("");
+          .join('');
         if (payload) yield JSON.parse(payload) as StreamEvent;
-        boundary = buffer.indexOf("\n\n");
+        boundary = buffer.indexOf('\n\n');
       }
     }
   } finally {
@@ -245,17 +234,17 @@ export async function* streamRun(
 }
 
 export function listApprovals(): Promise<ApprovalListResponse> {
-  return request<ApprovalListResponse>("/approvals");
+  return request<ApprovalListResponse>('/approvals');
 }
 
 export function approveRun(runId: string): Promise<RunResponse> {
   return request<RunResponse>(`/approvals/${runId}/approve`, {
-    method: "POST",
+    method: 'POST',
   });
 }
 
 export function rejectRun(runId: string): Promise<RunResponse> {
-  return request<RunResponse>(`/approvals/${runId}/reject`, { method: "POST" });
+  return request<RunResponse>(`/approvals/${runId}/reject`, { method: 'POST' });
 }
 
 // Mocks — everything below has no backend endpoint yet
@@ -271,22 +260,20 @@ export function getBuildInfo(): BuildInfo {
   return {
     evalsPassing: 42,
     evalsTotal: 42,
-    version: "v0.4.2-beta",
-    build: "8f21a0c",
+    version: 'v0.4.2-beta',
+    build: '8f21a0c',
   };
 }
 
 export function senderDisplayName(sender: string): string {
-  const local = sender.split("@")[0] ?? sender;
+  const local = sender.split('@')[0] ?? sender;
   return (
     local
       .split(/[._-]+/)
       .filter(Boolean)
       .map((part) =>
-        part.length <= 2
-          ? part.toUpperCase()
-          : part.charAt(0).toUpperCase() + part.slice(1),
+        part.length <= 2 ? part.toUpperCase() : part.charAt(0).toUpperCase() + part.slice(1),
       )
-      .join(" ") || sender
+      .join(' ') || sender
   );
 }
