@@ -100,28 +100,28 @@ export function InboxPage({ data }: { data: EmailListResponse }) {
         </div>
       </div>
 
-      <div className="border-hairline bg-surface overflow-x-auto rounded-xl border">
-        <div
-          className={`grid ${COLUMNS} border-hairline bg-page text-ink-45 min-w-[960px] gap-4 border-b px-[18px] py-2.5 text-[11px] font-semibold tracking-[0.03em] uppercase`}
-        >
-          <div>Sender</div>
-          <div>Subject</div>
-          <div>Received</div>
-          <div>Severity</div>
-          <div>Status</div>
-          <div>Actions taken</div>
+      {rows.length === 0 ? (
+        <div className="text-ink-40 text-[12.5px]">
+          {data.items.length === 0 ? 'No messages yet.' : 'No messages match this filter'}
         </div>
-
-        {rows.map((email) => (
-          <InboxRow key={email.id} email={email} />
-        ))}
-
-        {rows.length === 0 && (
-          <div className="text-ink-35 px-[18px] py-9 text-center text-[12.5px]">
-            No messages match this filter
+      ) : (
+        <div className="border-hairline bg-surface overflow-x-auto rounded-xl border">
+          <div
+            className={`grid ${COLUMNS} border-hairline bg-page text-ink-45 min-w-[960px] gap-4 border-b px-[18px] py-2.5 text-[11px] font-semibold tracking-[0.03em] uppercase`}
+          >
+            <div>Sender</div>
+            <div>Subject</div>
+            <div>Received</div>
+            <div>Severity</div>
+            <div>Status</div>
+            <div>Actions taken</div>
           </div>
-        )}
-      </div>
+
+          {rows.map((email) => (
+            <InboxRow key={email.id} email={email} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
