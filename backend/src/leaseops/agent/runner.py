@@ -83,6 +83,7 @@ class GraphRunner:
                 session, email.id, EmailStatus.AWAITING_APPROVAL
             )
             return await runs_repo.set_run_status(session, run, RunStatus.PAUSED)
+        await emails_repo.set_email_status(session, email.id, EmailStatus.PROCESSED)
         return await runs_repo.set_run_status(session, run, RunStatus.DONE, ended=True)
 
     async def wipe(self, session: AsyncSession, email_id: UUID) -> None:
@@ -179,7 +180,11 @@ class GraphRunner:
             return
 
         # Done: update the run status
-        status = RunStatus.PAUSED if paused else RunStatus.DONE
+        if paused:
+            status = RunStatus.PAUSED
+        else:
+            status = RunStatus.DONE
+            await emails_repo.set_email_status(session, email.id, EmailStatus.PROCESSED)
         run = await runs_repo.set_run_status(session, run, status, ended=not paused)
         yield RunFinishedEvent(status=status.value).model_dump(mode="json")
 
