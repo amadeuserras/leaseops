@@ -112,7 +112,7 @@ _NODE_NAMES = frozenset(
 )
 
 
-def parse_node_name(value: str) -> NodeName:
+def validate_node_name(value: str) -> NodeName:
     if value not in _NODE_NAMES:
         raise ValueError(f"unknown node_name: {value}")
     return cast(NodeName, value)

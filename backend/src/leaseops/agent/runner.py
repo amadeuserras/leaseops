@@ -23,8 +23,8 @@ from leaseops.agent.step_schemas import (
     ApprovalCard,
     ApprovalOutput,
     ExecuteOutput,
-    parse_node_name,
     parse_step_output,
+    validate_node_name,
 )
 from leaseops.db import emails as emails_repo
 from leaseops.db import runs as runs_repo
@@ -144,7 +144,7 @@ class GraphRunner:
                     await steps_repo.create_step(
                         session,
                         run_id=run.id,
-                        node_name=parse_node_name(node_name),
+                        node_name=validate_node_name(node_name),
                         output=request,
                     )
                     yield PausedEvent(request=request).model_dump(mode="json")
@@ -152,7 +152,7 @@ class GraphRunner:
 
                 # Node finished: write the finished event & create the step
                 cost = cost_by_node.pop(node_name, None)
-                parsed_name = parse_node_name(node_name)
+                parsed_name = validate_node_name(node_name)
                 await steps_repo.create_step(
                     session,
                     run_id=run.id,
