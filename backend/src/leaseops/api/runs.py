@@ -123,6 +123,27 @@ async def stream_run(
     return StreamingResponse(event_source(), media_type="text/event-stream")
 
 
+@router.post("/rerun/stream")
+async def rerun_stream(
+    payload: RunCreate,
+    session: SessionDep,
+    runner: RunnerDep,
+) -> StreamingResponse:
+    email = await emails_repo.get_email_by_id(session, payload.email_id)
+    if email is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="email not found"
+        )
+    await runner.wipe(session, email.id)
+
+    async def event_source() -> AsyncGenerator[str]:
+        async with SessionLocal() as stream_session:
+            async for event in runner.stream(stream_session, email):
+                yield _sse(event)
+
+    return StreamingResponse(event_source(), media_type="text/event-stream")
+
+
 @router.get("/{email_id}", response_model=RunDetailResponse)
 async def get_run(email_id: UUID, session: SessionDep) -> RunDetailResponse:
     row = await emails_repo.get_inbox_row(session, email_id)
@@ -130,7 +151,7 @@ async def get_run(email_id: UUID, session: SessionDep) -> RunDetailResponse:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="email not found"
         )
-    run = await runs_repo.get_latest_run_for_email(session, email_id)
+    run = await runs_repo.get_run_by_email_id(session, email_id)
     steps = (
         await steps_repo.list_steps_for_run(session, run.id) if run is not None else []
     )

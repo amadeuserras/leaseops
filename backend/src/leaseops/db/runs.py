@@ -4,11 +4,11 @@ from datetime import UTC, datetime
 from typing import TypedDict
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from leaseops.db.models import Run, Step
-from leaseops.models.enums import RunStatus
+from leaseops.db.models import Email, Outbox, Run, Step, WorkOrder
+from leaseops.models.enums import EmailStatus, RunStatus
 
 
 def _utcnow() -> datetime:
@@ -63,15 +63,23 @@ async def get_latest_run(session: AsyncSession) -> Run | None:
     ).first()
 
 
-async def get_latest_run_for_email(session: AsyncSession, email_id: UUID) -> Run | None:
+async def get_run_by_email_id(session: AsyncSession, email_id: UUID) -> Run | None:
     return (
-        await session.scalars(
-            select(Run)
-            .where(Run.email_id == email_id)
-            .order_by(Run.started_at.desc())
-            .limit(1)
-        )
-    ).first()
+        await session.scalars(select(Run).where(Run.email_id == email_id))
+    ).one_or_none()
+
+
+async def wipe_run(session: AsyncSession, email_id: UUID) -> UUID | None:
+    run = await get_run_by_email_id(session, email_id)
+    run_id = run.id if run is not None else None
+    await session.execute(delete(Outbox).where(Outbox.email_id == email_id))
+    await session.execute(delete(WorkOrder).where(WorkOrder.email_id == email_id))
+    await session.execute(delete(Run).where(Run.email_id == email_id))
+    email = await session.get(Email, email_id)
+    if email is not None:
+        email.status = EmailStatus.PENDING
+    await session.commit()
+    return run_id
 
 
 async def get_agent_last_ran_at(session: AsyncSession) -> datetime | None:

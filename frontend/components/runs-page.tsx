@@ -9,7 +9,7 @@ import { useEffect, useMemo, useRef } from 'react';
 
 export function RunsPage({ data }: { data: RunDetailResponse }) {
   const initial = useMemo(() => fromRunDetail(data), [data]);
-  const { state, start } = useRunStream(data.email.id, initial);
+  const { state, start, rerun } = useRunStream(data.email.id, initial);
 
   useEffect(() => {
     if (data.steps.length === 0 && data.email.status === 'pending') {
@@ -63,7 +63,7 @@ export function RunsPage({ data }: { data: RunDetailResponse }) {
             <h1 className="m-0 text-lg font-bold tracking-[-0.01em]">Agent run trace</h1>
             <button
               type="button"
-              onClick={start}
+              onClick={() => (state.steps.length > 0 ? rerun() : start())}
               disabled={state.live}
               className="bg-surface text-ink-60 hover:bg-raised hover:text-ink disabled:hover:bg-surface disabled:hover:text-ink-60 flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-black/10 px-3 py-[5px] text-[12.5px] font-medium select-none disabled:cursor-default disabled:opacity-50"
             >

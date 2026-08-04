@@ -85,6 +85,11 @@ class GraphRunner:
             return await runs_repo.set_run_status(session, run, RunStatus.PAUSED)
         return await runs_repo.set_run_status(session, run, RunStatus.DONE, ended=True)
 
+    async def wipe(self, session: AsyncSession, email_id: UUID) -> None:
+        run_id = await runs_repo.wipe_run(session, email_id)
+        if run_id is not None:
+            await self._reset_thread(run_id)
+
     async def stream(
         self, session: AsyncSession, email: Email
     ) -> AsyncGenerator[dict[str, Any]]:
@@ -247,6 +252,11 @@ class GraphRunner:
             return None
         raw = cast(dict[str, Any], snapshot.interrupts[0].value)
         return ApprovalCard.model_validate(raw)
+
+    async def _reset_thread(self, run_id: UUID) -> None:
+        checkpointer = self.graph.checkpointer
+        if checkpointer is not None:
+            await checkpointer.adelete_thread(str(run_id))
 
     @staticmethod
     def _thread_config(run_id: UUID) -> dict[str, Any]:

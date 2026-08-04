@@ -27,6 +27,7 @@ from leaseops.agent.step_schemas import (
     LeaseCheckOutput,
     PlanOutput,
 )
+from leaseops.db import emails as emails_repo
 from leaseops.db import runs as runs_repo
 from leaseops.db import steps as steps_repo
 from leaseops.db.models import Email
@@ -211,7 +212,7 @@ async def test_stream_persists_approval_step(db_session, runner) -> None:
     assert any(event.get("type") == "paused" for event in events)
     assert events[-1] == {"type": "run_finished", "status": RunStatus.PAUSED}
 
-    run = await runs_repo.get_latest_run_for_email(db_session, email.id)
+    run = await runs_repo.get_run_by_email_id(db_session, email.id)
     assert run is not None
     assert run.status == RunStatus.PAUSED
 
@@ -233,7 +234,7 @@ async def test_approve_after_stream_persists_execute(db_session, runner) -> None
     async for _ in runner.stream(db_session, email):
         pass
 
-    run = await runs_repo.get_latest_run_for_email(db_session, email.id)
+    run = await runs_repo.get_run_by_email_id(db_session, email.id)
     assert run is not None
 
     await runner.approve(db_session, run.id)
@@ -249,6 +250,41 @@ async def test_approve_after_stream_persists_execute(db_session, runner) -> None
         "execute",
     ]
     assert steps[-1].output == {"succeeded": True}
+
+
+async def test_stream_rerun_wipes_and_creates_new_run(db_session, runner) -> None:
+    email = await _seed_email(db_session)
+
+    async for _ in runner.stream(db_session, email):
+        pass
+    first = await runs_repo.get_run_by_email_id(db_session, email.id)
+    assert first is not None
+    first_id = first.id
+    first_steps = await steps_repo.list_steps_for_run(db_session, first_id)
+    assert len(first_steps) == 6
+
+    await runner.wipe(db_session, email.id)
+    assert await runs_repo.get_run(db_session, first_id) is None
+
+    email = await emails_repo.get_email_by_id(db_session, email.id)
+    assert email is not None
+    assert email.status == EmailStatus.PENDING
+
+    async for _ in runner.stream(db_session, email):
+        pass
+    second = await runs_repo.get_run_by_email_id(db_session, email.id)
+    assert second is not None
+    assert second.id != first_id
+
+    steps = await steps_repo.list_steps_for_run(db_session, second.id)
+    assert [step.node_name for step in steps] == [
+        "classify",
+        "extract",
+        "lease_check",
+        "draft",
+        "plan",
+        "approval",
+    ]
 
 
 async def test_approve_unknown_run_is_404(api_client) -> None:

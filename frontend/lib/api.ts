@@ -201,21 +201,10 @@ export function startRun(emailId: string): Promise<RunResponse> {
   });
 }
 
-export async function* streamRun(
-  emailId: string,
-  signal: AbortSignal,
-): AsyncGenerator<StreamEvent> {
-  const response = await fetch(`${BASE_URL}/runs/stream`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ email_id: emailId }),
-    cache: 'no-store',
-    signal,
-  });
-  if (!response.ok || response.body === null) {
-    throw new Error(`POST /runs/stream failed: ${response.status}`);
+async function* readRunStream(response: Response): AsyncGenerator<StreamEvent> {
+  if (response.body === null) {
+    throw new Error('stream response had no body');
   }
-
   const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
   let buffer = '';
   try {
@@ -240,6 +229,40 @@ export async function* streamRun(
   } finally {
     reader.cancel().catch(() => {});
   }
+}
+
+export async function* streamRun(
+  emailId: string,
+  signal: AbortSignal,
+): AsyncGenerator<StreamEvent> {
+  const response = await fetch(`${BASE_URL}/runs/stream`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ email_id: emailId }),
+    cache: 'no-store',
+    signal,
+  });
+  if (!response.ok) {
+    throw new Error(`POST /runs/stream failed: ${response.status}`);
+  }
+  yield* readRunStream(response);
+}
+
+export async function* streamRerun(
+  emailId: string,
+  signal: AbortSignal,
+): AsyncGenerator<StreamEvent> {
+  const response = await fetch(`${BASE_URL}/runs/rerun/stream`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ email_id: emailId }),
+    cache: 'no-store',
+    signal,
+  });
+  if (!response.ok) {
+    throw new Error(`POST /runs/rerun/stream failed: ${response.status}`);
+  }
+  yield* readRunStream(response);
 }
 
 export function listApprovals(): Promise<ApprovalListResponse> {

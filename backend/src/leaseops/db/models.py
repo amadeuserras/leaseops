@@ -12,6 +12,7 @@ from sqlalchemy import (
     Integer,
     Numeric,
     Text,
+    UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
@@ -142,6 +143,9 @@ class Run(Base):
 
 class Step(Base):
     __tablename__ = "steps"
+    __table_args__ = (
+        UniqueConstraint("run_id", "node_name", name="steps_run_id_node_name_key"),
+    )
 
     id: Mapped[UUID] = mapped_column(
         PGUUID(as_uuid=True), primary_key=True, default=uuid4

@@ -1,7 +1,7 @@
 'use client';
 
 import { useAppContext } from '@/context/app-context';
-import { streamRun } from '@/lib/api';
+import { streamRerun, streamRun, type StreamEvent } from '@/lib/api';
 import { applyStreamEvent, emptyRunState, type RunState } from '@/lib/run-state';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -20,35 +20,46 @@ export function useRunStream(emailId: string, initial: RunState) {
     abortRef.current = null;
   }, []);
 
-  const start = useCallback(() => {
-    stop();
-    const controller = new AbortController();
-    abortRef.current = controller;
-    startedAtRef.current = Date.now();
-    setState({ ...emptyRunState(), live: true, phase: 'running' });
+  const runStream = useCallback(
+    (stream: (emailId: string, signal: AbortSignal) => AsyncGenerator<StreamEvent>) => {
+      stop();
+      const controller = new AbortController();
+      abortRef.current = controller;
+      startedAtRef.current = Date.now();
+      setState({ ...emptyRunState(), live: true, phase: 'running' });
 
-    void (async () => {
-      try {
-        for await (const event of streamRun(emailId, controller.signal)) {
-          const elapsed = (Date.now() - startedAtRef.current) / 1000;
-          setState((current) => applyStreamEvent(current, event, elapsed));
-          if (event.type === 'paused') {
-            triggerApprovalsCount();
+      void (async () => {
+        try {
+          for await (const event of stream(emailId, controller.signal)) {
+            const elapsed = (Date.now() - startedAtRef.current) / 1000;
+            setState((current) => applyStreamEvent(current, event, elapsed));
+            if (event.type === 'paused') {
+              triggerApprovalsCount();
+            }
           }
+        } catch (error) {
+          if (controller.signal.aborted) return;
+          setState((current) => ({
+            ...current,
+            live: false,
+            phase: 'failed',
+            error: error instanceof Error ? error.message : String(error),
+          }));
+        } finally {
+          if (abortRef.current === controller) abortRef.current = null;
         }
-      } catch (error) {
-        if (controller.signal.aborted) return;
-        setState((current) => ({
-          ...current,
-          live: false,
-          phase: 'failed',
-          error: error instanceof Error ? error.message : String(error),
-        }));
-      } finally {
-        if (abortRef.current === controller) abortRef.current = null;
-      }
-    })();
-  }, [emailId, stop, triggerApprovalsCount]);
+      })();
+    },
+    [emailId, stop, triggerApprovalsCount],
+  );
+
+  const start = useCallback(() => {
+    runStream(streamRun);
+  }, [runStream]);
+
+  const rerun = useCallback(() => {
+    runStream(streamRerun);
+  }, [runStream]);
 
   useEffect(() => {
     if (!state.live) return;
@@ -70,5 +81,5 @@ export function useRunStream(emailId: string, initial: RunState) {
 
   useEffect(() => stop, [stop]);
 
-  return { state, start, stop };
+  return { state, start, rerun, stop };
 }
