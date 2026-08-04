@@ -19,6 +19,14 @@ from leaseops.agent.state import (
     Responsibility,
     Severity,
 )
+from leaseops.agent.step_schemas import (
+    ClassifyOutput,
+    DraftOutput,
+    ExecuteOutput,
+    ExtractOutput,
+    LeaseCheckOutput,
+    PlanOutput,
+)
 from leaseops.db import runs as runs_repo
 from leaseops.db import steps as steps_repo
 from leaseops.db.models import Email
@@ -31,20 +39,29 @@ def _after_approval(state: AgentState) -> str:
     return "end"
 
 
-def _seed_node(state: AgentState) -> dict[str, Any]:
+def _classify_node(state: AgentState) -> dict[str, Any]:
     _ = state
-    return {
-        "category": EmailCategory.MAINTENANCE,
-        "severity": Severity.MEDIUM,
-        "actions": [PlanAction.CREATE_WORK_ORDER, PlanAction.SEND_REPLY],
-        "draft": "We'll send someone out tomorrow.",
-        "tenant_name": "Ada Tenant",
-        "unit": "2A",
-        "address": "12 Example Street",
-        "issue_summary": "leaky faucet",
-        "appliance_or_system": "faucet",
-        "responsibility": Responsibility.LANDLORD,
-        "qa_results": [
+    return ClassifyOutput(category=EmailCategory.MAINTENANCE).model_dump()
+
+
+def _extract_node(state: AgentState) -> dict[str, Any]:
+    _ = state
+    return ExtractOutput(
+        tenant_name="Ada Tenant",
+        unit="2A",
+        address="12 Example Street",
+        issue_summary="leaky faucet",
+        severity=Severity.MEDIUM,
+        appliance_or_system="faucet",
+    ).model_dump()
+
+
+def _lease_check_node(state: AgentState) -> dict[str, Any]:
+    _ = state
+    return LeaseCheckOutput(
+        lease_addresses_issue=True,
+        responsibility=Responsibility.LANDLORD,
+        qa_results=[
             QAResultSchema(
                 question="Who is responsible for faucet repairs?",
                 answer="Landlord. [hardcoded-lease §7.2]",
@@ -52,7 +69,19 @@ def _seed_node(state: AgentState) -> dict[str, Any]:
                 reasoning="Checking lease responsibility for faucet repairs.",
             )
         ],
-    }
+    ).model_dump()
+
+
+def _draft_node(state: AgentState) -> dict[str, Any]:
+    _ = state
+    return DraftOutput(draft="We'll send someone out tomorrow.").model_dump()
+
+
+def _plan_node(state: AgentState) -> dict[str, Any]:
+    _ = state
+    return PlanOutput(
+        actions=[PlanAction.CREATE_WORK_ORDER, PlanAction.SEND_REPLY]
+    ).model_dump()
 
 
 def _approval_node(state: AgentState) -> dict[str, Any]:
@@ -60,16 +89,25 @@ def _approval_node(state: AgentState) -> dict[str, Any]:
 
 
 def _execute_node(state: AgentState) -> dict[str, Any]:
-    return {"succeeded": True}
+    _ = state
+    return ExecuteOutput(succeeded=True).model_dump()
 
 
 def build_test_graph(checkpointer: Any) -> Any:
     graph: Any = StateGraph(AgentState)
-    graph.add_node("seed", _seed_node)
+    graph.add_node("classify", _classify_node)
+    graph.add_node("extract", _extract_node)
+    graph.add_node("lease_check", _lease_check_node)
+    graph.add_node("draft", _draft_node)
+    graph.add_node("plan", _plan_node)
     graph.add_node("approval", _approval_node)
     graph.add_node("execute", _execute_node)
-    graph.add_edge(START, "seed")
-    graph.add_edge("seed", "approval")
+    graph.add_edge(START, "classify")
+    graph.add_edge("classify", "extract")
+    graph.add_edge("extract", "lease_check")
+    graph.add_edge("lease_check", "draft")
+    graph.add_edge("draft", "plan")
+    graph.add_edge("plan", "approval")
     graph.add_conditional_edges(
         "approval",
         _after_approval,
@@ -178,7 +216,14 @@ async def test_stream_persists_approval_step(db_session, runner) -> None:
     assert run.status == RunStatus.PAUSED
 
     steps = await steps_repo.list_steps_for_run(db_session, run.id)
-    assert [step.node_name for step in steps] == ["seed", "approval"]
+    assert [step.node_name for step in steps] == [
+        "classify",
+        "extract",
+        "lease_check",
+        "draft",
+        "plan",
+        "approval",
+    ]
     assert steps[-1].output is not None
     assert steps[-1].output["draft"] == "We'll send someone out tomorrow."
 
@@ -194,7 +239,15 @@ async def test_approve_after_stream_persists_execute(db_session, runner) -> None
     await runner.approve(db_session, run.id)
 
     steps = await steps_repo.list_steps_for_run(db_session, run.id)
-    assert [step.node_name for step in steps] == ["seed", "approval", "execute"]
+    assert [step.node_name for step in steps] == [
+        "classify",
+        "extract",
+        "lease_check",
+        "draft",
+        "plan",
+        "approval",
+        "execute",
+    ]
     assert steps[-1].output == {"succeeded": True}
 
 

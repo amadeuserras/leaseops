@@ -19,7 +19,13 @@ from leaseops.agent.events import (
     RunStartedEvent,
 )
 from leaseops.agent.state import AgentState
-from leaseops.agent.step_schemas import ApprovalCard, ApprovalOutput, ExecuteOutput
+from leaseops.agent.step_schemas import (
+    ApprovalCard,
+    ApprovalOutput,
+    ExecuteOutput,
+    parse_node_name,
+    parse_step_output,
+)
 from leaseops.db import emails as emails_repo
 from leaseops.db import runs as runs_repo
 from leaseops.db import steps as steps_repo
@@ -138,19 +144,20 @@ class GraphRunner:
                     await steps_repo.create_step(
                         session,
                         run_id=run.id,
-                        node_name=node_name,
-                        output=request.model_dump(mode="json"),
+                        node_name=parse_node_name(node_name),
+                        output=request,
                     )
                     yield PausedEvent(request=request).model_dump(mode="json")
                     continue
 
                 # Node finished: write the finished event & create the step
                 cost = cost_by_node.pop(node_name, None)
+                parsed_name = parse_node_name(node_name)
                 await steps_repo.create_step(
                     session,
                     run_id=run.id,
-                    node_name=node_name,
-                    output=task_chunk["result"],
+                    node_name=parsed_name,
+                    output=parse_step_output(parsed_name, task_chunk["result"]),
                     model=cost.model if cost is not None else None,
                     input_tokens=cost.input_tokens if cost is not None else None,
                     output_tokens=cost.output_tokens if cost is not None else None,
@@ -229,7 +236,7 @@ class GraphRunner:
                 session,
                 run_id=run.id,
                 node_name="execute",
-                output=ExecuteOutput(succeeded=state.succeeded).model_dump(mode="json"),
+                output=ExecuteOutput(succeeded=state.succeeded),
             )
         await emails_repo.set_email_status(session, run.email_id, EmailStatus.PROCESSED)
         return await runs_repo.set_run_status(session, run, RunStatus.DONE, ended=True)

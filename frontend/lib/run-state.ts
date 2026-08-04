@@ -149,13 +149,13 @@ export function fromRunDetail(data: RunDetailResponse): RunState {
     live: false,
     steps,
     stats: data.stats,
-    approval: (approvalStep?.output as ApprovalCard | null) ?? null,
+    approval: approvalStep?.output ?? null,
     error: null,
   };
 }
 
 function leaseCallsFor(step: StepResponse): ToolCall[] {
-  if (step.node_name !== 'lease_check' || step.output === null) return [];
+  if (step.node_name !== 'lease_check') return [];
   return [...qaCalls(step.output), verdictCall(step.output)];
 }
 
@@ -383,8 +383,7 @@ export function toDisplaySteps(state: RunState): DisplayStep[] {
     const running = step.status === 'running';
     const isLease = step.node === 'lease_check';
     const lease = isLease ? (step.output as LeaseCheckOutput | null) : null;
-    const gateKind =
-      step.status === 'paused' ? 'paused' : approved ? 'approved' : 'rejected';
+    const gateKind = step.status === 'paused' ? 'paused' : approved ? 'approved' : 'rejected';
 
     return {
       key: step.key,

@@ -1,26 +1,21 @@
 from __future__ import annotations
 
-import json
 from decimal import Decimal
-from typing import Any
 from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from leaseops.agent.step_schemas import NodeName, StepOutput
 from leaseops.db.models import Step
-
-
-def _jsonable(value: Any) -> Any:
-    return json.loads(json.dumps(value, default=str))
 
 
 async def create_step(
     session: AsyncSession,
     *,
     run_id: UUID,
-    node_name: str,
-    output: Any,
+    node_name: NodeName,
+    output: StepOutput,
     model: str | None = None,
     input_tokens: int | None = None,
     output_tokens: int | None = None,
@@ -29,7 +24,7 @@ async def create_step(
     step = Step(
         run_id=run_id,
         node_name=node_name,
-        output=_jsonable(output) if output is not None else None,
+        output=output.model_dump(mode="json"),
         model=model,
         input_tokens=input_tokens,
         output_tokens=output_tokens,

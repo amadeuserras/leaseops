@@ -96,13 +96,13 @@ interface StepBase {
 }
 
 export type StepResponse =
-  | (StepBase & { node_name: 'classify'; output: ClassifyOutput | null })
-  | (StepBase & { node_name: 'extract'; output: ExtractOutput | null })
-  | (StepBase & { node_name: 'lease_check'; output: LeaseCheckOutput | null })
-  | (StepBase & { node_name: 'plan'; output: PlanOutput | null })
-  | (StepBase & { node_name: 'draft'; output: DraftOutput | null })
-  | (StepBase & { node_name: 'approval'; output: ApprovalCard | null })
-  | (StepBase & { node_name: 'execute'; output: ExecuteOutput | null });
+  | (StepBase & { node_name: 'classify'; output: ClassifyOutput })
+  | (StepBase & { node_name: 'extract'; output: ExtractOutput })
+  | (StepBase & { node_name: 'lease_check'; output: LeaseCheckOutput })
+  | (StepBase & { node_name: 'plan'; output: PlanOutput })
+  | (StepBase & { node_name: 'draft'; output: DraftOutput })
+  | (StepBase & { node_name: 'approval'; output: ApprovalCard })
+  | (StepBase & { node_name: 'execute'; output: ExecuteOutput });
 
 export type NodeName = StepResponse['node_name'];
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal, cast, get_args
 from uuid import UUID
 
 from pydantic import Field, TypeAdapter
@@ -14,6 +14,24 @@ from leaseops.agent.state import (
     Severity,
 )
 from leaseops.core.base import LeaseOpsModel
+
+ClassifyName = Literal["classify"]
+ExtractName = Literal["extract"]
+LeaseCheckName = Literal["lease_check"]
+PlanName = Literal["plan"]
+DraftName = Literal["draft"]
+ApprovalName = Literal["approval"]
+ExecuteName = Literal["execute"]
+
+NodeName = (
+    ClassifyName
+    | ExtractName
+    | LeaseCheckName
+    | PlanName
+    | DraftName
+    | ApprovalName
+    | ExecuteName
+)
 
 
 class ClassifyOutput(LeaseOpsModel):
@@ -79,6 +97,30 @@ StepOutput = (
     | ExecuteOutput
 )
 
+_OUTPUT_BY_NODE: dict[NodeName, type[LeaseOpsModel]] = {
+    "classify": ClassifyOutput,
+    "extract": ExtractOutput,
+    "lease_check": LeaseCheckOutput,
+    "plan": PlanOutput,
+    "draft": DraftOutput,
+    "approval": ApprovalCard,
+    "execute": ExecuteOutput,
+}
+
+_NODE_NAMES = frozenset(
+    name for member in get_args(NodeName) for name in get_args(member)
+)
+
+
+def parse_node_name(value: str) -> NodeName:
+    if value not in _NODE_NAMES:
+        raise ValueError(f"unknown node_name: {value}")
+    return cast(NodeName, value)
+
+
+def parse_step_output(node_name: NodeName, output: Any) -> StepOutput:
+    return cast(StepOutput, _OUTPUT_BY_NODE[node_name].model_validate(output))
+
 
 class StepBase(LeaseOpsModel):
     id: UUID
@@ -91,38 +133,38 @@ class StepBase(LeaseOpsModel):
 
 
 class ClassifyStepResponse(StepBase):
-    node_name: Literal["classify"]
-    output: ClassifyOutput | None
+    node_name: ClassifyName
+    output: ClassifyOutput
 
 
 class ExtractStepResponse(StepBase):
-    node_name: Literal["extract"]
-    output: ExtractOutput | None
+    node_name: ExtractName
+    output: ExtractOutput
 
 
 class LeaseCheckStepResponse(StepBase):
-    node_name: Literal["lease_check"]
-    output: LeaseCheckOutput | None
+    node_name: LeaseCheckName
+    output: LeaseCheckOutput
 
 
 class PlanStepResponse(StepBase):
-    node_name: Literal["plan"]
-    output: PlanOutput | None
+    node_name: PlanName
+    output: PlanOutput
 
 
 class DraftStepResponse(StepBase):
-    node_name: Literal["draft"]
-    output: DraftOutput | None
+    node_name: DraftName
+    output: DraftOutput
 
 
 class ApprovalStepResponse(StepBase):
-    node_name: Literal["approval"]
-    output: ApprovalCard | None
+    node_name: ApprovalName
+    output: ApprovalCard
 
 
 class ExecuteStepResponse(StepBase):
-    node_name: Literal["execute"]
-    output: ExecuteOutput | None
+    node_name: ExecuteName
+    output: ExecuteOutput
 
 
 StepResponse = Annotated[
