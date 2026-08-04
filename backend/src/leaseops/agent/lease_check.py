@@ -27,42 +27,14 @@ _MAX_QA_CALLS = 3
 _MAX_TOKENS = 1024
 
 _LEASE_CHECK_SYSTEM = """\
-You are the lease-analysis step inside a maintenance triage system for \
-residential rental properties. A tenant has reported an issue. Your job is to \
-determine what the lease says about it, using the lease_qa tool, and then \
-submit a structured verdict.
+You are the lease-analysis step inside a maintenance triage system for
+residential rental properties. A tenant has reported an issue. Your job is to 
+determine what the lease says about it, using the lease_qa tool, and then
+submit a structured verdict using the submit_verdict tool.
 
-## Your tools
-- lease_qa: asks a question about the tenant's lease, identified by tenant \
-name, address, and unit. Returns an answer, or states that the lease does \
-not address the question. You do not choose a document id.
-- submit_verdict: ends your work by recording your determination. You must \
-always finish by calling this, and only once.
-
-## How to ask good questions
-- Ask about lease terms in neutral, precise language: \
-"Who is responsible for repair and maintenance of the heating system?" — \
-not "the tenant says the heating is broken again, whose fault is it?"
-- Never include the tenant's own wording, emotions, or accusations in a \
-question. You are querying a legal document, not relaying a complaint.
-- One question per call. Start with the most direct responsibility question \
-for the reported issue.
-- Ask a follow-up ONLY if the first answer makes it necessary: it cross-\
-references another section, it distinguishes cases you cannot resolve (e.g. \
-negligence vs. normal wear) and the distinction matters, or it partially \
-answers. You have a maximum of {max_calls} lease_qa calls; most cases need \
-exactly one.
-
-## How to reach a verdict
-- Base your verdict ONLY on the answers returned by lease_qa. Do not use \
+## How to ask questions
+- Base your verdict ONLY on the answers returned by lease_qa. Do not use 
 general knowledge of landlord-tenant law.
-- If lease_qa states the lease does not address the issue, set \
-lease_addresses_issue to false. This is a normal, correct outcome — do not \
-stretch a tangentially related clause to force an answer.
-- Distinguish carefully:
-  - lease is SILENT → lease_addresses_issue: false, responsibility: unclear
-  - lease SPEAKS but responsibility genuinely depends on facts you don't \
-have → lease_addresses_issue: true, responsibility: unclear
 """
 
 
@@ -149,9 +121,13 @@ async def lease_check(state: AgentState) -> LeaseCheckOutput:
         while True:
             force_verdict = len(qa_results) >= _MAX_QA_CALLS
             tool_choice: ToolChoiceParam = (
-                {"type": "tool", "name": "submit_verdict"}
+                {
+                    "type": "tool",
+                    "name": "submit_verdict",
+                    "disable_parallel_tool_use": True,
+                }
                 if force_verdict
-                else {"type": "auto"}
+                else {"type": "auto", "disable_parallel_tool_use": True}
             )
 
             response = await client.messages.create(
