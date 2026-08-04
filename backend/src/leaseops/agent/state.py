@@ -63,6 +63,7 @@ class AgentState(LeaseOpsModel):
     responsibility: Responsibility | None = None
     lease_addresses_issue: bool | None = None
     qa_results: list[QAResultSchema] = []
+    reasoning: str | None = None
 
     # draft
     draft: str | None = None

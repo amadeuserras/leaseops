@@ -92,7 +92,7 @@ function unbracket(citation: string): string {
 function verdictCall(output: LeaseCheckOutput): ToolCall {
   return {
     tool: 'submit_verdict',
-    reasoning: null,
+    reasoning: output.reasoning || null,
     question: null,
     argsText: `lease_addresses_issue: ${output.lease_addresses_issue}, responsibility: "${output.responsibility}"`,
     answer: null,

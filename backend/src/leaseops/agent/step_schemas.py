@@ -33,6 +33,7 @@ class LeaseCheckOutput(LeaseOpsModel):
     lease_addresses_issue: bool
     responsibility: Responsibility
     qa_results: list[QAResultSchema]
+    reasoning: str | None = None
 
 
 class PlanOutput(LeaseOpsModel):

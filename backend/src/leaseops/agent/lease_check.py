@@ -178,6 +178,7 @@ async def lease_check(state: AgentState) -> LeaseCheckOutput:
                         verdict_use.input["lease_addresses_issue"]
                     ),
                     qa_results=qa_results,
+                    reasoning=_response_text(response) or None,
                 )
 
             qa_use = _find_tool_use(response, "lease_qa")
