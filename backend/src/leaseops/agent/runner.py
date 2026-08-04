@@ -122,6 +122,11 @@ class GraphRunner:
                     yield NodeStartedEvent(node=node_name).model_dump(mode="json")
                     continue
 
+                # Node failed: LangGraph still sends result={} with error set
+                error = task_chunk.get("error")
+                if error is not None:
+                    raise error
+
                 # Node paused: write the pause event & update status
                 interrupts = task_chunk.get("interrupts") or []
                 if interrupts:
