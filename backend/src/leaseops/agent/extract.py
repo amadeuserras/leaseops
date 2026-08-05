@@ -85,6 +85,7 @@ async def extract(state: AgentState) -> ExtractOutput:
         tenant_name=tenant.name if tenant else None,
         unit=tenant.unit if tenant else None,
         address=tenant.address if tenant else None,
+        document_id=tenant.document_id if tenant else None,
         issue_summary=fields.issue_summary,
         severity=severity,
         appliance_or_system=fields.appliance_or_system,

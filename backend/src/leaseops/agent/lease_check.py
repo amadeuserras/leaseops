@@ -57,9 +57,9 @@ LEASE_QA_TOOL: ToolParam = {
     "name": "lease_qa",
     "description": (
         "Ask one neutral, precise question about the tenant's lease. "
-        "The lease is resolved from the tenant name, address, and unit "
-        "already known for this email. Returns an answer grounded in the "
-        "lease, or states that the lease does not address the question."
+        "The lease document is already scoped for this email. Returns an "
+        "answer grounded in the lease, or states that the lease does not "
+        "address the question."
     ),
     "strict": True,
     "input_schema": transform_schema(_LeaseQaFormat.model_json_schema()),
@@ -81,8 +81,8 @@ def _task_message(state: AgentState) -> str:
     severity = state.severity.value if state.severity else "not specified"
     summary = state.issue_summary or "not specified"
     return (
-        "Tenant lease identity (pass these through lease_qa as given):\n"
-        f"- Tenant name: {tenant}\n"
+        "Tenant:\n"
+        f"- Name: {tenant}\n"
         f"- Address: {address}\n"
         f"- Unit: {unit}\n\n"
         "Reported issue:\n"
@@ -105,7 +105,7 @@ def _response_text(response: Message) -> str:
 
 
 async def lease_check(state: AgentState) -> LeaseCheckOutput:
-    if state.tenant_name is None or state.address is None:
+    if state.document_id is None:
         return LeaseCheckOutput(
             responsibility=Responsibility.UNCLEAR,
             lease_addresses_issue=False,
@@ -169,9 +169,7 @@ async def lease_check(state: AgentState) -> LeaseCheckOutput:
             reasoning = _response_text(response)
             tool_args: dict[str, object] = {
                 "question": question,
-                "tenant_name": state.tenant_name,
-                "address": state.address,
-                "unit": state.unit,
+                "document_id": str(state.document_id),
             }
             emit_tool_call("lease_check", "lease_qa", tool_args, reasoning=reasoning)
             try:

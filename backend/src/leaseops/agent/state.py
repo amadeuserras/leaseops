@@ -55,6 +55,7 @@ class AgentState(LeaseOpsModel):
     tenant_name: str | None = None
     unit: str | None = None
     address: str | None = None
+    document_id: UUID | None = None
     issue_summary: str | None = None
     severity: Severity | None = None
     appliance_or_system: str | None = None

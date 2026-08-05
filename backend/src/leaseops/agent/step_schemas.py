@@ -42,6 +42,7 @@ class ExtractOutput(LeaseOpsModel):
     tenant_name: str | None
     unit: str | None
     address: str | None
+    document_id: UUID | None = None
     issue_summary: str | None
     severity: Severity | None
     appliance_or_system: str | None

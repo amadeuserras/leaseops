@@ -14,22 +14,5 @@ async def get_tenant_by_email(session: AsyncSession, email: str) -> Tenant | Non
     return await session.scalar(stmt)
 
 
-async def get_tenant_by_identity(
-    session: AsyncSession,
-    name: str,
-    address: str,
-    unit: str | None,
-) -> Tenant | None:
-    stmt = select(Tenant).where(
-        Tenant.name == name.strip(),
-        Tenant.address == address.strip(),
-    )
-    if unit is None or not unit.strip():
-        stmt = stmt.where(Tenant.unit.is_(None))
-    else:
-        stmt = stmt.where(Tenant.unit == unit.strip())
-    return await session.scalar(stmt)
-
-
 async def get_tenant_by_id(session: AsyncSession, tenant_id: UUID) -> Tenant | None:
     return await session.get(Tenant, tenant_id)

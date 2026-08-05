@@ -44,6 +44,7 @@ export interface ExtractOutput {
   tenant_name: string | null;
   unit: string | null;
   address: string | null;
+  document_id: string | null;
   issue_summary: string | null;
   severity: Severity | null;
   appliance_or_system: string | null;

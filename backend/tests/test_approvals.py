@@ -51,6 +51,7 @@ def _extract_node(state: AgentState) -> dict[str, Any]:
         tenant_name="Ada Tenant",
         unit="2A",
         address="12 Example Street",
+        document_id=None,
         issue_summary="leaky faucet",
         severity=Severity.MEDIUM,
         appliance_or_system="faucet",
