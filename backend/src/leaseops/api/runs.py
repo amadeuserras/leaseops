@@ -10,7 +10,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from leaseops.agent.runner import GraphRunner
-from leaseops.agent.step_schemas import StepResponse, StepResponseAdapter
+from leaseops.agent.schemas import StepResponse, StepResponseAdapter
 from leaseops.api.schemas import (
     EmailResponse,
     LatestRunResponse,

@@ -19,7 +19,7 @@ from pydantic import TypeAdapter
 from leaseops.evals.aggregate import compute_globals
 from leaseops.evals.report import print_summary, render_report
 from leaseops.evals.run import run_cases
-from leaseops.evals.types import GoldenItem
+from leaseops.evals.schemas import GoldenItem
 
 _EVALS_DIR = Path(__file__).resolve().parents[1] / "src/leaseops/evals"
 _GOLDEN_PATH = _EVALS_DIR / "golden/data.json"

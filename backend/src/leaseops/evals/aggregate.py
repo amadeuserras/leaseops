@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 
-from leaseops.evals.types import CaseResult, GlobalMetrics
+from leaseops.evals.schemas import CaseResult, GlobalMetrics
 
 
 def _p95(values: list[float]) -> float:

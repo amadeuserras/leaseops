@@ -5,7 +5,7 @@ from typing import Annotated, Any, Literal
 from langgraph.config import get_stream_writer
 from pydantic import Field, TypeAdapter
 
-from leaseops.agent.step_schemas import ApprovalCard
+from leaseops.agent.schemas import ApprovalCard
 from leaseops.core.base import LeaseOpsModel
 
 _PRICING_PER_TOKEN_USD: dict[str, tuple[float, float]] = {
@@ -97,9 +97,7 @@ def _emit(event: StreamEvent) -> None:
 def emit_tool_call(
     node: str, tool: str, arguments: dict[str, Any], *, reasoning: str
 ) -> None:
-    _emit(
-        ToolCallEvent(node=node, tool=tool, arguments=arguments, reasoning=reasoning)
-    )
+    _emit(ToolCallEvent(node=node, tool=tool, arguments=arguments, reasoning=reasoning))
 
 
 def emit_tool_result(

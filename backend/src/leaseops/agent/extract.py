@@ -6,8 +6,8 @@ from openai import AsyncOpenAI
 from pydantic import BaseModel
 
 from leaseops.agent.events import emit_cost
+from leaseops.agent.schemas import ExtractOutput
 from leaseops.agent.state import AgentState, EmailCategory, Severity
-from leaseops.agent.step_schemas import ExtractOutput
 from leaseops.core.config import settings
 from leaseops.db import tenants as tenants_repo
 from leaseops.db.models import Tenant

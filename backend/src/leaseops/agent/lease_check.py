@@ -16,8 +16,8 @@ from pydantic import BaseModel, Field
 
 from leaseops.agent.citations import extract_citation_ids
 from leaseops.agent.events import emit_cost, emit_tool_call, emit_tool_result
+from leaseops.agent.schemas import LeaseCheckOutput
 from leaseops.agent.state import AgentState, QAResultSchema, Responsibility
-from leaseops.agent.step_schemas import LeaseCheckOutput
 from leaseops.clients.leaseclear import LeaseQAResponse
 from leaseops.core.config import settings
 from leaseops.mcp.client import McpToolError, call_tool, mcp_session

@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from leaseops.agent.state import AgentState, EmailCategory, Responsibility
-from leaseops.evals.types import CaseResult, GoldenItem, GoldenWrites
+from leaseops.evals.schemas import CaseResult, GoldenItem, GoldenWrites
 
 _LEASE_CHECK_CATEGORIES = {
     EmailCategory.MAINTENANCE,

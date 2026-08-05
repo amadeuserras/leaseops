@@ -11,6 +11,14 @@ from langgraph.graph import END, START, StateGraph
 from leaseops.agent.approval import approval
 from leaseops.agent.checkpoint import CHECKPOINT_SERDE
 from leaseops.agent.runner import GraphRunner
+from leaseops.agent.schemas import (
+    ClassifyOutput,
+    DraftOutput,
+    ExecuteOutput,
+    ExtractOutput,
+    LeaseCheckOutput,
+    PlanOutput,
+)
 from leaseops.agent.state import (
     AgentState,
     EmailCategory,
@@ -18,14 +26,6 @@ from leaseops.agent.state import (
     QAResultSchema,
     Responsibility,
     Severity,
-)
-from leaseops.agent.step_schemas import (
-    ClassifyOutput,
-    DraftOutput,
-    ExecuteOutput,
-    ExtractOutput,
-    LeaseCheckOutput,
-    PlanOutput,
 )
 from leaseops.db import emails as emails_repo
 from leaseops.db import runs as runs_repo

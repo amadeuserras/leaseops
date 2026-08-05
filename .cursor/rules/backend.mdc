@@ -22,7 +22,7 @@ After backend changes, run from `backend/` when relevant:
 
 ```bash
 uv run pytest
-uv run ruff check .
+uv run ruff check . --fix
 uv run ruff format .
 uv run pyright
 ```

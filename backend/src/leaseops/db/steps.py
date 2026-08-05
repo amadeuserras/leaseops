@@ -6,7 +6,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from leaseops.agent.step_schemas import NodeName, StepOutput
+from leaseops.agent.schemas import NodeName, StepOutput
 from leaseops.db.models import Step
 
 

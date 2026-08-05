@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from datetime import datetime
 
-from leaseops.evals.types import CaseResult, GlobalMetrics
+from leaseops.evals.schemas import CaseResult, GlobalMetrics
 
 
 def pct(rate: float) -> str:

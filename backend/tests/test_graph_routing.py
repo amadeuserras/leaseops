@@ -11,8 +11,8 @@ from langgraph.graph import END, START, StateGraph
 from leaseops.agent.checkpoint import CHECKPOINT_SERDE
 from leaseops.agent.graph import _after_classify, _after_extract
 from leaseops.agent.runner import GraphRunner
+from leaseops.agent.schemas import ClassifyOutput
 from leaseops.agent.state import AgentState, EmailCategory
-from leaseops.agent.step_schemas import ClassifyOutput
 from leaseops.db import emails as emails_repo
 from leaseops.db import runs as runs_repo
 from leaseops.db import steps as steps_repo
@@ -99,9 +99,7 @@ async def test_not_our_problem_stream_ends_processed(
     await db_session.commit()
     await db_session.refresh(email)
 
-    events = [
-        event async for event in not_our_problem_runner.stream(db_session, email)
-    ]
+    events = [event async for event in not_our_problem_runner.stream(db_session, email)]
 
     assert events[-1]["type"] == "run_finished"
     assert events[-1]["status"] == RunStatus.DONE.value

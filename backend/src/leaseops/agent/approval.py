@@ -5,8 +5,8 @@ from typing import Any, cast
 from langgraph.types import interrupt
 
 from leaseops.agent.citations import first_citation
+from leaseops.agent.schemas import ApprovalCard, ApprovalOutput
 from leaseops.agent.state import AgentState, EmailCategory
-from leaseops.agent.step_schemas import ApprovalCard, ApprovalOutput
 
 
 def _approval_request(state: AgentState) -> ApprovalCard:

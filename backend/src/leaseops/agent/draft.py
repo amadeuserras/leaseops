@@ -4,8 +4,8 @@ from openai import AsyncOpenAI
 from pydantic import BaseModel
 
 from leaseops.agent.events import emit_cost
+from leaseops.agent.schemas import DraftOutput
 from leaseops.agent.state import AgentState, QAResultSchema
-from leaseops.agent.step_schemas import DraftOutput
 from leaseops.core.config import settings
 
 _MODEL = "gpt-4o-mini"

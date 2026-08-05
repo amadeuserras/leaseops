@@ -4,8 +4,8 @@ from openai import AsyncOpenAI
 from pydantic import BaseModel
 
 from leaseops.agent.events import emit_cost
+from leaseops.agent.schemas import ClassifyOutput
 from leaseops.agent.state import AgentState, EmailCategory
-from leaseops.agent.step_schemas import ClassifyOutput
 from leaseops.core.config import settings
 
 _MODEL = "gpt-4o-mini"

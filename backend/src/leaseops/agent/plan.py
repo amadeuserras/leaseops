@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+from leaseops.agent.schemas import PlanOutput
 from leaseops.agent.state import (
     AgentState,
     EmailCategory,
     PlanAction,
     Responsibility,
 )
-from leaseops.agent.step_schemas import PlanOutput
 
 
 def plan(state: AgentState) -> PlanOutput:

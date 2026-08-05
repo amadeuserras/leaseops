@@ -10,8 +10,8 @@ from langgraph.checkpoint.memory import InMemorySaver
 from leaseops.agent.checkpoint import CHECKPOINT_SERDE
 from leaseops.agent.graph import build_graph
 from leaseops.agent.state import AgentState
+from leaseops.evals.schemas import CaseResult, GoldenItem
 from leaseops.evals.score import score
-from leaseops.evals.types import CaseResult, GoldenItem
 
 
 async def _run_graph(

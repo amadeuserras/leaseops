@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from leaseops.agent.step_schemas import StepResponse
+from leaseops.agent.schemas import StepResponse
 from leaseops.core.base import LeaseOpsModel
 from leaseops.models.enums import EmailStatus, OutboxStatus, RunStatus, WorkOrderStatus
 
