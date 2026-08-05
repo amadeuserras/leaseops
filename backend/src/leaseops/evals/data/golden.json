@@ -1,0 +1,625 @@
+[
+  {
+    "id": "soojin-park-kitchen-ants",
+    "email": {
+      "sender": "soojin.park@example.com",
+      "subject": "Ants in the kitchen",
+      "body": "Hi, we've got a trail of ants coming in along the kitchen counter in apt 8B. I've wiped everything down twice but they keep coming back from behind the baseboard.\n\nI thought the building had a pest service? Can someone come treat the unit?"
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "landlord" },
+    "writes": {
+      "before_approval": [],
+      "after_approval": ["send_reply", "create_work_order"]
+    }
+  },
+  {
+    "id": "kevin-chen-fridge-not-cooling",
+    "email": {
+      "sender": "kevin.chen@example.com",
+      "subject": "Fridge barely cooling",
+      "body": "Hey — the refrigerator in 8B has been getting warmer over the past few days. Milk went off way early and the thermometer we stuck in there reads about 50°F even on the coldest setting. It came with the apartment and we haven't done anything unusual to it.\n\nCan you send someone before we lose a whole fridge of groceries?"
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "landlord" },
+    "writes": {
+      "before_approval": [],
+      "after_approval": ["send_reply", "create_work_order"]
+    }
+  },
+  {
+    "id": "soojin-park-smoke-detector-chirping",
+    "email": {
+      "sender": "soojin.park@example.com",
+      "subject": "Smoke detector won't stop chirping",
+      "body": "The smoke detector in our hallway in apt 8B has been chirping every 40 seconds since last night. I'm guessing it's the battery, but the ceiling is high and we don't have a ladder.\n\nDo you guys handle this or should we deal with it?"
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "tenant" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "soojin-park-dying-landscaping",
+    "email": {
+      "sender": "soojin.park@example.com",
+      "subject": "Plants out front look rough",
+      "body": "Not sure who to flag this to — the shrubs and plants along the walkway by our entrance at 302 Fern Valley are turning brown and look like they haven't been watered in weeks.\n\nCould you have the landscaping folks come take a look before they're past saving?"
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "landlord" },
+    "writes": {
+      "before_approval": [],
+      "after_approval": ["send_reply", "create_work_order"]
+    }
+  },
+  {
+    "id": "kevin-chen-paint-bedroom",
+    "email": {
+      "sender": "kevin.chen@example.com",
+      "subject": "Painting the bedroom?",
+      "body": "Quick question — Soo-Jin and I want to paint the bedroom in 8B a light gray. We'd do it ourselves and could paint it back before we ever move out.\n\nIs that okay under our lease, or do we need something from you first?"
+    },
+    "category": "lease_question",
+    "lease_check": { "responsibility": "tenant" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "soojin-park-sparking-outlet",
+    "email": {
+      "sender": "soojin.park@example.com",
+      "subject": "Outlet sparking — turned off breaker",
+      "body": "The outlet behind the TV in 8B just sparked when I plugged in a lamp and there's a burnt plastic smell. I flipped the breaker for the living room off.\n\nPlease tell me what to do — I don't want to turn it back on until someone looks at it."
+    },
+    "category": "emergency",
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "kevin-chen-solar-sales-spam",
+    "email": {
+      "sender": "kevin.chen@example.com",
+      "subject": "FW: Cut your energy bill 40% with solar",
+      "body": "Forwarding this solar panel sales pitch that came to me — looks like they're blasting everyone in the building. It's junk as far as I can tell, just flagging in case. Nothing needed from you."
+    },
+    "category": "not_our_problem",
+    "writes": { "before_approval": [], "after_approval": [] }
+  },
+  {
+    "id": "priya-nadkarni-dishwasher-dead",
+    "email": {
+      "sender": "priya.nadkarni@example.com",
+      "subject": "Dishwasher stopped mid-cycle",
+      "body": "The dishwasher in 3C died mid-cycle last night — no lights, won't respond at all. I checked the breaker and it's fine. It came with the unit and we haven't done anything unusual with it.\n\nCan you get someone out? Hand-washing everything with a toddler in the house is not it."
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "landlord" },
+    "writes": {
+      "before_approval": [],
+      "after_approval": ["send_reply", "create_work_order"]
+    }
+  },
+  {
+    "id": "daniel-osei-washer-mid-cycle",
+    "email": {
+      "sender": "daniel.osei@example.com",
+      "subject": "Washer keeps dying mid-cycle",
+      "body": "The stacked washer in 3C keeps stopping partway through the cycle with a blinking error light, leaving everything soaking wet. We've tried different settings and smaller loads — same result every time. It's the unit that came with the apartment.\n\nCan you get someone out? Laundromat runs with a toddler are rough."
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "landlord" },
+    "writes": {
+      "before_approval": [],
+      "after_approval": ["send_reply", "create_work_order"]
+    }
+  },
+  {
+    "id": "daniel-osei-toilet-toy-clog",
+    "email": {
+      "sender": "daniel.osei@example.com",
+      "subject": "Toilet clogged (kid dropped a toy)",
+      "body": "So... our toddler flushed a toy dinosaur and now the bathroom toilet in 3C is completely blocked. Plunger isn't doing anything.\n\nWe know this one's on us — can you send your usual plumber and bill us, or should we call someone ourselves?"
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "tenant" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "priya-nadkarni-yard-upkeep",
+    "email": {
+      "sender": "priya.nadkarni@example.com",
+      "subject": "Planting beds by our patio",
+      "body": "The beds along our patio at 77 Larkspur are looking half dead and the shrubs are getting pretty overgrown. Honestly not sure who's supposed to be doing what out there.\n\nCan someone come deal with the bushes at least? And let me know if the watering part is supposed to be us."
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "shared" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "daniel-osei-beagle-move-in",
+    "email": {
+      "sender": "daniel.osei@example.com",
+      "subject": "Beagle coming home next month",
+      "body": "We're picking up the beagle mix we told you about in a few weeks. Want to make sure we're all square before he moves into 3C — what do we owe up front and monthly, and is there anything else you need from us first?"
+    },
+    "category": "lease_question",
+    "lease_check": { "responsibility": "tenant" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "daniel-osei-water-heater-flood",
+    "email": {
+      "sender": "daniel.osei@example.com",
+      "subject": "URGENT — water everywhere in 3C",
+      "body": "The water heater closet in 3C is gushing water and it's spreading into the hallway fast. I can't find a shutoff valve and towels are not keeping up. Please call me ASAP."
+    },
+    "category": "emergency",
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "priya-nadkarni-faint-gas-smell",
+    "email": {
+      "sender": "priya.nadkarni@example.com",
+      "subject": "Weird smell near the stove?",
+      "body": "This might be nothing, but a couple of times this week I've caught a faint gas-y smell near the range in 3C when it's on. It comes and goes, and Daniel says he can't smell it.\n\nProbably fine? But maybe worth having someone check whenever's convenient."
+    },
+    "category": "emergency",
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "chukwuemeka-okonkwo-furnace-rattle",
+    "email": {
+      "sender": "chukwuemeka.okonkwo@example.com",
+      "subject": "Furnace rattling, weak heat",
+      "body": "The furnace at 1845 Selby has started making a loud rattle when it kicks on, and the back bedroom barely gets warm. Not an emergency yet, but with the weather turning I'd rather get ahead of it.\n\nWhen can someone take a look?"
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "landlord" },
+    "writes": {
+      "before_approval": [],
+      "after_approval": ["send_reply", "create_work_order"]
+    }
+  },
+  {
+    "id": "sara-berg-bath-faucet-drip",
+    "email": {
+      "sender": "sara.berg@example.com",
+      "subject": "Bathtub faucet won't stop dripping",
+      "body": "The bathtub faucet at Selby has a constant drip now, and tightening the handle doesn't help. Feels like a washer or cartridge thing. Can you have someone come fix it? It's wasting a lot of water."
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "landlord" },
+    "writes": {
+      "before_approval": [],
+      "after_approval": ["send_reply", "create_work_order"]
+    }
+  },
+  {
+    "id": "chukwuemeka-okonkwo-drafty-window",
+    "email": {
+      "sender": "chukwuemeka.okonkwo@example.com",
+      "subject": "Back bedroom window won't close right",
+      "body": "The back bedroom window at 1845 Selby won't latch shut anymore — it sits about a half inch open no matter what we do, and there's a real draft coming through. Nothing happened to it, it's just gotten worse over time.\n\nWith the cold coming, can you have someone come fix or adjust it?"
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "landlord" },
+    "writes": {
+      "before_approval": [],
+      "after_approval": ["send_reply", "create_work_order"]
+    }
+  },
+  {
+    "id": "sara-berg-boat-trailer-stall",
+    "email": {
+      "sender": "sara.berg@example.com",
+      "subject": "Boat trailer in stall S-12?",
+      "body": "My brother is between storage spots and asked if he could leave his small boat trailer in our stall S-12 for a few weeks. We barely use the stall anyway. Is that allowed?"
+    },
+    "category": "lease_question",
+    "lease_check": { "responsibility": "tenant" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "sara-berg-co-alarm",
+    "email": {
+      "sender": "sara.berg@example.com",
+      "subject": "CO alarm going off",
+      "body": "The carbon monoxide alarm at Selby started blaring about ten minutes ago and I was feeling a little lightheaded, so we're standing outside now. What should we do? Please call me right away."
+    },
+    "category": "emergency",
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "chukwuemeka-okonkwo-mover-recommendation",
+    "email": {
+      "sender": "chukwuemeka.okonkwo@example.com",
+      "subject": "Random question — movers?",
+      "body": "Totally unrelated to the apartment — my sister is moving to Duluth next month and I figured you folks might know reputable movers. Any recommendations?"
+    },
+    "category": "not_our_problem",
+    "writes": { "before_approval": [], "after_approval": [] }
+  },
+  {
+    "id": "chukwuemeka-okonkwo-propane-grill",
+    "email": {
+      "sender": "chukwuemeka.okonkwo@example.com",
+      "subject": "Grill in the backyard?",
+      "body": "We're thinking of getting a small propane grill for the backyard at Selby this summer. I couldn't find anything obvious in the lease about grills — is that fine, or is the propane tank an issue?"
+    },
+    "category": "lease_question",
+    "lease_check": { "responsibility": "unclear" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "astrid-lindqvist-no-hot-water",
+    "email": {
+      "sender": "astrid.lindqvist@example.com",
+      "subject": "No hot water since yesterday",
+      "body": "We've had no hot water in 2B since yesterday evening — the water heater isn't doing anything as far as I can tell. Cold showers in Minneapolis are character-building but I'd rather not.\n\nCan you send someone today or tomorrow?"
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "landlord" },
+    "writes": {
+      "before_approval": [],
+      "after_approval": ["send_reply", "create_work_order"]
+    }
+  },
+  {
+    "id": "ravi-patel-garage-door-g7",
+    "email": {
+      "sender": "ravi.patel@example.com",
+      "subject": "Garage G-7 door sticking",
+      "body": "The door on our garage stall G-7 keeps sticking about halfway up and the opener sounds like it's straining. This morning I could barely get the car out.\n\nCan you get it looked at before it fails completely?"
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "landlord" },
+    "writes": {
+      "before_approval": [],
+      "after_approval": ["send_reply", "create_work_order"]
+    }
+  },
+  {
+    "id": "astrid-lindqvist-utilities-split",
+    "email": {
+      "sender": "astrid.lindqvist@example.com",
+      "subject": "Which utilities go in our name?",
+      "body": "Setting up our accounts for 2B and I want to make sure we're not doubling up or missing anything. Which bills are supposed to be in our name, and which ones do you handle? Xcel is asking."
+    },
+    "category": "lease_question",
+    "lease_check": { "responsibility": "shared" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "ravi-patel-second-cat",
+    "email": {
+      "sender": "ravi.patel@example.com",
+      "subject": "Adding a second cat",
+      "body": "Our cat Miso could use a friend and we're thinking about adopting a second cat from the humane society. I believe we're okay to have two in 2B — just want to confirm and see if you need anything from us."
+    },
+    "category": "lease_question",
+    "lease_check": { "responsibility": "tenant" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "ravi-patel-gas-smell-kitchen",
+    "email": {
+      "sender": "ravi.patel@example.com",
+      "subject": "Strong gas smell in kitchen",
+      "body": "There's a strong gas smell in the kitchen at 2B near the stove. We've opened windows and are heading out of the unit now. Please call as soon as you see this."
+    },
+    "category": "emergency",
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "astrid-lindqvist-misdirected-forward",
+    "email": {
+      "sender": "astrid.lindqvist@example.com",
+      "subject": "FW: Weekend sale — 40% off sectionals",
+      "body": "So sorry — meant to forward this to Ravi, not you! Please ignore."
+    },
+    "category": "not_our_problem",
+    "writes": { "before_approval": [], "after_approval": [] }
+  },
+  {
+    "id": "carlos-morales-ac-filter",
+    "email": {
+      "sender": "carlos.morales@example.com",
+      "subject": "AC struggling at Brentwood",
+      "body": "The AC at 2214 Brentwood is running nonstop but barely keeping up. Isabel pointed out we haven't touched the filter since we moved in, so that's probably part of it.\n\nIs filter stuff something y'all send someone for, or is that on us to handle?"
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "tenant" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "isabel-reyes-grease-clog",
+    "email": {
+      "sender": "isabel.reyes@example.com",
+      "subject": "Kitchen sink backed up",
+      "body": "The kitchen sink at Brentwood is fully backed up after a big cooking weekend — I'm pretty sure some grease went down that shouldn't have, our fault.\n\nCan you send your plumber and just bill us, or do you want us to find our own?"
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "tenant" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "carlos-morales-storm-fence",
+    "email": {
+      "sender": "carlos.morales@example.com",
+      "subject": "Back fence down after the storm",
+      "body": "That storm last week knocked over a whole section of the back fence at Brentwood — a couple of posts snapped and it's laying in the yard. The neighbor's dog keeps wandering in.\n\nHonestly not sure whose job this is. What's the move?"
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "unclear" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "isabel-reyes-cousin-stay",
+    "email": {
+      "sender": "isabel.reyes@example.com",
+      "subject": "My cousin staying with us",
+      "body": "My cousin is between jobs and we'd like to let her stay with us at Brentwood for two or three months while she gets back on her feet. Is that okay, or do we need to get something approved in writing first?"
+    },
+    "category": "lease_question",
+    "lease_check": { "responsibility": "tenant" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "carlos-morales-trampoline",
+    "email": {
+      "sender": "carlos.morales@example.com",
+      "subject": "Trampoline for the backyard?",
+      "body": "Our daughter's birthday is coming up and she's been begging for a trampoline. Before I cave — is there anything in the lease about that kind of thing in the backyard?"
+    },
+    "category": "lease_question",
+    "lease_check": { "responsibility": "unclear" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "isabel-reyes-breaker-burning-smell",
+    "email": {
+      "sender": "isabel.reyes@example.com",
+      "subject": "Burning smell from the breaker box",
+      "body": "The breaker panel in the garage at Brentwood is buzzing and there's a hot plastic / burning smell coming from it. Carlos flipped the main off and we're keeping the kids away from the garage. Please call us immediately."
+    },
+    "category": "emergency",
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "carlos-morales-warranty-spam",
+    "email": {
+      "sender": "carlos.morales@example.com",
+      "subject": "FW: FINAL NOTICE — Home Warranty Division",
+      "body": "Third one of these 'final notice' home warranty emails this week. Pretty sure it's junk — just flagging it in case, no action needed on your end."
+    },
+    "category": "not_our_problem",
+    "writes": { "before_approval": [], "after_approval": [] }
+  },
+  {
+    "id": "darnell-washington-broken-blinds",
+    "email": {
+      "sender": "darnell.washington@example.com",
+      "subject": "Blinds in the bedroom",
+      "body": "I yanked the cord too hard on the bedroom blinds in 14C and now they won't raise at all — totally my fault. What's the best way to get them fixed or replaced? Happy to cover it."
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "tenant" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "keisha-price-leaky-faucet",
+    "email": {
+      "sender": "keisha.price@example.com",
+      "subject": "Bathroom faucet dripping",
+      "body": "The bathroom sink faucet in 14C has a steady drip going. Do you have a handyman you send for stuff like this, or are we supposed to sort it out ourselves?"
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "tenant" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "darnell-washington-roaches",
+    "email": {
+      "sender": "darnell.washington@example.com",
+      "subject": "Roaches in 14C",
+      "body": "We've started seeing roaches at night in the kitchen even though we keep the place clean. Talked to the neighbors and apparently the whole floor is dealing with them.\n\nWho handles pest control here — is that something the building takes care of?"
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "unclear" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "keisha-price-stray-kitten",
+    "email": {
+      "sender": "keisha.price@example.com",
+      "subject": "Found a kitten — can we keep her?",
+      "body": "A tiny kitten showed up outside my office and, long story short, we're smitten. She's staying with a coworker for now.\n\nBefore we bring her home to 14C — what's the deal with pets in the building? Is there a way to make this official?"
+    },
+    "category": "lease_question",
+    "lease_check": { "responsibility": "tenant" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "darnell-washington-ceiling-water",
+    "email": {
+      "sender": "darnell.washington@example.com",
+      "subject": "Water pouring through bathroom ceiling",
+      "body": "Water is actively pouring through the bathroom ceiling in 14C — looks like it's coming from the unit above. The drywall is sagging and water is spreading into the hallway. Please send someone NOW and call me."
+    },
+    "category": "emergency",
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "keisha-price-restaurant-recs",
+    "email": {
+      "sender": "keisha.price@example.com",
+      "subject": "Totally random — taco recs?",
+      "body": "Not apartment related at all — my in-laws are visiting Houston this weekend and you seem to know the area. Any favorite taco spots near Westheimer?"
+    },
+    "category": "not_our_problem",
+    "writes": { "before_approval": [], "after_approval": [] }
+  },
+  {
+    "id": "james-whitfield-dryer-no-heat",
+    "email": {
+      "sender": "james.whitfield@example.com",
+      "subject": "Dryer not heating",
+      "body": "The dryer at 884 Pelican Court spins but isn't putting out any heat anymore — clothes come out cold and damp. Lint trap is clean and we haven't done anything different. It's the unit that came with the house.\n\nCan you send someone out?"
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "landlord" },
+    "writes": {
+      "before_approval": [],
+      "after_approval": ["send_reply", "create_work_order"]
+    }
+  },
+  {
+    "id": "maria-vega-microwave-dead",
+    "email": {
+      "sender": "maria.vega@example.com",
+      "subject": "Microwave died",
+      "body": "The microwave at Pelican Court just stopped working — no display, no light, nothing. The outlet is fine (tested it with the kettle) and nothing was spilled on it. It's the one that came with the house.\n\nCan you arrange a repair or replacement?"
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "landlord" },
+    "writes": {
+      "before_approval": [],
+      "after_approval": ["send_reply", "create_work_order"]
+    }
+  },
+  {
+    "id": "james-whitfield-overgrown-hedges",
+    "email": {
+      "sender": "james.whitfield@example.com",
+      "subject": "Hedges getting out of hand",
+      "body": "The hedges along the front walkway at Pelican Court are really overgrown — they're scraping the car on the way into the driveway and starting to block the path.\n\nWhen is the gardener scheduled next? Might need an extra visit."
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "landlord" },
+    "writes": {
+      "before_approval": [],
+      "after_approval": ["send_reply", "create_work_order"]
+    }
+  },
+  {
+    "id": "maria-vega-cat-approval",
+    "email": {
+      "sender": "maria.vega@example.com",
+      "subject": "Confirming the cat is okay",
+      "body": "We're adopting a small neutered cat from the shelter — she's about nine pounds. I'm pretty sure our lease covers this, but wanted to confirm with you before we bring her home to Pelican Court, and see if you need anything from us."
+    },
+    "category": "lease_question",
+    "lease_check": { "responsibility": "tenant" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "james-whitfield-trash-bill",
+    "email": {
+      "sender": "james.whitfield@example.com",
+      "subject": "Trash bill came to us?",
+      "body": "We just got a bill from the city for trash pickup at Pelican Court. I thought trash and water/sewer were handled on your side — can you confirm before I pay something I'm not supposed to?"
+    },
+    "category": "lease_question",
+    "lease_check": { "responsibility": "landlord" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "james-whitfield-gas-smell-water-heater",
+    "email": {
+      "sender": "james.whitfield@example.com",
+      "subject": "Gas smell near the water heater",
+      "body": "There's a rotten-egg gas smell near the water heater closet in the garage at Pelican Court and it's gotten stronger over the last hour. Maria and the kiddo are out front and I've opened the garage door. Calling the gas company too — please call me back right away."
+    },
+    "category": "emergency",
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "maria-vega-auto-warranty-spam",
+    "email": {
+      "sender": "maria.vega@example.com",
+      "subject": "FW: Your vehicle's extended warranty",
+      "body": "Forwarding this only because it came addressed to 'Resident at 884 Pelican Court' — it's junk about car warranties. Nothing needed, just FYI."
+    },
+    "category": "not_our_problem",
+    "writes": { "before_approval": [], "after_approval": [] }
+  },
+  {
+    "id": "deshawn-johnson-stove-igniter",
+    "email": {
+      "sender": "deshawn.johnson@example.com",
+      "subject": "Stove igniter clicking nonstop",
+      "body": "The gas range in Unit 5 has started clicking continuously even when everything's off — the igniter just keeps ticking. Burners still light and there's no gas smell, but it can't be good.\n\nCan you have someone look at it?"
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "landlord" },
+    "writes": {
+      "before_approval": [],
+      "after_approval": ["send_reply", "create_work_order"]
+    }
+  },
+  {
+    "id": "yuna-kim-heater-not-working",
+    "email": {
+      "sender": "yuna.kim@example.com",
+      "subject": "Heat won't turn on in Unit 5",
+      "body": "The heater in Unit 5 won't kick on at all — thermostat is set, batteries are fresh, and nothing happens. It's been genuinely cold at night this week.\n\nNo smells or anything weird, it just won't start. Can you send someone this week?"
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "landlord" },
+    "writes": {
+      "before_approval": [],
+      "after_approval": ["send_reply", "create_work_order"]
+    }
+  },
+  {
+    "id": "yuna-kim-lost-garage-remote",
+    "email": {
+      "sender": "yuna.kim@example.com",
+      "subject": "Lost one of our garage remotes",
+      "body": "I lost one of our two garage remotes somewhere over the weekend — we're in the tandem spaces #7 and #8. How do I get a replacement, and what does it cost? DeShawn still has his."
+    },
+    "category": "maintenance",
+    "lease_check": { "responsibility": "tenant" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "deshawn-johnson-gas-bill",
+    "email": {
+      "sender": "deshawn.johnson@example.com",
+      "subject": "Gas bill showed up in our name?",
+      "body": "We got a setup notice from the gas company addressed to us for Unit 5. I thought gas was one of the things covered on your side — can you confirm before I call them back?"
+    },
+    "category": "lease_question",
+    "lease_check": { "responsibility": "landlord" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "yuna-kim-hoa-bike-notice",
+    "email": {
+      "sender": "yuna.kim@example.com",
+      "subject": "HOA notice about our bikes",
+      "body": "The Sunset Ridge HOA left a notice saying our bikes can't stay on the balcony of Unit 5 and mentioned a possible fine if they're not moved. We'll move them this week.\n\nFor future reference though — if the HOA ever fines the unit for something like this, does that come to you or to us?"
+    },
+    "category": "lease_question",
+    "lease_check": { "responsibility": "tenant" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "deshawn-johnson-ceiling-bulge",
+    "email": {
+      "sender": "deshawn.johnson@example.com",
+      "subject": "Ceiling bulging and dripping — getting worse",
+      "body": "The bedroom ceiling in Unit 5 is bulging and there's water dripping through, spreading fast — I think a pipe burst upstairs. We've moved the bed and put buckets down but the bulge is growing and I'm worried it's going to come down. Please treat this as urgent and call me."
+    },
+    "category": "emergency",
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
+  },
+  {
+    "id": "yuna-kim-parking-ticket",
+    "email": {
+      "sender": "yuna.kim@example.com",
+      "subject": "Street sweeping ticket",
+      "body": "I got a street-sweeping ticket from the city parked out front on Sunset Ridge Drive. Any chance you can get it waived, or know who to call at the city? So annoying."
+    },
+    "category": "not_our_problem",
+    "writes": { "before_approval": [], "after_approval": [] }
+  }
+]

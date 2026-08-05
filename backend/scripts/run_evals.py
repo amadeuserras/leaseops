@@ -22,7 +22,7 @@ from leaseops.evals.run import run_cases
 from leaseops.evals.schemas import GoldenItem
 
 _EVALS_DIR = Path(__file__).resolve().parents[1] / "src/leaseops/evals"
-_GOLDEN_PATH = _EVALS_DIR / "golden/data.json"
+_GOLDEN_PATH = _EVALS_DIR / "data/golden.json"
 _REPORT_PATH = _EVALS_DIR / "reports/report.md"
 
 _GoldenItems = TypeAdapter(list[GoldenItem])
