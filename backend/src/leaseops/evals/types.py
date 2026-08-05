@@ -10,23 +10,8 @@ class GoldenEmail(LeaseOpsModel):
     body: str
 
 
-class GoldenTenant(LeaseOpsModel):
-    name: str
-    document_id: str
-    address: str
-    unit: str | None = None
-
-
-class GoldenExtract(LeaseOpsModel):
-    issue_summary: str | None = None
-    severity: str | None = None
-    urgency: str | None = None
-    appliance_or_system: str | None = None
-
-
 class GoldenLeaseCheck(LeaseOpsModel):
     responsibility: str
-    lease_addresses_issue: bool
 
 
 class GoldenWrites(LeaseOpsModel):
@@ -38,8 +23,6 @@ class GoldenItem(LeaseOpsModel):
     id: str
     email: GoldenEmail
     category: str
-    tenant: GoldenTenant | None = None
-    extract: GoldenExtract | None = None
     lease_check: GoldenLeaseCheck | None = None
     writes: GoldenWrites | None = None
 

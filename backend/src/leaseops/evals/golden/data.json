@@ -6,21 +6,9 @@
       "subject": "Radiator leaking onto bedroom floor",
       "body": "Hello, the radiator in the back bedroom has been leaking onto the floor since last night. I've put towels down but it keeps coming back. Could someone take a look this week? Thanks, James, Pelican Court"
     },
-    "tenant": {
-      "name": "James Whitfield",
-      "document_id": "e61af2b7-a2bb-4bcf-87b9-e7d324965bf9",
-      "address": "884 Pelican Court, Oxnard, CA 93035",
-      "unit": null
-    },
     "category": "maintenance",
-    "extract": {
-      "issue_summary": "Radiator in the back bedroom has been leaking onto the floor since last night",
-      "severity": "high",
-      "appliance_or_system": "radiator"
-    },
     "lease_check": {
-      "responsibility": "landlord",
-      "lease_addresses_issue": true
+      "responsibility": "landlord"
     },
     "writes": {
       "before_approval": [],
@@ -34,18 +22,7 @@
       "subject": "Gas smell in kitchen",
       "body": "Hi, I need someone urgently. There's a strong gas smell coming from around the kitchen stove. It's been getting stronger over the last hour. I've turned off the stove and cracked a window but I'm worried. Can someone come check this today? — Maria, Pelican Court"
     },
-    "tenant": {
-      "name": "Maria Elena Vega",
-      "document_id": "e61af2b7-a2bb-4bcf-87b9-e7d324965bf9",
-      "address": "884 Pelican Court, Oxnard, CA 93035",
-      "unit": null
-    },
     "category": "emergency",
-    "extract": {
-      "issue_summary": "Strong gas smell near kitchen stove, increasing over last hour",
-      "severity": "critical",
-      "appliance_or_system": "gas line"
-    },
     "writes": {
       "before_approval": [],
       "after_approval": ["send_reply"]
@@ -58,21 +35,9 @@
       "subject": "Dishwasher not draining",
       "body": "Hi, my dishwasher fills with water but won't drain — there's standing water pooling at the bottom after every cycle. Started two days ago. Let me know when someone can come take a look. Kevin, Unit 8B"
     },
-    "tenant": {
-      "name": "Kevin Chen",
-      "document_id": "6bee794f-11cd-4278-916c-950d53a67d7f",
-      "address": "302 Fern Valley Road, Ashford Heights, OR 97201",
-      "unit": "8B"
-    },
     "category": "maintenance",
-    "extract": {
-      "issue_summary": "Dishwasher fills but will not drain; standing water pooling at the bottom after every cycle for two days",
-      "severity": "medium",
-      "appliance_or_system": "dishwasher"
-    },
     "lease_check": {
-      "responsibility": "landlord",
-      "lease_addresses_issue": true
+      "responsibility": "landlord"
     },
     "writes": {
       "before_approval": [],
@@ -85,12 +50,6 @@
       "sender": "sara.berg@example.com",
       "subject": "Noise complaint – upstairs neighbor",
       "body": "Hi, the neighbors upstairs have been really loud again late at night this week. Wondering if building management could send a reminder about quiet hours? Thanks, Sara"
-    },
-    "tenant": {
-      "name": "Sara Berg",
-      "document_id": "19380bd4-f7af-4b81-90ff-af804bd0d819",
-      "address": "1845 Selby Avenue, Saint Paul, MN 55104",
-      "unit": null
     },
     "category": "not_our_problem",
     "writes": {
@@ -105,21 +64,9 @@
       "subject": "Can I paint the living room?",
       "body": "Hi, I was hoping to paint the living room a light blue. I noticed the lease doesn't specify any restrictions on paint colors. I'm happy to restore it to the original color when I move out. Let me know if that's alright. Thanks, Priya, Unit 3C"
     },
-    "tenant": {
-      "name": "Priya Nadkarni",
-      "document_id": "2ef1cc3b-fbe5-4567-9f39-297efa672965",
-      "address": "77 Larkspur Lane, Port Marlow, CA 94066",
-      "unit": "3C"
-    },
     "category": "lease_question",
-    "extract": {
-      "issue_summary": "Tenant requests permission to paint the living room a light blue, offering to restore original color on move-out",
-      "severity": "low",
-      "appliance_or_system": null
-    },
     "lease_check": {
-      "responsibility": "tenant",
-      "lease_addresses_issue": true
+      "responsibility": "tenant"
     },
     "writes": {
       "before_approval": [],
@@ -133,21 +80,9 @@
       "subject": "AC unit not cooling",
       "body": "Hello, the AC unit has stopped cooling properly over the past two days. It's just blowing warm air now. It's been quite uncomfortable. Could someone take a look soon? Yuna, Unit 5"
     },
-    "tenant": {
-      "name": "Yuna Kim",
-      "document_id": "c20c63ab-9330-40ce-af05-8dd84c545803",
-      "address": "1142 Sunset Ridge Drive, Los Angeles, CA 90026",
-      "unit": "5"
-    },
     "category": "maintenance",
-    "extract": {
-      "issue_summary": "AC unit has been blowing warm air instead of cooling for the past two days",
-      "severity": "high",
-      "appliance_or_system": "air conditioner"
-    },
     "lease_check": {
-      "responsibility": "landlord",
-      "lease_addresses_issue": true
+      "responsibility": "landlord"
     },
     "writes": {
       "before_approval": [],
