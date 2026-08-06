@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     cors_origins: list[str]
     database_url: str
     test_database_url: str
+    evals_database_url: str
     jwt_secret: str
     anthropic_api_key: str
     openai_api_key: str
