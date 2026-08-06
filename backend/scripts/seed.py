@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import asyncio
 import json
 from datetime import datetime
@@ -7,13 +8,32 @@ from pathlib import Path
 from uuid import UUID
 
 from sqlalchemy import delete
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from leaseops.core.config import settings
 from leaseops.db.models import AuditLog, Email, Outbox, Run, Step, Tenant, WorkOrder
+from leaseops.db.session import open_session, use_database
 from leaseops.models.enums import EmailStatus
 
 SEED_DIR = Path(__file__).resolve().parent.parent / "seed_data"
+
+_DB_URLS = {
+    "dev": settings.database_url,
+    "evals": settings.evals_database_url,
+    "tests": settings.test_database_url,
+}
+
+
+def _parse_database_url() -> tuple[str, str]:
+    parser = argparse.ArgumentParser(
+        description="Seed tenants and emails into a database."
+    )
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--evals", action="store_const", const="evals", dest="target")
+    group.add_argument("--tests", action="store_const", const="tests", dest="target")
+    parser.set_defaults(target="dev")
+    args = parser.parse_args()
+    return args.target, _DB_URLS[args.target]
 
 
 def load_json(name: str) -> list[dict[str, object]]:
@@ -67,15 +87,14 @@ async def seed(session: AsyncSession) -> tuple[int, int]:
 
 
 async def main() -> None:
-    engine = create_async_engine(settings.database_url)
-    session_factory = async_sessionmaker(engine, expire_on_commit=False)
-    try:
-        async with session_factory() as session:
-            n_tenants, n_emails = await seed(session)
-    finally:
-        await engine.dispose()
+    target, database_url = _parse_database_url()
+    async with use_database(database_url), open_session() as session:
+        n_tenants, n_emails = await seed(session)
 
-    print(f"Seeded {n_tenants} tenant(s) and {n_emails} email(s) from {SEED_DIR}")
+    print(
+        f"Seeded {n_tenants} tenant(s) and {n_emails} email(s) "
+        f"into {target} from {SEED_DIR}"
+    )
 
 
 if __name__ == "__main__":
