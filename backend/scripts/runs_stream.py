@@ -8,8 +8,9 @@ from uuid import UUID
 import httpx
 from rich import print_json
 
+from leaseops.core.config import settings
 from leaseops.db import emails as repo
-from leaseops.db.session import SessionLocal
+from leaseops.db.session import open_session, use_database
 
 DEFAULT_BASE_URL = "http://127.0.0.1:8000"
 DEFAULT_EMAIL = "Can we paint the living room?"
@@ -24,7 +25,7 @@ async def _resolve_email_id(
     if subject is None:
         raise SystemExit("pass either --email-id or --subject")
 
-    async with SessionLocal() as session:
+    async with open_session() as session:
         email = await repo.get_email_by_subject(session, subject)
     if email is None:
         raise SystemExit(f"no inbox email found for subject: {subject}")
@@ -89,13 +90,14 @@ async def main() -> None:
     )
     args = parser.parse_args()
 
-    email_id, resolved_subject = await _resolve_email_id(
-        email_id=args.email_id, subject=args.subject
-    )
-    if resolved_subject is not None:
-        print(f"Resolved subject to email_id={email_id}: {resolved_subject}")
+    async with use_database(settings.database_url):
+        email_id, resolved_subject = await _resolve_email_id(
+            email_id=args.email_id, subject=args.subject
+        )
+        if resolved_subject is not None:
+            print(f"Resolved subject to email_id={email_id}: {resolved_subject}")
 
-    await _stream_events(base_url=args.base_url, email_id=email_id)
+        await _stream_events(base_url=args.base_url, email_id=email_id)
 
 
 if __name__ == "__main__":

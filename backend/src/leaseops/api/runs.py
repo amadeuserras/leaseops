@@ -24,7 +24,7 @@ from leaseops.db import runs as runs_repo
 from leaseops.db import steps as steps_repo
 from leaseops.db.emails import InboxRow
 from leaseops.db.models import Run, Step
-from leaseops.db.session import SessionLocal, get_session
+from leaseops.db.session import get_session
 
 router = APIRouter(prefix="/runs", tags=["runs"])
 
@@ -116,9 +116,8 @@ async def stream_run(
         )
 
     async def event_source() -> AsyncGenerator[str]:
-        async with SessionLocal() as stream_session:
-            async for event in runner.stream(stream_session, email):
-                yield _sse(event)
+        async for event in runner.stream(session, email):
+            yield _sse(event)
 
     return StreamingResponse(event_source(), media_type="text/event-stream")
 
@@ -137,9 +136,8 @@ async def rerun_stream(
     await runner.wipe(session, email.id)
 
     async def event_source() -> AsyncGenerator[str]:
-        async with SessionLocal() as stream_session:
-            async for event in runner.stream(stream_session, email):
-                yield _sse(event)
+        async for event in runner.stream(session, email):
+            yield _sse(event)
 
     return StreamingResponse(event_source(), media_type="text/event-stream")
 

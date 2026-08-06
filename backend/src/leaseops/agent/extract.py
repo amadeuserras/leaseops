@@ -11,7 +11,7 @@ from leaseops.agent.state import AgentState, EmailCategory, Severity
 from leaseops.core.config import settings
 from leaseops.db import tenants as tenants_repo
 from leaseops.db.models import Tenant
-from leaseops.db.session import SessionLocal
+from leaseops.db.session import open_session
 
 _MODEL = "gpt-4o-mini"
 
@@ -69,7 +69,7 @@ async def _extract_fields(state: AgentState) -> _ExtractFormat:
 
 
 async def _lookup_tenant(sender: str) -> Tenant | None:
-    async with SessionLocal() as session:
+    async with open_session() as session:
         return await tenants_repo.get_tenant_by_email(session, sender)
 
 

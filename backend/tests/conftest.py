@@ -13,7 +13,7 @@ from leaseops.api.runs import router as runs_router
 from leaseops.api.work_orders import router as work_orders_router
 from leaseops.core.config import settings
 from leaseops.db.base import Base
-from leaseops.db.session import get_session, make_engine
+from leaseops.db.session import get_session, make_engine, use_database
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -30,7 +30,10 @@ async def db_session(test_engine):
         await conn.run_sync(Base.metadata.create_all)
 
     session_factory = async_sessionmaker(test_engine, expire_on_commit=False)
-    async with session_factory() as session:
+    async with (
+        use_database(settings.test_database_url),
+        session_factory() as session,
+    ):
         yield session
 
 

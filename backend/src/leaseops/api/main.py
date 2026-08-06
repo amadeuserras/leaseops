@@ -14,12 +14,16 @@ from leaseops.api.schemas import HealthResponse
 from leaseops.api.work_orders import router as work_orders_router
 from leaseops.core.config import settings
 from leaseops.core.logging import configure_logging
+from leaseops.db.session import use_database
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     configure_logging()
-    async with graph_runner() as runner:
+    async with (
+        use_database(settings.database_url),
+        graph_runner() as runner,
+    ):
         app.state.runner = runner
         yield
 

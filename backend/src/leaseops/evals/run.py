@@ -5,11 +5,10 @@ from datetime import UTC, datetime
 from typing import Any, cast
 from uuid import uuid4
 
-from langgraph.checkpoint.memory import InMemorySaver
-
-from leaseops.agent.checkpoint import CHECKPOINT_SERDE
-from leaseops.agent.graph import build_graph
+from leaseops.agent.runtime import graph_runner
 from leaseops.agent.state import AgentState
+from leaseops.core.config import settings
+from leaseops.db.session import use_database
 from leaseops.evals.schemas import CaseResult, GoldenItem
 from leaseops.evals.score import score
 
@@ -48,5 +47,8 @@ async def _run_case(item: GoldenItem, graph: Any) -> CaseResult:
 
 
 async def run_cases(items: list[GoldenItem]) -> list[CaseResult]:
-    graph = build_graph(checkpointer=InMemorySaver(serde=CHECKPOINT_SERDE))
-    return [await _run_case(item, graph) for item in items]
+    async with (
+        use_database(settings.evals_database_url),
+        graph_runner() as runner,
+    ):
+        return [await _run_case(item, runner.graph) for item in items]

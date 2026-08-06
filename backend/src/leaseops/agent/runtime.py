@@ -12,7 +12,7 @@ from psycopg_pool import AsyncConnectionPool
 from leaseops.agent.checkpoint import CHECKPOINT_SERDE
 from leaseops.agent.graph import build_graph
 from leaseops.agent.runner import GraphRunner
-from leaseops.core.config import settings
+from leaseops.db.session import require_database_url
 
 
 def _psycopg_conninfo(database_url: str) -> str:
@@ -20,10 +20,8 @@ def _psycopg_conninfo(database_url: str) -> str:
 
 
 @asynccontextmanager
-async def graph_runner(
-    database_url: str | None = None,
-) -> AsyncGenerator[GraphRunner]:
-    conninfo = _psycopg_conninfo(database_url or settings.database_url)
+async def graph_runner() -> AsyncGenerator[GraphRunner]:
+    conninfo = _psycopg_conninfo(require_database_url())
     async with AsyncConnectionPool(
         conninfo,
         min_size=1,

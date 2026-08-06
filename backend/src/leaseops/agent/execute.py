@@ -10,7 +10,7 @@ from leaseops.db import outbox as outbox_repo
 from leaseops.db import tenants as tenants_repo
 from leaseops.db import work_orders as work_orders_repo
 from leaseops.db.models import Tenant
-from leaseops.db.session import SessionLocal
+from leaseops.db.session import open_session
 from leaseops.models.enums import EmailStatus, OutboxStatus, WorkOrderStatus
 
 
@@ -49,7 +49,7 @@ async def _create_work_order(session: AsyncSession, state: AgentState) -> None:
 
 
 async def execute(state: AgentState) -> ExecuteOutput:
-    async with SessionLocal() as session:
+    async with open_session() as session:
         for action in state.actions:
             if action == PlanAction.SEND_REPLY:
                 await _send_reply(session, state)
