@@ -26,6 +26,7 @@ from leaseops.evals.writes import load_performed_actions
 from leaseops.models.enums import RunStatus
 
 CaseProgress = Callable[[int, int, GoldenItem], Awaitable[None]]
+CaseError = Callable[[int, int, GoldenItem, Exception], Awaitable[None]]
 
 
 async def _run_graph(
@@ -98,6 +99,7 @@ async def run_cases(
     *,
     on_start: CaseProgress | None = None,
     on_done: CaseProgress | None = None,
+    on_error: CaseError | None = None,
 ) -> list[CaseResult]:
     async with (
         use_database(settings.evals_database_url),
@@ -108,7 +110,12 @@ async def run_cases(
         for i, item in enumerate(items, 1):
             if on_start is not None:
                 await on_start(i, n, item)
-            results.append(await _run_case(item, runner))
+            try:
+                results.append(await _run_case(item, runner))
+            except Exception as exc:
+                if on_error is not None:
+                    await on_error(i, n, item, exc)
+                continue
             if on_done is not None:
                 await on_done(i, n, item)
         return results

@@ -48,6 +48,10 @@ class _Progress:
         await self._stop_spinner()
         print(f"✓ [{i}/{n}] {item.id}")
 
+    async def error(self, i: int, n: int, item: GoldenItem, exc: Exception) -> None:
+        await self._stop_spinner()
+        print(f"✗ [{i}/{n}] {item.id} — skipped: {exc}")
+
     async def _spin(self) -> None:
         assert self._stop is not None
         frame = 0
@@ -95,7 +99,13 @@ async def main() -> None:
 
     print(f"🧪 Running evals on {len(items)} item(s)...")
     progress = _Progress()
-    results = await run_cases(items, on_start=progress.start, on_done=progress.done)
+    results = await run_cases(
+        items,
+        on_start=progress.start,
+        on_done=progress.done,
+        on_error=progress.error,
+    )
+    skipped = len(items) - len(results)
     g = compute_globals(results)
     generated_at = datetime.now(UTC)
     report = render_report(results, g, generated_at)
@@ -106,7 +116,10 @@ async def main() -> None:
         if old.is_file():
             old.unlink()
     report_path.write_text(report, encoding="utf-8")
-    print("\nDone. ✅ Report written to evals/reports")
+    if skipped:
+        print(f"\nDone. ⚠️  Report written ({skipped} case(s) skipped due to errors)")
+    else:
+        print("\nDone. ✅ Report written to evals/reports")
 
 
 if __name__ == "__main__":
