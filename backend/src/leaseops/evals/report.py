@@ -125,10 +125,18 @@ def _render_case(r: CaseResult) -> str:
     return "\n".join(lines)
 
 
+def _fmt_duration(seconds: float) -> str:
+    total = int(round(seconds))
+    minutes, secs = divmod(total, 60)
+    if minutes:
+        return f"{minutes}m {secs}s"
+    return f"{secs}s"
+
+
 def _totals_line(g: GlobalMetrics) -> str:
     return (
-        f"_Total cost ${g.total_cost_usd:.1f}"
-        f" · Total time {g.total_latency_s / 60:.1f} min_"
+        f"_Total cost ${g.total_cost_usd:.2f}"
+        f" · Total time {_fmt_duration(g.total_latency_s)}_"
     )
 
 
@@ -224,16 +232,3 @@ def render_report(
             per_case,
         ]
     )
-
-
-def print_summary(g: GlobalMetrics) -> None:
-    col = 42
-    print(f"{'Metric':<{col}} {'Score':>8}  {'Target':>8}  {'n':>4}  Status")
-    print("-" * 75)
-    for metric, score, target, count in _metric_rows(g):
-        if metric == "Landlord issue blamed on tenant rate":
-            metric = "Landlord blamed on tenant rate"
-        status = _status(score, target)
-        print(f"{metric:<{col}} {score:>8}  {target:>8}  {count!s:>4}  {status}")
-    print()
-    print(_totals_line(g).strip("_"))

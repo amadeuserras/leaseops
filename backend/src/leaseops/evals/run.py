@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 from uuid import UUID
 
@@ -22,6 +23,8 @@ from leaseops.evals.schemas import CaseResult, GoldenItem
 from leaseops.evals.score import score
 from leaseops.evals.writes import load_performed_actions
 from leaseops.models.enums import RunStatus
+
+CaseProgress = Callable[[int, int, GoldenItem], Awaitable[None]]
 
 
 async def _run_graph(
@@ -89,9 +92,22 @@ async def _run_case(item: GoldenItem, runner: GraphRunner) -> CaseResult:
     )
 
 
-async def run_cases(items: list[GoldenItem]) -> list[CaseResult]:
+async def run_cases(
+    items: list[GoldenItem],
+    *,
+    on_start: CaseProgress | None = None,
+    on_done: CaseProgress | None = None,
+) -> list[CaseResult]:
     async with (
         use_database(settings.evals_database_url),
         graph_runner() as runner,
     ):
-        return [await _run_case(item, runner) for item in items]
+        results: list[CaseResult] = []
+        n = len(items)
+        for i, item in enumerate(items, 1):
+            if on_start is not None:
+                await on_start(i, n, item)
+            results.append(await _run_case(item, runner))
+            if on_done is not None:
+                await on_done(i, n, item)
+        return results

@@ -17,7 +17,7 @@ from pathlib import Path
 from pydantic import TypeAdapter
 
 from leaseops.evals.aggregate import compute_globals
-from leaseops.evals.report import print_summary, render_report
+from leaseops.evals.report import render_report
 from leaseops.evals.run import run_cases
 from leaseops.evals.schemas import GoldenItem
 
@@ -26,6 +26,45 @@ _GOLDEN_PATH = _EVALS_DIR / "data/golden.json"
 _REPORT_PATH = _EVALS_DIR / "reports/report.md"
 
 _GoldenItems = TypeAdapter(list[GoldenItem])
+_SPINNER_FRAMES = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
+
+
+class _Progress:
+    def __init__(self) -> None:
+        self._label = ""
+        self._stop: asyncio.Event | None = None
+        self._task: asyncio.Task[None] | None = None
+
+    async def start(self, i: int, n: int, item: GoldenItem) -> None:
+        await self._stop_spinner()
+        self._label = f"[{i}/{n}] {item.id}"
+        self._stop = asyncio.Event()
+        self._task = asyncio.create_task(self._spin())
+
+    async def done(self, i: int, n: int, item: GoldenItem) -> None:
+        await self._stop_spinner()
+        print(f"✓ [{i}/{n}] {item.id}")
+
+    async def _spin(self) -> None:
+        assert self._stop is not None
+        frame = 0
+        while not self._stop.is_set():
+            print(
+                f"\r{_SPINNER_FRAMES[frame % len(_SPINNER_FRAMES)]} {self._label}",
+                end="",
+                flush=True,
+            )
+            frame += 1
+            await asyncio.sleep(0.08)
+
+    async def _stop_spinner(self) -> None:
+        if self._task is None or self._stop is None:
+            return
+        self._stop.set()
+        await self._task
+        self._task = None
+        self._stop = None
+        print(f"\r{' ' * (len(self._label) + 4)}\r", end="", flush=True)
 
 
 async def main() -> None:
@@ -47,15 +86,14 @@ async def main() -> None:
         items = items[: args.limit]
 
     print(f"Running evals on {len(items)} item(s)...")
-    results = await run_cases(items)
+    progress = _Progress()
+    results = await run_cases(items, on_start=progress.start, on_done=progress.done)
     g = compute_globals(results)
     report = render_report(results, g, datetime.now(UTC))
 
     _REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
     _REPORT_PATH.write_text(report, encoding="utf-8")
-    print(f"\nReport written to {_REPORT_PATH}")
-    print()
-    print_summary(g)
+    print(f"\nDone. Report written to {_REPORT_PATH}")
 
 
 if __name__ == "__main__":
