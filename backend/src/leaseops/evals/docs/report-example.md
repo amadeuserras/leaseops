@@ -14,6 +14,8 @@ _Generated 2026-07-18 14:10 UTC by `scripts/run_eval.py` against 45 golden items
 | p95 cost / task | $0.042 | publish | 60 | — |
 | p95 latency | 12.8s | publish | 60 | — |
 
+_Total cost $2.1 · Total time 8.2 min_
+
 ## Per-case results
 
 ### james-whitfield-radiator-leak

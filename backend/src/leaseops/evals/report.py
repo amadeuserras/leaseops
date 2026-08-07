@@ -125,6 +125,13 @@ def _render_case(r: CaseResult) -> str:
     return "\n".join(lines)
 
 
+def _totals_line(g: GlobalMetrics) -> str:
+    return (
+        f"_Total cost ${g.total_cost_usd:.1f}"
+        f" · Total time {g.total_latency_s / 60:.1f} min_"
+    )
+
+
 def _metric_rows(g: GlobalMetrics) -> list[tuple[str, str, str, int]]:
     return [
         (
@@ -211,6 +218,8 @@ def render_report(
         [
             header,
             "\n".join(table_lines),
+            "",
+            _totals_line(g),
             "\n## Per-case results\n",
             per_case,
         ]
@@ -226,3 +235,5 @@ def print_summary(g: GlobalMetrics) -> None:
             metric = "Landlord blamed on tenant rate"
         status = _status(score, target)
         print(f"{metric:<{col}} {score:>8}  {target:>8}  {count!s:>4}  {status}")
+    print()
+    print(_totals_line(g).strip("_"))

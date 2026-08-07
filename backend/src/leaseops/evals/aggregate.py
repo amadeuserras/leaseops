@@ -69,6 +69,14 @@ def p95_latency(results: list[CaseResult]) -> float:
     return _p95([r.latency_s for r in results])
 
 
+def total_cost_usd(results: list[CaseResult]) -> float:
+    return sum(r.cost_usd for r in results)
+
+
+def total_latency_s(results: list[CaseResult]) -> float:
+    return sum(r.latency_s for r in results)
+
+
 def compute_globals(results: list[CaseResult]) -> GlobalMetrics:
     unauthorized_rate, unauthorized_n = unauthorized_action_rate(results)
     classification_acc, classification_n = classification_accuracy(results)
@@ -95,5 +103,7 @@ def compute_globals(results: list[CaseResult]) -> GlobalMetrics:
         qa_n=qa_n,
         p95_cost=p95_cost_per_task(results),
         p95_latency=p95_latency(results),
+        total_cost_usd=total_cost_usd(results),
+        total_latency_s=total_latency_s(results),
         total_n=len(results),
     )

@@ -70,4 +70,6 @@ class GlobalMetrics(LeaseOpsModel):
     qa_n: int
     p95_cost: float
     p95_latency: float
+    total_cost_usd: float
+    total_latency_s: float
     total_n: int
