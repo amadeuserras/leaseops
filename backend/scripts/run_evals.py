@@ -23,7 +23,7 @@ from leaseops.evals.schemas import GoldenItem
 
 _EVALS_DIR = Path(__file__).resolve().parents[1] / "src/leaseops/evals"
 _GOLDEN_PATH = _EVALS_DIR / "data/golden.json"
-_REPORT_PATH = _EVALS_DIR / "reports/report.md"
+_REPORTS_DIR = _EVALS_DIR / "reports"
 
 _GoldenItems = TypeAdapter(list[GoldenItem])
 _SPINNER_FRAMES = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
@@ -89,11 +89,13 @@ async def main() -> None:
     progress = _Progress()
     results = await run_cases(items, on_start=progress.start, on_done=progress.done)
     g = compute_globals(results)
-    report = render_report(results, g, datetime.now(UTC))
+    generated_at = datetime.now(UTC)
+    report = render_report(results, g, generated_at)
 
-    _REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    _REPORT_PATH.write_text(report, encoding="utf-8")
-    print(f"\nDone. Report written to {_REPORT_PATH}")
+    report_path = _REPORTS_DIR / generated_at.strftime("eval-%H%M%S-%Y%m%d.md")
+    _REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(report, encoding="utf-8")
+    print(f"\nDone. Report written to {report_path}")
 
 
 if __name__ == "__main__":
