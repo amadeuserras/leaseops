@@ -67,7 +67,6 @@ export interface LeaseCheckOutput {
   lease_addresses_issue: boolean;
   responsibility: Responsibility;
   lease_check_steps: LeaseCheckStep[];
-  reasoning?: string | null;
 }
 
 export interface PlanOutput {

@@ -41,6 +41,10 @@ submit a structured verdict using the submit_verdict tool.
 ## How to ask questions
 - Base your verdict ONLY on the answers returned by lease_qa. Do not use 
 general knowledge of landlord-tenant law.
+
+## Reasoning
+- Before every tool call, write 1–2 short sentences of your own reasoning in plain text.
+- Never call a tool without that preceding text.
 """
 
 
@@ -134,7 +138,6 @@ def _verdict_output(
         responsibility=responsibility,
         lease_addresses_issue=lease_addresses_issue,
         lease_check_steps=steps,
-        reasoning=reasoning or None,
     )
 
 

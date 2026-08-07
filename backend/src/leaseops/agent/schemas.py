@@ -75,7 +75,6 @@ class LeaseCheckOutput(LeaseOpsModel):
     lease_addresses_issue: bool
     responsibility: Responsibility
     lease_check_steps: list[LeaseCheckStep]
-    reasoning: str | None = None
 
 
 class PlanOutput(LeaseOpsModel):

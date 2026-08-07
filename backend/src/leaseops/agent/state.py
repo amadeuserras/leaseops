@@ -37,7 +37,6 @@ class AgentState(LeaseOpsModel):
     responsibility: Responsibility | None = None
     lease_addresses_issue: bool | None = None
     lease_check_steps: list[LeaseCheckStep] = []
-    reasoning: str | None = None
 
     # draft
     draft: str | None = None
