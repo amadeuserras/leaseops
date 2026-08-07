@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from leaseops.agent.state import QAResultSchema
+from leaseops.agent.schemas import LeaseCheckStep, LeaseQaTool
 
 # Matches inline citation ids as they appear in answers.
 # Copied from leaseclear.evals.generation.answer.
@@ -20,9 +20,10 @@ def extract_citation_ids(text: str) -> list[str]:
     return ids
 
 
-def first_citation(qa_results: list[QAResultSchema]) -> str | None:
-    """Card display: first citation on the earliest QA that has one."""
-    for qa in qa_results:
-        if qa.citations:
-            return qa.citations[0]
+def first_citation(steps: list[LeaseCheckStep]) -> str | None:
+    """Card display: first citation on the earliest lease_qa that has one."""
+    for step in steps:
+        tool = step.tool
+        if isinstance(tool, LeaseQaTool) and tool.citations:
+            return tool.citations[0]
     return None

@@ -5,9 +5,10 @@ from typing import Literal
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 
+from leaseops.agent.enums import EmailCategory, Severity
 from leaseops.agent.events import emit_cost
 from leaseops.agent.schemas import ExtractOutput
-from leaseops.agent.state import AgentState, EmailCategory, Severity
+from leaseops.agent.state import AgentState
 from leaseops.core.config import settings
 from leaseops.db import tenants as tenants_repo
 from leaseops.db.models import Tenant

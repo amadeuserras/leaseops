@@ -4,8 +4,8 @@ from openai import AsyncOpenAI
 from pydantic import BaseModel
 
 from leaseops.agent.events import emit_cost
-from leaseops.agent.schemas import DraftOutput
-from leaseops.agent.state import AgentState, QAResultSchema
+from leaseops.agent.schemas import DraftOutput, LeaseCheckStep, LeaseQaTool
+from leaseops.agent.state import AgentState
 from leaseops.core.config import settings
 
 _MODEL = "gpt-4o-mini"
@@ -55,12 +55,15 @@ class _DraftFormat(BaseModel):
     draft: str
 
 
-def _format_qa_results(qa_results: list[QAResultSchema]) -> str:
-    if not qa_results:
+def _format_lease_check_steps(steps: list[LeaseCheckStep]) -> str:
+    qa_steps = [s for s in steps if isinstance(s.tool, LeaseQaTool)]
+    if not qa_steps:
         return "(none)"
     parts: list[str] = []
-    for i, qa in enumerate(qa_results, start=1):
-        parts.append(f"{i}. Q: {qa.question}\n   A: {qa.answer}")
+    for i, step in enumerate(qa_steps, start=1):
+        tool = step.tool
+        assert isinstance(tool, LeaseQaTool)
+        parts.append(f"{i}. Q: {tool.question}\n   A: {tool.answer}")
     return "\n".join(parts)
 
 
@@ -80,7 +83,7 @@ def _content_message(state: AgentState) -> str:
         f"Lease addresses issue: {state.lease_addresses_issue}\n"
         f"Responsibility: {responsibility}\n\n"
         f"Lease Q&A (citations are inline in the answers):\n"
-        f"{_format_qa_results(state.qa_results)}\n"
+        f"{_format_lease_check_steps(state.lease_check_steps)}\n"
     )
 
 

@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from leaseops.agent.enums import PlanAction
 from leaseops.agent.schemas import ExecuteOutput
-from leaseops.agent.state import AgentState, PlanAction
+from leaseops.agent.state import AgentState
 from leaseops.api.schemas import OutboxCreate, WorkOrderCreate
 from leaseops.db import emails as emails_repo
 from leaseops.db import outbox as outbox_repo

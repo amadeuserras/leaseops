@@ -91,21 +91,32 @@ Hello, the radiator in the back bedroom has been leaking onto the floor since la
 {
   "responsibility": "landlord",
   "lease_addresses_issue": true,
-  "qa_results": [
+  "lease_check_steps": [
     {
-      "question": "Who is responsible for repairing a leaking radiator in the unit?",
-      "answer": "Under Clause 7.2 (Landlord's Obligations), the Landlord must keep in repair and proper working order the installations in the Premises for space heating [lease-abc §7.2]. A radiator forms part of the space heating installation, so repair of a leaking radiator is the Landlord's responsibility.",
-      "citations": ["[lease-abc §7.2]"],
-      "reasoning": "The issue is a leaking radiator. I need to know who the lease assigns repair responsibility to for heating systems in the unit."
+      "reasoning": "The issue is a leaking radiator. I need to know who the lease assigns repair responsibility to for heating systems in the unit.",
+      "tool": {
+        "name": "lease_qa",
+        "question": "Who is responsible for repairing a leaking radiator in the unit?",
+        "answer": "Under Clause 7.2 (Landlord's Obligations), the Landlord must keep in repair and proper working order the installations in the Premises for space heating [lease-abc §7.2]. A radiator forms part of the space heating installation, so repair of a leaking radiator is the Landlord's responsibility."
+      }
     },
     {
-      "question": "Does the lease require the landlord to maintain heating systems?",
-      "answer": "Yes. Clause 7.2 requires the Landlord to keep the installations for space heating in repair and proper working order throughout the tenancy [lease-abc §7.2].",
-      "citations": ["[lease-abc §7.2]"],
-      "reasoning": "The first answer points to landlord duty for heating installations. I'll confirm that heating-system maintenance is explicitly required of the landlord."
+      "reasoning": "The first answer points to landlord duty for heating installations. I'll confirm that heating-system maintenance is explicitly required of the landlord.",
+      "tool": {
+        "name": "lease_qa",
+        "question": "Does the lease require the landlord to maintain heating systems?",
+        "answer": "Yes. Clause 7.2 requires the Landlord to keep the installations for space heating in repair and proper working order throughout the tenancy [lease-abc §7.2]."
+      }
+    },
+    {
+      "reasoning": "Both answers assign radiator/heating repair to the landlord, and the lease addresses the issue. Submitting the verdict.",
+      "tool": {
+        "name": "submit_verdict",
+        "lease_addresses_issue": true,
+        "responsibility": "landlord"
+      }
     }
-  ],
-  "reasoning": "Both answers assign radiator/heating repair to the landlord, and the lease addresses the issue. Submitting the verdict."
+  ]
 }
 ```
 

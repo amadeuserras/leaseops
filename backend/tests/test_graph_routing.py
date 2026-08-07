@@ -9,10 +9,11 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import END, START, StateGraph
 
 from leaseops.agent.checkpoint import CHECKPOINT_SERDE
+from leaseops.agent.enums import EmailCategory
 from leaseops.agent.graph import _after_classify, _after_extract
 from leaseops.agent.runner import GraphRunner
 from leaseops.agent.schemas import ClassifyOutput
-from leaseops.agent.state import AgentState, EmailCategory
+from leaseops.agent.state import AgentState
 from leaseops.db import emails as emails_repo
 from leaseops.db import runs as runs_repo
 from leaseops.db import steps as steps_repo

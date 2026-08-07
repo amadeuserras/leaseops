@@ -15,9 +15,15 @@ from anthropic.types import (
 from pydantic import BaseModel, Field
 
 from leaseops.agent.citations import extract_citation_ids
+from leaseops.agent.enums import Responsibility
 from leaseops.agent.events import emit_cost, emit_tool_call, emit_tool_result
-from leaseops.agent.schemas import LeaseCheckOutput
-from leaseops.agent.state import AgentState, QAResultSchema, Responsibility
+from leaseops.agent.schemas import (
+    LeaseCheckOutput,
+    LeaseCheckStep,
+    LeaseQaTool,
+    SubmitVerdictTool,
+)
+from leaseops.agent.state import AgentState
 from leaseops.clients.leaseclear import LeaseQAResponse
 from leaseops.core.config import settings
 from leaseops.mcp.client import McpToolError, call_tool, mcp_session
@@ -104,22 +110,51 @@ def _response_text(response: Message) -> str:
     return "\n".join(parts).strip()
 
 
+def _qa_call_count(steps: list[LeaseCheckStep]) -> int:
+    return sum(1 for step in steps if step.tool.name == "lease_qa")
+
+
+def _verdict_output(
+    *,
+    responsibility: Responsibility,
+    lease_addresses_issue: bool,
+    steps: list[LeaseCheckStep],
+    reasoning: str,
+) -> LeaseCheckOutput:
+    steps.append(
+        LeaseCheckStep(
+            reasoning=reasoning,
+            tool=SubmitVerdictTool(
+                lease_addresses_issue=lease_addresses_issue,
+                responsibility=responsibility,
+            ),
+        )
+    )
+    return LeaseCheckOutput(
+        responsibility=responsibility,
+        lease_addresses_issue=lease_addresses_issue,
+        lease_check_steps=steps,
+        reasoning=reasoning or None,
+    )
+
+
 async def lease_check(state: AgentState) -> LeaseCheckOutput:
     if state.document_id is None:
-        return LeaseCheckOutput(
+        return _verdict_output(
             responsibility=Responsibility.UNCLEAR,
             lease_addresses_issue=False,
-            qa_results=[],
+            steps=[],
+            reasoning="",
         )
 
     system_prompt = _LEASE_CHECK_SYSTEM.format(max_calls=_MAX_QA_CALLS)
     messages: list[MessageParam] = [{"role": "user", "content": _task_message(state)}]
-    qa_results: list[QAResultSchema] = []
+    steps: list[LeaseCheckStep] = []
 
     client = AsyncAnthropic(api_key=settings.anthropic_api_key)
     async with mcp_session() as session:
         while True:
-            force_verdict = len(qa_results) >= _MAX_QA_CALLS
+            force_verdict = _qa_call_count(steps) >= _MAX_QA_CALLS
             tool_choice: ToolChoiceParam = (
                 {
                     "type": "tool",
@@ -148,21 +183,22 @@ async def lease_check(state: AgentState) -> LeaseCheckOutput:
 
             verdict_use = _find_tool_use(response, "submit_verdict")
             if verdict_use is not None:
-                return LeaseCheckOutput(
+                return _verdict_output(
                     responsibility=Responsibility(verdict_use.input["responsibility"]),
                     lease_addresses_issue=bool(
                         verdict_use.input["lease_addresses_issue"]
                     ),
-                    qa_results=qa_results,
-                    reasoning=_response_text(response) or None,
+                    steps=steps,
+                    reasoning=_response_text(response),
                 )
 
             qa_use = _find_tool_use(response, "lease_qa")
             if qa_use is None:
-                return LeaseCheckOutput(
+                return _verdict_output(
                     responsibility=Responsibility.UNCLEAR,
                     lease_addresses_issue=False,
-                    qa_results=qa_results,
+                    steps=steps,
+                    reasoning=_response_text(response),
                 )
 
             question = cast(str, qa_use.input["question"])
@@ -181,12 +217,14 @@ async def lease_check(state: AgentState) -> LeaseCheckOutput:
                 is_error = True
             emit_tool_result("lease_check", "lease_qa", answer, is_error=is_error)
 
-            qa_results.append(
-                QAResultSchema(
-                    question=question,
-                    answer=answer,
-                    citations=extract_citation_ids(answer),
+            steps.append(
+                LeaseCheckStep(
                     reasoning=reasoning,
+                    tool=LeaseQaTool(
+                        question=question,
+                        answer=answer,
+                        citations=extract_citation_ids(answer),
+                    ),
                 )
             )
             tool_result: ToolResultBlockParam = {

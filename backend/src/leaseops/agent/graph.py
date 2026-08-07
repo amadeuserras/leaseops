@@ -11,11 +11,12 @@ from langgraph.graph import (  # pyright: ignore[reportMissingTypeStubs]
 from leaseops.agent.approval import approval
 from leaseops.agent.classify import classify
 from leaseops.agent.draft import draft
+from leaseops.agent.enums import EmailCategory
 from leaseops.agent.execute import execute
 from leaseops.agent.extract import extract
 from leaseops.agent.lease_check import lease_check
 from leaseops.agent.plan import plan
-from leaseops.agent.state import AgentState, EmailCategory
+from leaseops.agent.state import AgentState
 
 _AfterClassify = Literal["extract", "end"]
 _AfterExtract = Literal["lease_check", "draft"]

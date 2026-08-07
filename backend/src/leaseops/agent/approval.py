@@ -5,8 +5,9 @@ from typing import Any, cast
 from langgraph.types import interrupt
 
 from leaseops.agent.citations import first_citation
+from leaseops.agent.enums import EmailCategory
 from leaseops.agent.schemas import ApprovalCard, ApprovalOutput
-from leaseops.agent.state import AgentState, EmailCategory
+from leaseops.agent.state import AgentState
 
 
 def _approval_request(state: AgentState) -> ApprovalCard:
@@ -26,7 +27,7 @@ def _approval_request(state: AgentState) -> ApprovalCard:
         issue_summary=state.issue_summary,
         appliance_or_system=state.appliance_or_system,
         responsibility=responsibility,
-        citation=first_citation(state.qa_results),
+        citation=first_citation(state.lease_check_steps),
         original_email=state.body,
         draft=state.draft,
         actions=[action.value for action in state.actions],

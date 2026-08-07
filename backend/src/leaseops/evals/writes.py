@@ -4,7 +4,7 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from leaseops.agent.state import PlanAction
+from leaseops.agent.enums import PlanAction
 from leaseops.db import outbox as outbox_repo
 from leaseops.db import work_orders as work_orders_repo
 

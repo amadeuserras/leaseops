@@ -10,6 +10,7 @@ from langgraph.graph import END, START, StateGraph
 
 from leaseops.agent.approval import approval
 from leaseops.agent.checkpoint import CHECKPOINT_SERDE
+from leaseops.agent.enums import EmailCategory, PlanAction, Responsibility, Severity
 from leaseops.agent.runner import GraphRunner
 from leaseops.agent.schemas import (
     ClassifyOutput,
@@ -17,16 +18,12 @@ from leaseops.agent.schemas import (
     ExecuteOutput,
     ExtractOutput,
     LeaseCheckOutput,
+    LeaseCheckStep,
+    LeaseQaTool,
     PlanOutput,
+    SubmitVerdictTool,
 )
-from leaseops.agent.state import (
-    AgentState,
-    EmailCategory,
-    PlanAction,
-    QAResultSchema,
-    Responsibility,
-    Severity,
-)
+from leaseops.agent.state import AgentState
 from leaseops.db import emails as emails_repo
 from leaseops.db import runs as runs_repo
 from leaseops.db import steps as steps_repo
@@ -63,13 +60,22 @@ def _lease_check_node(state: AgentState) -> dict[str, Any]:
     return LeaseCheckOutput(
         lease_addresses_issue=True,
         responsibility=Responsibility.LANDLORD,
-        qa_results=[
-            QAResultSchema(
-                question="Who is responsible for faucet repairs?",
-                answer="Landlord. [hardcoded-lease §7.2]",
-                citations=["[hardcoded-lease §7.2]"],
+        lease_check_steps=[
+            LeaseCheckStep(
                 reasoning="Checking lease responsibility for faucet repairs.",
-            )
+                tool=LeaseQaTool(
+                    question="Who is responsible for faucet repairs?",
+                    answer="Landlord. [hardcoded-lease §7.2]",
+                    citations=["[hardcoded-lease §7.2]"],
+                ),
+            ),
+            LeaseCheckStep(
+                reasoning="Lease assigns faucet repairs to the landlord.",
+                tool=SubmitVerdictTool(
+                    lease_addresses_issue=True,
+                    responsibility=Responsibility.LANDLORD,
+                ),
+            ),
         ],
     ).model_dump()
 

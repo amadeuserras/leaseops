@@ -5,6 +5,7 @@ from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 from uuid import UUID
 
+from leaseops.agent.enums import PlanAction
 from leaseops.agent.events import (
     CostEvent,
     ErrorEvent,
@@ -14,7 +15,7 @@ from leaseops.agent.events import (
 )
 from leaseops.agent.runner import GraphRunner
 from leaseops.agent.runtime import graph_runner
-from leaseops.agent.state import AgentState, PlanAction
+from leaseops.agent.state import AgentState
 from leaseops.api.schemas import EmailCreate
 from leaseops.core.config import settings
 from leaseops.db import emails as emails_repo

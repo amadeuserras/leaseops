@@ -89,29 +89,28 @@ function unbracket(citation: string): string {
   return citation.replace(/^\[|\]$/g, '');
 }
 
-function verdictCall(output: LeaseCheckOutput): ToolCall {
-  return {
-    tool: 'submit_verdict',
-    reasoning: output.reasoning || null,
-    question: null,
-    argsText: `lease_addresses_issue: ${output.lease_addresses_issue}, responsibility: "${output.responsibility}"`,
-    answer: null,
-    citations: [],
-    done: true,
-    isError: false,
-  };
-}
-
-function qaCalls(output: LeaseCheckOutput): ToolCall[] {
-  return output.qa_results.map((qa) => {
-    const { text } = splitCitations(qa.answer);
+function leaseCheckCalls(output: LeaseCheckOutput): ToolCall[] {
+  return output.lease_check_steps.map((step) => {
+    if (step.tool.name === 'lease_qa') {
+      const { text } = splitCitations(step.tool.answer);
+      return {
+        tool: 'lease_qa',
+        reasoning: step.reasoning || null,
+        question: step.tool.question,
+        argsText: null,
+        answer: text,
+        citations: step.tool.citations.map(unbracket),
+        done: true,
+        isError: false,
+      };
+    }
     return {
-      tool: 'lease_qa',
-      reasoning: qa.reasoning || null,
-      question: qa.question,
-      argsText: null,
-      answer: text,
-      citations: qa.citations.map(unbracket),
+      tool: 'submit_verdict',
+      reasoning: step.reasoning || null,
+      question: null,
+      argsText: `lease_addresses_issue: ${step.tool.lease_addresses_issue}, responsibility: "${step.tool.responsibility}"`,
+      answer: null,
+      citations: [],
       done: true,
       isError: false,
     };
@@ -156,7 +155,7 @@ export function fromRunDetail(data: RunDetailResponse): RunState {
 
 function leaseCallsFor(step: StepResponse): ToolCall[] {
   if (step.node_name !== 'lease_check') return [];
-  return [...qaCalls(step.output), verdictCall(step.output)];
+  return leaseCheckCalls(step.output);
 }
 
 function gateNote(awaiting: boolean, executed: boolean): string {
@@ -267,9 +266,10 @@ export function applyStreamEvent(state: RunState, event: StreamEvent, elapsed: n
         status: 'completed' as const,
         output: event.output,
         at: elapsed,
+        // Prefer the persisted step list (includes submit_verdict) over live tool events.
         calls:
           event.node === 'lease_check' && event.output
-            ? [...step.calls, verdictCall(event.output as LeaseCheckOutput)]
+            ? leaseCheckCalls(event.output as LeaseCheckOutput)
             : step.calls,
       }));
       return { ...state, steps };

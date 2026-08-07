@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from leaseops.agent.state import PlanAction, QAResultSchema
+from leaseops.agent.enums import PlanAction
+from leaseops.agent.schemas import LeaseCheckStep
 from leaseops.core.base import LeaseOpsModel
 
 
@@ -35,7 +36,7 @@ class CaseResult(LeaseOpsModel):
     returned_lease_addresses_issue: bool | None
     returned_before_approval: list[PlanAction]
     returned_after_approval: list[PlanAction]
-    returned_qa_results: list[QAResultSchema]
+    returned_lease_check_steps: list[LeaseCheckStep]
     golden_category: str
     golden_responsibility: str | None
     golden_before_approval: list[PlanAction]

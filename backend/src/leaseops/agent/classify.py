@@ -3,9 +3,10 @@ from __future__ import annotations
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 
+from leaseops.agent.enums import EmailCategory
 from leaseops.agent.events import emit_cost
 from leaseops.agent.schemas import ClassifyOutput
-from leaseops.agent.state import AgentState, EmailCategory
+from leaseops.agent.state import AgentState
 from leaseops.core.config import settings
 
 _MODEL = "gpt-4o-mini"

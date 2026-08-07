@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from datetime import datetime
 
+from leaseops.agent.schemas import LeaseCheckStep
 from leaseops.evals.schemas import CaseResult, GlobalMetrics
 
 
@@ -12,6 +13,14 @@ def pct(rate: float) -> str:
 
 def _json_block(obj: object) -> str:
     return f"```json\n{json.dumps(obj, indent=2)}\n```"
+
+
+def _dump_lease_check_step(step: LeaseCheckStep) -> dict[str, object]:
+    data = step.model_dump(mode="json")
+    tool = data.get("tool")
+    if isinstance(tool, dict):
+        tool.pop("citations", None)
+    return data
 
 
 def _status(score: str, target: str) -> str:
@@ -96,8 +105,9 @@ def _render_case(r: CaseResult) -> str:
                 {
                     "responsibility": r.returned_responsibility,
                     "lease_addresses_issue": r.returned_lease_addresses_issue,
-                    "qa_results": [
-                        qa.model_dump(mode="json") for qa in r.returned_qa_results
+                    "lease_check_steps": [
+                        _dump_lease_check_step(step)
+                        for step in r.returned_lease_check_steps
                     ],
                 }
             )

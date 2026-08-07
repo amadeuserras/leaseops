@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from leaseops.agent.state import AgentState, EmailCategory, PlanAction, Responsibility
+from leaseops.agent.enums import EmailCategory, PlanAction, Responsibility
+from leaseops.agent.schemas import LeaseCheckStep
+from leaseops.agent.state import AgentState
 from leaseops.evals.schemas import CaseResult, GoldenItem, GoldenWrites
 
 _LEASE_CHECK_CATEGORIES = {
@@ -75,13 +77,13 @@ def _landlord_issue_blamed_on_tenant(
 
 
 def _qa_calls(
-    results: Sequence[object],
+    steps: Sequence[LeaseCheckStep],
     *,
     applicable: bool,
 ) -> int | None:
     if not applicable:
         return None
-    return len(results)
+    return sum(1 for step in steps if step.tool.name == "lease_qa")
 
 
 def score(
@@ -116,7 +118,7 @@ def score(
         returned_lease_addresses_issue=state.lease_addresses_issue,
         returned_before_approval=returned_before,
         returned_after_approval=returned_after,
-        returned_qa_results=list(state.qa_results),
+        returned_lease_check_steps=list(state.lease_check_steps),
         golden_category=golden_category.value,
         golden_responsibility=(
             lc_golden.responsibility if lc_golden is not None else None
@@ -133,7 +135,9 @@ def score(
         landlord_issue_blamed_on_tenant=_landlord_issue_blamed_on_tenant(
             state.responsibility, golden_resp
         ),
-        qa_calls=_qa_calls(state.qa_results, applicable=lease_check_applicable),
+        qa_calls=_qa_calls(
+            state.lease_check_steps, applicable=lease_check_applicable
+        ),
         cost_usd=cost_usd,
         latency_s=latency_s,
     )

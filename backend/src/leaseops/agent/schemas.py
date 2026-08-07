@@ -6,10 +6,9 @@ from uuid import UUID
 
 from pydantic import Field, TypeAdapter
 
-from leaseops.agent.state import (
+from leaseops.agent.enums import (
     EmailCategory,
     PlanAction,
-    QAResultSchema,
     Responsibility,
     Severity,
 )
@@ -34,6 +33,30 @@ NodeName = (
 )
 
 
+class LeaseQaTool(LeaseOpsModel):
+    name: Literal["lease_qa"] = "lease_qa"
+    question: str
+    answer: str
+    citations: list[str]
+
+
+class SubmitVerdictTool(LeaseOpsModel):
+    name: Literal["submit_verdict"] = "submit_verdict"
+    lease_addresses_issue: bool
+    responsibility: Responsibility
+
+
+LeaseCheckTool = Annotated[
+    LeaseQaTool | SubmitVerdictTool,
+    Field(discriminator="name"),
+]
+
+
+class LeaseCheckStep(LeaseOpsModel):
+    reasoning: str
+    tool: LeaseCheckTool
+
+
 class ClassifyOutput(LeaseOpsModel):
     category: EmailCategory
 
@@ -51,7 +74,7 @@ class ExtractOutput(LeaseOpsModel):
 class LeaseCheckOutput(LeaseOpsModel):
     lease_addresses_issue: bool
     responsibility: Responsibility
-    qa_results: list[QAResultSchema]
+    lease_check_steps: list[LeaseCheckStep]
     reasoning: str | None = None
 
 

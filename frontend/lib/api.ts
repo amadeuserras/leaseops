@@ -29,11 +29,24 @@ export interface EmailListResponse {
   agent_last_ran_at: string | null;
 }
 
-export interface QaResult {
+export interface LeaseQaTool {
+  name: 'lease_qa';
   question: string;
   answer: string;
   citations: string[];
+}
+
+export interface SubmitVerdictTool {
+  name: 'submit_verdict';
+  lease_addresses_issue: boolean;
+  responsibility: Responsibility;
+}
+
+export type LeaseCheckTool = LeaseQaTool | SubmitVerdictTool;
+
+export interface LeaseCheckStep {
   reasoning: string;
+  tool: LeaseCheckTool;
 }
 
 export interface ClassifyOutput {
@@ -53,7 +66,7 @@ export interface ExtractOutput {
 export interface LeaseCheckOutput {
   lease_addresses_issue: boolean;
   responsibility: Responsibility;
-  qa_results: QaResult[];
+  lease_check_steps: LeaseCheckStep[];
   reasoning?: string | null;
 }
 

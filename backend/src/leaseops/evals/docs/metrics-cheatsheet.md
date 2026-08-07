@@ -38,11 +38,11 @@ Returned / golden: `category`.
 
 ### Responsibility accuracy · Landlord-issue-blamed-on-tenant rate · Mean QA calls
 
-Returned: lease_check state (`responsibility`, `qa_results`, …). Golden: `responsibility`.
+Returned: lease_check state (`responsibility`, `lease_check_steps`, …). Golden: `responsibility`.
 
 - `responsibility_match` — `true` if returned responsibility == golden responsibility
 - `landlord_issue_blamed_on_tenant` — `true` if golden is `landlord` and returned is `tenant`; `null` when golden is not `landlord` (case out of denom)
-- `qa_calls` — `len(qa_results)`
+- `qa_calls` — count of `lease_qa` steps in `lease_check_steps`
 
 ### p95 cost / task · p95 latency
 
