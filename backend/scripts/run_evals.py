@@ -15,7 +15,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from pydantic import TypeAdapter
+from seed import seed
 
+from leaseops.core.config import settings
+from leaseops.db.session import open_session, use_database
 from leaseops.evals.aggregate import compute_globals
 from leaseops.evals.report import render_report
 from leaseops.evals.run import run_cases
@@ -85,6 +88,11 @@ async def main() -> None:
         random.shuffle(items)
         items = items[: args.limit]
 
+    print("🌱 Truncating and seeding evals database...")
+    async with use_database(settings.evals_database_url), open_session() as session:
+        n_tenants, n_emails = await seed(session)
+    print(f"Seeded {n_tenants} tenant(s) and {n_emails} email(s)")
+
     print(f"🧪 Running evals on {len(items)} item(s)...")
     progress = _Progress()
     results = await run_cases(items, on_start=progress.start, on_done=progress.done)
@@ -94,6 +102,9 @@ async def main() -> None:
 
     report_path = _REPORTS_DIR / generated_at.strftime("eval-%H%M%S-%Y%m%d.md")
     _REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    for old in _REPORTS_DIR.iterdir():
+        if old.is_file():
+            old.unlink()
     report_path.write_text(report, encoding="utf-8")
     print("\nDone. ✅ Report written to evals/reports")
 

@@ -135,9 +135,7 @@ def score(
         landlord_issue_blamed_on_tenant=_landlord_issue_blamed_on_tenant(
             state.responsibility, golden_resp
         ),
-        qa_calls=_qa_calls(
-            state.lease_check_steps, applicable=lease_check_applicable
-        ),
+        qa_calls=_qa_calls(state.lease_check_steps, applicable=lease_check_applicable),
         cost_usd=cost_usd,
         latency_s=latency_s,
     )

@@ -13,10 +13,7 @@ async def load_performed_actions(
     session: AsyncSession, email_id: UUID
 ) -> list[PlanAction]:
     outboxes = await outbox_repo.list_outbox_by_email_id(session, email_id)
-    work_orders = await work_orders_repo.list_work_orders_by_email_id(
-        session, email_id
-    )
-    return (
-        [PlanAction.SEND_REPLY] * len(outboxes)
-        + [PlanAction.CREATE_WORK_ORDER] * len(work_orders)
-    )
+    work_orders = await work_orders_repo.list_work_orders_by_email_id(session, email_id)
+    return [PlanAction.SEND_REPLY] * len(outboxes) + [
+        PlanAction.CREATE_WORK_ORDER
+    ] * len(work_orders)
