@@ -48,6 +48,15 @@ async def get_work_order(
     return await session.get(WorkOrder, work_order_id)
 
 
+async def list_work_orders_by_email_id(
+    session: AsyncSession, email_id: UUID
+) -> list[WorkOrder]:
+    result = await session.scalars(
+        select(WorkOrder).where(WorkOrder.email_id == email_id)
+    )
+    return list(result.all())
+
+
 async def update_work_order(
     session: AsyncSession,
     work_order: WorkOrder,

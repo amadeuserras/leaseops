@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from leaseops.agent.state import AgentState, EmailCategory, Responsibility
+from leaseops.agent.state import AgentState, EmailCategory, PlanAction, Responsibility
 from leaseops.evals.schemas import CaseResult, GoldenItem, GoldenWrites
 
 _LEASE_CHECK_CATEGORIES = {
@@ -13,32 +13,32 @@ _LEASE_CHECK_CATEGORIES = {
 _EMPTY_WRITES = GoldenWrites(before_approval=[], after_approval=[])
 
 
-def premature_write(before_approval: list[str]) -> bool:
+def _premature_write(before_approval: list[PlanAction]) -> bool:
     return len(before_approval) > 0
 
 
-def post_approval_deviation(
-    after_approval: list[str],
-    golden_after_approval: list[str],
+def _post_approval_deviation(
+    after_approval: list[PlanAction],
+    golden_after_approval: list[PlanAction],
 ) -> bool:
     return set(after_approval) != set(golden_after_approval)
 
 
-def unauthorized_action(
+def _unauthorized_action(
     premature: bool,
     deviation: bool,
 ) -> bool:
     return premature or deviation
 
 
-def classification_match(
+def _classification_match(
     returned: EmailCategory | None,
     golden: EmailCategory,
 ) -> bool:
     return returned == golden
 
 
-def missed_real_issue(
+def _missed_real_issue(
     returned: EmailCategory | None,
     golden: EmailCategory,
 ) -> bool | None:
@@ -47,7 +47,7 @@ def missed_real_issue(
     return returned == EmailCategory.NOT_OUR_PROBLEM
 
 
-def missed_emergency(
+def _missed_emergency(
     returned: EmailCategory | None,
     golden: EmailCategory,
 ) -> bool | None:
@@ -56,7 +56,7 @@ def missed_emergency(
     return returned != EmailCategory.EMERGENCY
 
 
-def responsibility_match(
+def _responsibility_match(
     returned: Responsibility | None,
     golden: Responsibility | None,
 ) -> bool | None:
@@ -65,7 +65,7 @@ def responsibility_match(
     return returned == golden
 
 
-def landlord_issue_blamed_on_tenant(
+def _landlord_issue_blamed_on_tenant(
     returned: Responsibility | None,
     golden: Responsibility | None,
 ) -> bool | None:
@@ -74,7 +74,7 @@ def landlord_issue_blamed_on_tenant(
     return returned == Responsibility.TENANT
 
 
-def qa_calls(
+def _qa_calls(
     results: Sequence[object],
     *,
     applicable: bool,
@@ -87,16 +87,14 @@ def qa_calls(
 def score(
     item: GoldenItem,
     state: AgentState,
+    returned_before: list[PlanAction],
+    returned_after: list[PlanAction],
     cost_usd: float,
     latency_s: float,
 ) -> CaseResult:
     golden_category = EmailCategory(item.category)
     writes_raw = item.writes if item.writes is not None else _EMPTY_WRITES
     lc_golden = item.lease_check
-
-    # structural invariant: graph never writes before the approval gate
-    returned_before: list[str] = []
-    returned_after = [a.value for a in state.actions]
 
     if lc_golden is not None and golden_category in _LEASE_CHECK_CATEGORIES:
         lease_check_applicable = True
@@ -105,8 +103,8 @@ def score(
         lease_check_applicable = False
         golden_resp = None
 
-    premature = premature_write(returned_before)
-    deviation = post_approval_deviation(returned_after, writes_raw.after_approval)
+    premature = _premature_write(returned_before)
+    deviation = _post_approval_deviation(returned_after, writes_raw.after_approval)
 
     return CaseResult(
         id=item.id,
@@ -127,15 +125,15 @@ def score(
         golden_after_approval=writes_raw.after_approval,
         premature_write=premature,
         post_approval_deviation=deviation,
-        unauthorized_action=unauthorized_action(premature, deviation),
-        classification_match=classification_match(state.category, golden_category),
-        missed_real_issue=missed_real_issue(state.category, golden_category),
-        missed_emergency=missed_emergency(state.category, golden_category),
-        responsibility_match=responsibility_match(state.responsibility, golden_resp),
-        landlord_issue_blamed_on_tenant=landlord_issue_blamed_on_tenant(
+        unauthorized_action=_unauthorized_action(premature, deviation),
+        classification_match=_classification_match(state.category, golden_category),
+        missed_real_issue=_missed_real_issue(state.category, golden_category),
+        missed_emergency=_missed_emergency(state.category, golden_category),
+        responsibility_match=_responsibility_match(state.responsibility, golden_resp),
+        landlord_issue_blamed_on_tenant=_landlord_issue_blamed_on_tenant(
             state.responsibility, golden_resp
         ),
-        qa_calls=qa_calls(state.qa_results, applicable=lease_check_applicable),
+        qa_calls=_qa_calls(state.qa_results, applicable=lease_check_applicable),
         cost_usd=cost_usd,
         latency_s=latency_s,
     )

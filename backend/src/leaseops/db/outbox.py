@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from uuid import UUID
+
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,3 +25,10 @@ async def create_outbox_entry(session: AsyncSession, payload: OutboxCreate) -> O
         select(Outbox).where(Outbox.email_id == payload.email_id)
     )
     return result.one()
+
+
+async def list_outbox_by_email_id(
+    session: AsyncSession, email_id: UUID
+) -> list[Outbox]:
+    result = await session.scalars(select(Outbox).where(Outbox.email_id == email_id))
+    return list(result.all())

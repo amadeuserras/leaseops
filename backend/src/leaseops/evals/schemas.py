@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from leaseops.agent.state import QAResultSchema
+from leaseops.agent.state import PlanAction, QAResultSchema
 from leaseops.core.base import LeaseOpsModel
 
 
@@ -15,8 +15,8 @@ class GoldenLeaseCheck(LeaseOpsModel):
 
 
 class GoldenWrites(LeaseOpsModel):
-    before_approval: list[str]
-    after_approval: list[str]
+    before_approval: list[PlanAction]
+    after_approval: list[PlanAction]
 
 
 class GoldenItem(LeaseOpsModel):
@@ -33,13 +33,13 @@ class CaseResult(LeaseOpsModel):
     returned_category: str | None
     returned_responsibility: str | None
     returned_lease_addresses_issue: bool | None
-    returned_before_approval: list[str]
-    returned_after_approval: list[str]
+    returned_before_approval: list[PlanAction]
+    returned_after_approval: list[PlanAction]
     returned_qa_results: list[QAResultSchema]
     golden_category: str
     golden_responsibility: str | None
-    golden_before_approval: list[str]
-    golden_after_approval: list[str]
+    golden_before_approval: list[PlanAction]
+    golden_after_approval: list[PlanAction]
     premature_write: bool
     post_approval_deviation: bool
     unauthorized_action: bool

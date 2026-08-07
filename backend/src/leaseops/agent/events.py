@@ -70,7 +70,7 @@ class CostEvent(LeaseOpsModel):
     cost_usd: float
 
 
-StreamEvent = (
+StreamEvent = Annotated[
     RunStartedEvent
     | NodeStartedEvent
     | NodeFinishedEvent
@@ -79,8 +79,10 @@ StreamEvent = (
     | RunFinishedEvent
     | ToolCallEvent
     | ToolResultEvent
-    | CostEvent
-)
+    | CostEvent,
+    Field(discriminator="type"),
+]
+StreamEventAdapter: TypeAdapter[StreamEvent] = TypeAdapter(StreamEvent)
 
 CustomEvent = Annotated[
     CostEvent | ToolCallEvent | ToolResultEvent,
