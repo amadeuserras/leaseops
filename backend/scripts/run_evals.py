@@ -85,7 +85,7 @@ async def main() -> None:
         random.shuffle(items)
         items = items[: args.limit]
 
-    print(f"Running evals on {len(items)} item(s)...")
+    print(f"🧪 Running evals on {len(items)} item(s)...")
     progress = _Progress()
     results = await run_cases(items, on_start=progress.start, on_done=progress.done)
     g = compute_globals(results)
@@ -95,7 +95,7 @@ async def main() -> None:
     report_path = _REPORTS_DIR / generated_at.strftime("eval-%H%M%S-%Y%m%d.md")
     _REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     report_path.write_text(report, encoding="utf-8")
-    print(f"\nDone. Report written to {report_path}")
+    print("\nDone. ✅ Report written to evals/reports")
 
 
 if __name__ == "__main__":
