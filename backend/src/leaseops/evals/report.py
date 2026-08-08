@@ -69,7 +69,7 @@ def _render_case(r: CaseResult) -> str:
         _json_block(
             {
                 "premature_write": r.premature_write,
-                "post_approval_deviation": r.post_approval_deviation,
+                "extra_post_approval_write": r.extra_post_approval_write,
                 "unauthorized_action": r.unauthorized_action,
             }
         )

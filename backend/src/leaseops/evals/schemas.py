@@ -42,7 +42,7 @@ class CaseResult(LeaseOpsModel):
     golden_before_approval: list[PlanAction]
     golden_after_approval: list[PlanAction]
     premature_write: bool
-    post_approval_deviation: bool
+    extra_post_approval_write: bool
     unauthorized_action: bool
     classification_match: bool
     missed_real_issue: bool | None
