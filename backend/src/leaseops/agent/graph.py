@@ -18,52 +18,20 @@ from leaseops.agent.lease_check import lease_check
 from leaseops.agent.plan import plan
 from leaseops.agent.state import AgentState
 
-_AfterClassify = Literal["extract", "end"]
-_AfterExtract = Literal["lease_check", "draft"]
-_AfterApproval = Literal["execute", "end"]
 
-
-async def _classify_node(state: AgentState) -> dict[str, Any]:
-    return (await classify(state)).model_dump()
-
-
-async def _extract_node(state: AgentState) -> dict[str, Any]:
-    return (await extract(state)).model_dump()
-
-
-async def _lease_check_node(state: AgentState) -> dict[str, Any]:
-    return (await lease_check(state)).model_dump()
-
-
-async def _draft_node(state: AgentState) -> dict[str, Any]:
-    return (await draft(state)).model_dump()
-
-
-def _plan_node(state: AgentState) -> dict[str, Any]:
-    return plan(state).model_dump()
-
-
-def _approval_node(state: AgentState) -> dict[str, Any]:
-    return approval(state).model_dump()
-
-
-async def _execute_node(state: AgentState) -> dict[str, Any]:
-    return (await execute(state)).model_dump()
-
-
-def _after_classify(state: AgentState) -> _AfterClassify:
+def _after_classify(state: AgentState) -> Literal["extract", "end"]:
     if state.category == EmailCategory.NOT_OUR_PROBLEM:
         return "end"
     return "extract"
 
 
-def _after_extract(state: AgentState) -> _AfterExtract:
+def _after_extract(state: AgentState) -> Literal["lease_check", "draft"]:
     if state.category == EmailCategory.EMERGENCY:
         return "draft"
     return "lease_check"
 
 
-def _after_approval(state: AgentState) -> _AfterApproval:
+def _after_approval(state: AgentState) -> Literal["execute", "end"]:
     if state.approved:
         return "execute"
     return "end"
@@ -71,13 +39,13 @@ def _after_approval(state: AgentState) -> _AfterApproval:
 
 def build_graph(checkpointer: Any = None) -> Any:
     graph: Any = StateGraph(AgentState)
-    graph.add_node("classify", _classify_node)
-    graph.add_node("extract", _extract_node)
-    graph.add_node("lease_check", _lease_check_node)
-    graph.add_node("draft", _draft_node)
-    graph.add_node("plan", _plan_node)
-    graph.add_node("approval", _approval_node)
-    graph.add_node("execute", _execute_node)
+    graph.add_node("classify", classify)
+    graph.add_node("extract", extract)
+    graph.add_node("lease_check", lease_check)
+    graph.add_node("draft", draft)
+    graph.add_node("plan", plan)
+    graph.add_node("approval", approval)
+    graph.add_node("execute", execute)
 
     graph.add_edge(START, "classify")
     graph.add_conditional_edges(
