@@ -52,6 +52,7 @@ jobs:
           CORS_ORIGINS: '["http://localhost:3000"]'
           DATABASE_URL: postgresql+asyncpg://leaseops:leaseops@localhost:5434/leaseops
           TEST_DATABASE_URL: postgresql+asyncpg://leaseops:leaseops@localhost:5434/leaseops_test
+          EVALS_DATABASE_URL: postgresql+asyncpg://leaseops:leaseops@localhost:5434/leaseops_evals
           JWT_SECRET: ci-placeholder
           ANTHROPIC_API_KEY: ci-placeholder
           OPENAI_API_KEY: ci-placeholder
