@@ -98,18 +98,15 @@
     }
   },
   {
-    "id": "daniel-osei-washer-mid-cycle",
+    "id": "daniel-osei-smoke-detector-battery",
     "email": {
       "sender": "daniel.osei@example.com",
-      "subject": "Washer keeps dying mid-cycle",
-      "body": "The stacked washer in 3C keeps stopping partway through the cycle with a blinking error light, leaving everything soaking wet. We've tried different settings and smaller loads — same result every time. It's the unit that came with the apartment.\n\nCan you get someone out? Laundromat runs with a toddler are rough."
+      "subject": "Smoke detector chirping in 3C",
+      "body": "The hallway smoke detector in 3C has been chirping all night — pretty sure it's just a dead battery. Priya and I can swap it ourselves if that's on us, or do you send someone for detector batteries?\n\nJust want to know before I buy a pack."
     },
     "category": "maintenance",
-    "lease_check": { "responsibility": "landlord" },
-    "writes": {
-      "before_approval": [],
-      "after_approval": ["send_reply", "create_work_order"]
-    }
+    "lease_check": { "responsibility": "tenant" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
   },
   {
     "id": "daniel-osei-toilet-toy-clog",
@@ -238,14 +235,14 @@
     "writes": { "before_approval": [], "after_approval": [] }
   },
   {
-    "id": "chukwuemeka-okonkwo-propane-grill",
+    "id": "chukwuemeka-okonkwo-propane-tank-storage",
     "email": {
       "sender": "chukwuemeka.okonkwo@example.com",
-      "subject": "Grill in the backyard?",
-      "body": "We're thinking of getting a small propane grill for the backyard at Selby this summer. I couldn't find anything obvious in the lease about grills — is that fine, or is the propane tank an issue?"
+      "subject": "Storing spare propane tanks in the garage?",
+      "body": "We've got a couple of spare propane tanks for the grill and were planning to just keep them in the garage at Selby between uses. Is that okay, or does the lease say we can't store that stuff inside?"
     },
     "category": "lease_question",
-    "lease_check": { "responsibility": "unclear" },
+    "lease_check": { "responsibility": "tenant" },
     "writes": { "before_approval": [], "after_approval": ["send_reply"] }
   },
   {
@@ -352,11 +349,11 @@
     "writes": { "before_approval": [], "after_approval": ["send_reply"] }
   },
   {
-    "id": "isabel-reyes-cousin-stay",
+    "id": "isabel-reyes-cousin-moving-in",
     "email": {
       "sender": "isabel.reyes@example.com",
-      "subject": "My cousin staying with us",
-      "body": "My cousin is between jobs and we'd like to let her stay with us at Brentwood for two or three months while she gets back on her feet. Is that okay, or do we need to get something approved in writing first?"
+      "subject": "My cousin moving in with us",
+      "body": "My cousin lost her lease and we've agreed she's going to move in with us at Brentwood permanently and split the bills going forward. Do we need to get that approved, or is it fine since she's family?"
     },
     "category": "lease_question",
     "lease_check": { "responsibility": "tenant" },
@@ -458,32 +455,26 @@
     "writes": { "before_approval": [], "after_approval": [] }
   },
   {
-    "id": "james-whitfield-dryer-no-heat",
+    "id": "james-whitfield-who-waters",
     "email": {
       "sender": "james.whitfield@example.com",
-      "subject": "Dryer not heating",
-      "body": "The dryer at 884 Pelican Court spins but isn't putting out any heat anymore — clothes come out cold and damp. Lint trap is clean and we haven't done anything different. It's the unit that came with the house.\n\nCan you send someone out?"
+      "subject": "Who waters the landscaping?",
+      "body": "Quick lease check — with the heat this week the front beds at Pelican Court are drying out. Are Maria and I supposed to water the landscaping, or is that on your gardener?\n\nDon't want to assume and then get a notice."
     },
-    "category": "maintenance",
-    "lease_check": { "responsibility": "landlord" },
-    "writes": {
-      "before_approval": [],
-      "after_approval": ["send_reply", "create_work_order"]
-    }
+    "category": "lease_question",
+    "lease_check": { "responsibility": "tenant" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
   },
   {
-    "id": "maria-vega-microwave-dead",
+    "id": "maria-vega-paint-living-room",
     "email": {
       "sender": "maria.vega@example.com",
-      "subject": "Microwave died",
-      "body": "The microwave at Pelican Court just stopped working — no display, no light, nothing. The outlet is fine (tested it with the kettle) and nothing was spilled on it. It's the one that came with the house.\n\nCan you arrange a repair or replacement?"
+      "subject": "Painting the living room?",
+      "body": "James and I want to paint the living room at Pelican Court a soft white — we'd do the work ourselves and put it back to the original color before we move out.\n\nIs that allowed under the lease, or do we need written approval first?"
     },
-    "category": "maintenance",
-    "lease_check": { "responsibility": "landlord" },
-    "writes": {
-      "before_approval": [],
-      "after_approval": ["send_reply", "create_work_order"]
-    }
+    "category": "lease_question",
+    "lease_check": { "responsibility": "tenant" },
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
   },
   {
     "id": "james-whitfield-overgrown-hedges",
@@ -556,18 +547,15 @@
     }
   },
   {
-    "id": "yuna-kim-heater-not-working",
+    "id": "yuna-kim-who-waters",
     "email": {
       "sender": "yuna.kim@example.com",
-      "subject": "Heat won't turn on in Unit 5",
-      "body": "The heater in Unit 5 won't kick on at all — thermostat is set, batteries are fresh, and nothing happens. It's been genuinely cold at night this week.\n\nNo smells or anything weird, it just won't start. Can you send someone this week?"
+      "subject": "Who waters the garden at Unit 5?",
+      "body": "The shared garden beds outside Unit 5 look pretty dry. DeShawn and I weren't sure — is watering the landscaping something we're supposed to handle, or does the building take care of that?\n\nJust want to follow the lease correctly."
     },
-    "category": "maintenance",
+    "category": "lease_question",
     "lease_check": { "responsibility": "landlord" },
-    "writes": {
-      "before_approval": [],
-      "after_approval": ["send_reply", "create_work_order"]
-    }
+    "writes": { "before_approval": [], "after_approval": ["send_reply"] }
   },
   {
     "id": "yuna-kim-lost-garage-remote",
