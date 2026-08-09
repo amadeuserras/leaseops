@@ -3,6 +3,8 @@
 Usage:
     uv run python scripts/run_evals.py
     uv run python scripts/run_evals.py --limit 3
+    uv run python scripts/run_evals.py --ids a,b,c
+    uv run python scripts/run_evals.py --failures
 """
 
 from __future__ import annotations
@@ -28,8 +30,37 @@ _EVALS_DIR = Path(__file__).resolve().parents[1] / "src/leaseops/evals"
 _GOLDEN_PATH = _EVALS_DIR / "data/golden.json"
 _REPORTS_DIR = _EVALS_DIR / "reports"
 
+_FAILURE_CASE_IDS = [
+    "kevin-chen-fridge-not-cooling",
+    "kevin-chen-paint-bedroom",
+    "carlos-morales-storm-fence",
+    "isabel-reyes-cousin-moving-in",
+    "carlos-morales-trampoline",
+    "darnell-washington-roaches",
+]
+
 _GoldenItems = TypeAdapter(list[GoldenItem])
-_SPINNER_FRAMES = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
+_SPINNER_FRAMES = "⠋⠙⠹⠼⠴⠦⠧⠇⠏"
+
+
+def _parse_ids(raw: str) -> list[str]:
+    ids = [part.strip() for part in raw.split(",") if part.strip()]
+    if not ids:
+        raise argparse.ArgumentTypeError("expected at least one item id")
+    return ids
+
+
+def _select_by_ids(
+    items: list[GoldenItem],
+    ids: list[str],
+    *,
+    parser: argparse.ArgumentParser,
+) -> list[GoldenItem]:
+    by_id = {item.id: item for item in items}
+    missing = [item_id for item_id in ids if item_id not in by_id]
+    if missing:
+        parser.error(f"unknown item id(s): {', '.join(missing)}")
+    return [by_id[item_id] for item_id in ids]
 
 
 class _Progress:
@@ -83,10 +114,30 @@ async def main() -> None:
         metavar="N",
         help="Pick N random golden items instead of running all.",
     )
+    parser.add_argument(
+        "--ids",
+        type=_parse_ids,
+        default=None,
+        metavar="ID,...",
+        help="Comma-separated golden item ids to run only.",
+    )
+    parser.add_argument(
+        "--failures",
+        action="store_true",
+        help="Run only the hardcoded responsibility failure cases.",
+    )
     args = parser.parse_args()
+
+    if args.ids is not None and args.failures:
+        parser.error("--ids and --failures are mutually exclusive")
 
     with _GOLDEN_PATH.open() as f:
         items = _GoldenItems.validate_python(json.load(f))
+
+    if args.failures:
+        items = _select_by_ids(items, _FAILURE_CASE_IDS, parser=parser)
+    elif args.ids is not None:
+        items = _select_by_ids(items, args.ids, parser=parser)
 
     if args.limit is not None:
         random.shuffle(items)
@@ -110,16 +161,16 @@ async def main() -> None:
     generated_at = datetime.now(UTC)
     report = render_report(results, g, generated_at)
 
-    report_path = _REPORTS_DIR / generated_at.strftime("eval-%H%M%S-%Y%m%d.md")
+    report_path = _REPORTS_DIR / generated_at.strftime("eval-%Y%m%d-%H%M%S.md")
     _REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-    for old in _REPORTS_DIR.iterdir():
-        if old.is_file():
-            old.unlink()
     report_path.write_text(report, encoding="utf-8")
     if skipped:
-        print(f"\nDone. ⚠️  Report written ({skipped} case(s) skipped due to errors)")
+        print(
+            f"\nDone. ⚠️  Report written to {report_path.name} "
+            f"({skipped} case(s) skipped due to errors)"
+        )
     else:
-        print("\nDone. ✅ Report written to evals/reports")
+        print(f"\nDone. ✅ Report written to {report_path.name}")
 
 
 if __name__ == "__main__":
