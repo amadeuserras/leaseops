@@ -1,6 +1,6 @@
-from __future__ import annotations
+# ruff: noqa: E501
 
-from typing import cast
+from __future__ import annotations
 
 from anthropic import AsyncAnthropic, transform_schema
 from anthropic.types import (
@@ -12,7 +12,7 @@ from anthropic.types import (
     ToolResultBlockParam,
     ToolUseBlock,
 )
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from leaseops.agent.citations import extract_citation_ids
 from leaseops.agent.enums import Responsibility
@@ -28,23 +28,16 @@ from leaseops.clients.leaseclear import LeaseQAResponse
 from leaseops.core.config import settings
 from leaseops.mcp.client import McpToolError, call_tool, mcp_session
 
-_ACTOR_MODEL = "claude-sonnet-4-5"
-_MAX_QA_CALLS = 3
-_MAX_TOKENS = 1024
+_ACTOR_MODEL = "claude-sonnet-4-6"
+_MAX_QA_CALLS = 4
+_MAX_TOKENS = 2048
 
-_LEASE_CHECK_SYSTEM = """\
-You are the lease-analysis step inside a maintenance triage system for
-residential rental properties. A tenant has reported an issue. Your job is to 
-determine what the lease says about it, using the lease_qa tool, and then
-submit a structured verdict using the submit_verdict tool.
+_SYSTEM_PROMPT = """\
+Decide who is responsible for the tenant's request using only the lease answers provided.
 
-## How to ask questions
-- Base your verdict ONLY on the answers returned by lease_qa. Do not use 
-general knowledge of landlord-tenant law.
+Ask questions about the reported issue, then call submit_verdict when you're ready to draw a conclusion. Reason and infer the verdict from the lease_qa answers, not outside knowledge. Always include 1–2 short reasoning sentences with each tool call, and ensure the submitted responsibility matches that reasoning. 
 
-## Reasoning
-- Before every tool call, write 1–2 short sentences of your own reasoning in plain text.
-- Never call a tool without that preceding text.
+lease_qa calls remaining: {remaining} / {max_calls}
 """
 
 
@@ -55,6 +48,11 @@ class _LeaseQaFormat(BaseModel):
 
 
 class _SubmitVerdictFormat(BaseModel):
+    reasoning: str = Field(
+        description=(
+            "Brief explanation of how the lease evidence leads to this verdict."
+        ),
+    )
     lease_addresses_issue: bool = Field(
         description="True if the lease speaks to this issue at all.",
     )
@@ -77,7 +75,9 @@ LEASE_QA_TOOL: ToolParam = {
 
 SUBMIT_VERDICT_TOOL: ToolParam = {
     "name": "submit_verdict",
-    "description": "Record the final determination and end the analysis.",
+    "description": (
+        "Submit the final responsibility verdict for the email's main request."
+    ),
     "strict": True,
     "input_schema": transform_schema(_SubmitVerdictFormat.model_json_schema()),
 }
@@ -150,14 +150,15 @@ async def lease_check(state: AgentState) -> LeaseCheckOutput:
             reasoning="",
         )
 
-    system_prompt = _LEASE_CHECK_SYSTEM.format(max_calls=_MAX_QA_CALLS)
     messages: list[MessageParam] = [{"role": "user", "content": _task_message(state)}]
     steps: list[LeaseCheckStep] = []
 
     client = AsyncAnthropic(api_key=settings.anthropic_api_key)
     async with mcp_session() as session:
         while True:
-            force_verdict = _qa_call_count(steps) >= _MAX_QA_CALLS
+            used = _qa_call_count(steps)
+            remaining = max(_MAX_QA_CALLS - used, 0)
+            force_verdict = remaining == 0
             tool_choice: ToolChoiceParam = (
                 {
                     "type": "tool",
@@ -171,7 +172,10 @@ async def lease_check(state: AgentState) -> LeaseCheckOutput:
             response = await client.messages.create(
                 model=_ACTOR_MODEL,
                 max_tokens=_MAX_TOKENS,
-                system=system_prompt,
+                system=_SYSTEM_PROMPT.format(
+                    remaining=remaining,
+                    max_calls=_MAX_QA_CALLS,
+                ),
                 messages=messages,
                 tools=[LEASE_QA_TOOL, SUBMIT_VERDICT_TOOL],
                 tool_choice=tool_choice,
@@ -186,13 +190,22 @@ async def lease_check(state: AgentState) -> LeaseCheckOutput:
 
             verdict_use = _find_tool_use(response, "submit_verdict")
             if verdict_use is not None:
+                try:
+                    verdict = _SubmitVerdictFormat.model_validate(verdict_use.input)
+                except ValidationError:
+                    return _verdict_output(
+                        responsibility=Responsibility.UNCLEAR,
+                        lease_addresses_issue=False,
+                        steps=steps,
+                        reasoning=_response_text(response),
+                    )
+                # Prefer tool-arg reasoning: forced tool_choice often skips text.
+                reasoning = verdict.reasoning.strip() or _response_text(response)
                 return _verdict_output(
-                    responsibility=Responsibility(verdict_use.input["responsibility"]),
-                    lease_addresses_issue=bool(
-                        verdict_use.input["lease_addresses_issue"]
-                    ),
+                    responsibility=verdict.responsibility,
+                    lease_addresses_issue=verdict.lease_addresses_issue,
                     steps=steps,
-                    reasoning=_response_text(response),
+                    reasoning=reasoning,
                 )
 
             qa_use = _find_tool_use(response, "lease_qa")
@@ -204,7 +217,8 @@ async def lease_check(state: AgentState) -> LeaseCheckOutput:
                     reasoning=_response_text(response),
                 )
 
-            question = cast(str, qa_use.input["question"])
+            qa = _LeaseQaFormat.model_validate(qa_use.input)
+            question = qa.question
             reasoning = _response_text(response)
             tool_args: dict[str, object] = {
                 "question": question,
