@@ -10,7 +10,7 @@ from leaseops.core.base import LeaseOpsModel
 
 _PRICING_PER_TOKEN_USD: dict[str, tuple[float, float]] = {
     "gpt-4o-mini": (0.15 / 1_000_000, 0.60 / 1_000_000),
-    "claude-sonnet-4-5": (3.00 / 1_000_000, 15.00 / 1_000_000),
+    "claude-sonnet-4-6": (3.00 / 1_000_000, 15.00 / 1_000_000),
 }
 
 
