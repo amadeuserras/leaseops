@@ -14,3 +14,6 @@ build/
 
 # Environment & secrets
 .env
+
+# Local lease source text
+src/leaseops/evals/data/leases/
