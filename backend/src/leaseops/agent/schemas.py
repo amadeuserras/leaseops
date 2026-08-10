@@ -85,6 +85,12 @@ class DraftOutput(LeaseOpsModel):
     draft: str
 
 
+class LeaseEvidence(LeaseOpsModel):
+    citation: str
+    question: str
+    document_id: UUID
+
+
 class ApprovalCard(LeaseOpsModel):
     email_id: UUID
     category: str
@@ -96,7 +102,7 @@ class ApprovalCard(LeaseOpsModel):
     issue_summary: str | None
     appliance_or_system: str | None
     responsibility: str | None
-    citation: str | None
+    lease_evidence: LeaseEvidence | None = None
     original_email: str
     draft: str | None
     actions: list[str]

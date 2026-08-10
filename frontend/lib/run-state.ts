@@ -336,6 +336,7 @@ export interface DisplayStep {
   draft: string | null;
   note: string | null;
   gate: { bg: string; border: string; text: string; pulse: boolean } | null;
+  documentId: string | null;
 }
 
 const DOT: Record<TimelineStatus, string> = {
@@ -378,6 +379,8 @@ function gateStyle(kind: 'paused' | 'approved' | 'rejected') {
 
 export function toDisplaySteps(state: RunState): DisplayStep[] {
   const approved = state.steps.some((step) => step.node === 'execute');
+  const extractOutput = state.steps.find((s) => s.node === 'extract')?.output as ExtractOutput | null;
+  const documentId = extractOutput?.document_id ?? null;
 
   return state.steps.map((step, index) => {
     const running = step.status === 'running';
@@ -436,6 +439,7 @@ export function toDisplaySteps(state: RunState): DisplayStep[] {
       draft: step.node === 'draft' && step.output ? (step.output as DraftOutput).draft : null,
       note: step.note,
       gate: step.node === 'approval' ? gateStyle(gateKind) : null,
+      documentId: isLease ? documentId : null,
     };
   });
 }

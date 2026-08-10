@@ -1,5 +1,6 @@
 'use client';
 
+import { CitationBadge } from '@/components/citation-badge';
 import type { DisplayCall, DisplayStep, Field } from '@/lib/run-state';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -70,7 +71,7 @@ function StepRow({ step }: { step: DisplayStep }) {
             {step.calls.length > 0 && (
               <div className="flex flex-col gap-3.5">
                 {step.calls.map((call) => (
-                  <ToolCallRow key={call.key} call={call} />
+                  <ToolCallRow key={call.key} call={call} documentId={step.documentId} />
                 ))}
                 {step.verdictFields.length > 0 && (
                   <div className="mt-1">
@@ -127,7 +128,7 @@ function StepRow({ step }: { step: DisplayStep }) {
   );
 }
 
-function ToolCallRow({ call }: { call: DisplayCall }) {
+function ToolCallRow({ call, documentId }: { call: DisplayCall; documentId: string | null }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -187,12 +188,13 @@ function ToolCallRow({ call }: { call: DisplayCall }) {
                   <div className="text-ink text-[12.5px] leading-[1.7]">
                     {call.answer}
                     {call.citations.map((cite) => (
-                      <span
+                      <CitationBadge
                         key={cite}
-                        className="text-ink-50 hover:text-ink mx-0.5 inline-flex cursor-pointer items-center gap-1 rounded-[20px] bg-black/[0.055] px-2 py-px align-middle text-[11.5px] font-medium whitespace-nowrap hover:bg-black/10"
-                      >
-                        {cite}
-                      </span>
+                        citation={cite}
+                        documentId={documentId}
+                        question={call.question}
+                        className="mx-0.5 align-middle"
+                      />
                     ))}
                   </div>
                 )}

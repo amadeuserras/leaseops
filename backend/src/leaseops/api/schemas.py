@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from leaseops.agent.schemas import StepResponse
+from leaseops.agent.schemas import LeaseEvidence, StepResponse
 from leaseops.core.base import LeaseOpsModel
 from leaseops.models.enums import EmailStatus, OutboxStatus, RunStatus, WorkOrderStatus
 
@@ -79,7 +79,7 @@ class ApprovalRequestResponse(LeaseOpsModel):
     issue_summary: str | None
     appliance_or_system: str | None
     responsibility: str | None
-    citation: str | None
+    lease_evidence: LeaseEvidence | None = None
     original_email: str
     draft: str | None
     actions: list[str]

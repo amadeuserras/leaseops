@@ -1,5 +1,6 @@
 'use client';
 
+import { CitationBadge } from '@/components/citation-badge';
 import { useApprovalActions } from '@/hooks/use-approval-actions';
 import type { ApprovalListResponse, ApprovalRequestResponse, PlanAction } from '@/lib/api';
 import { fmtRelative, humVal } from '@/lib/format';
@@ -282,13 +283,12 @@ function ApprovalCardView({
                   <div className="text-ink-45 min-w-0 whitespace-nowrap">Responsibility</div>
                   <div className="flex min-w-0 flex-wrap items-center gap-[7px]">
                     <span>{humVal(item.responsibility)}</span>
-                    {item.citation && (
-                      <span
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-ink-50 hover:text-ink inline-flex cursor-pointer items-center gap-1 rounded-[20px] bg-black/[0.055] px-2 py-px text-[11.5px] font-medium whitespace-nowrap hover:bg-black/10"
-                      >
-                        {item.citation.replace(/^\[|\]$/g, '')}
-                      </span>
+                    {item.lease_evidence && (
+                      <CitationBadge
+                        citation={item.lease_evidence.citation}
+                        documentId={item.lease_evidence.document_id}
+                        question={item.lease_evidence.question}
+                      />
                     )}
                   </div>
                 </>

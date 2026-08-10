@@ -77,6 +77,12 @@ export interface DraftOutput {
   draft: string;
 }
 
+export interface LeaseEvidence {
+  citation: string;
+  question: string;
+  document_id: string;
+}
+
 export interface ApprovalCard {
   email_id: string;
   category: string;
@@ -88,7 +94,7 @@ export interface ApprovalCard {
   issue_summary: string | null;
   appliance_or_system: string | null;
   responsibility: Responsibility | null;
-  citation: string | null;
+  lease_evidence: LeaseEvidence | null;
   original_email: string;
   draft: string | null;
   actions: PlanAction[];
