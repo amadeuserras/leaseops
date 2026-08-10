@@ -81,14 +81,14 @@ async def _run_graph(
 
 
 async def _run_case(item: GoldenItem, runner: GraphRunner) -> CaseResult:
-    state, returned_before, returned_after, cost_usd, latency_s = await _run_graph(
+    state, executed_before, executed_after, cost_usd, latency_s = await _run_graph(
         item, runner
     )
     return score(
         item,
         state,
-        returned_before,
-        returned_after,
+        executed_before,
+        executed_after,
         cost_usd,
         latency_s,
     )

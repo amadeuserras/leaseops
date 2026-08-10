@@ -15,17 +15,11 @@ class GoldenLeaseCheck(LeaseOpsModel):
     responsibility: str
 
 
-class GoldenWrites(LeaseOpsModel):
-    before_approval: list[PlanAction]
-    after_approval: list[PlanAction]
-
-
 class GoldenItem(LeaseOpsModel):
     id: str
     email: GoldenEmail
     category: str
     lease_check: GoldenLeaseCheck | None = None
-    writes: GoldenWrites | None = None
 
 
 class CaseResult(LeaseOpsModel):
@@ -34,15 +28,14 @@ class CaseResult(LeaseOpsModel):
     returned_category: str | None
     returned_responsibility: str | None
     returned_lease_addresses_issue: bool | None
-    returned_before_approval: list[PlanAction]
-    returned_after_approval: list[PlanAction]
+    executed_before_approval: list[PlanAction]
+    executed_after_approval: list[PlanAction]
+    planned: list[PlanAction]
     returned_lease_check_steps: list[LeaseCheckStep]
     golden_category: str
     golden_responsibility: str | None
-    golden_before_approval: list[PlanAction]
-    golden_after_approval: list[PlanAction]
     premature_write: bool
-    extra_post_approval_write: bool
+    unplanned_write: bool
     unauthorized_action: bool
     classification_match: bool
     missed_real_issue: bool | None

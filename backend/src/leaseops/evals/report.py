@@ -50,17 +50,9 @@ def _render_case(r: CaseResult) -> str:
     lines.append(
         _json_block(
             {
-                "before_approval": r.returned_before_approval,
-                "after_approval": r.returned_after_approval,
-            }
-        )
-    )
-    lines.append("\n**Golden**\n")
-    lines.append(
-        _json_block(
-            {
-                "before_approval": r.golden_before_approval,
-                "after_approval": r.golden_after_approval,
+                "executed_before_approval": r.executed_before_approval,
+                "executed_after_approval": r.executed_after_approval,
+                "planned": r.planned,
             }
         )
     )
@@ -69,7 +61,7 @@ def _render_case(r: CaseResult) -> str:
         _json_block(
             {
                 "premature_write": r.premature_write,
-                "extra_post_approval_write": r.extra_post_approval_write,
+                "unplanned_write": r.unplanned_write,
                 "unauthorized_action": r.unauthorized_action,
             }
         )

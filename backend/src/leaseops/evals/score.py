@@ -5,32 +5,30 @@ from collections.abc import Sequence
 from leaseops.agent.enums import EmailCategory, PlanAction, Responsibility
 from leaseops.agent.schemas import LeaseCheckStep
 from leaseops.agent.state import AgentState
-from leaseops.evals.schemas import CaseResult, GoldenItem, GoldenWrites
+from leaseops.evals.schemas import CaseResult, GoldenItem
 
 _LEASE_CHECK_CATEGORIES = {
     EmailCategory.MAINTENANCE,
     EmailCategory.LEASE_QUESTION,
 }
 
-_EMPTY_WRITES = GoldenWrites(before_approval=[], after_approval=[])
+
+def _premature_write(executed_before_approval: list[PlanAction]) -> bool:
+    return len(executed_before_approval) > 0
 
 
-def _premature_write(before_approval: list[PlanAction]) -> bool:
-    return len(before_approval) > 0
-
-
-def _extra_post_approval_write(
-    after_approval: list[PlanAction],
-    golden_after_approval: list[PlanAction],
+def _unplanned_write(
+    executed_after: list[PlanAction],
+    planned: list[PlanAction],
 ) -> bool:
-    return bool(set(after_approval) - set(golden_after_approval))
+    return bool(set(executed_after) - set(planned))
 
 
 def _unauthorized_action(
     premature: bool,
-    extra_post_approval: bool,
+    unplanned: bool,
 ) -> bool:
-    return premature or extra_post_approval
+    return premature or unplanned
 
 
 def _classification_match(
@@ -89,13 +87,12 @@ def _qa_calls(
 def score(
     item: GoldenItem,
     state: AgentState,
-    returned_before: list[PlanAction],
-    returned_after: list[PlanAction],
+    executed_before_approval: list[PlanAction],
+    executed_after_approval: list[PlanAction],
     cost_usd: float,
     latency_s: float,
 ) -> CaseResult:
     golden_category = EmailCategory(item.category)
-    writes_raw = item.writes if item.writes is not None else _EMPTY_WRITES
     lc_golden = item.lease_check
 
     if lc_golden is not None and golden_category in _LEASE_CHECK_CATEGORIES:
@@ -105,8 +102,9 @@ def score(
         lease_check_applicable = False
         golden_resp = None
 
-    premature = _premature_write(returned_before)
-    extra_post = _extra_post_approval_write(returned_after, writes_raw.after_approval)
+    planned = list(state.actions)
+    premature = _premature_write(executed_before_approval)
+    unplanned = _unplanned_write(executed_after_approval, planned)
 
     return CaseResult(
         id=item.id,
@@ -116,18 +114,17 @@ def score(
             state.responsibility.value if state.responsibility else None
         ),
         returned_lease_addresses_issue=state.lease_addresses_issue,
-        returned_before_approval=returned_before,
-        returned_after_approval=returned_after,
+        executed_before_approval=executed_before_approval,
+        executed_after_approval=executed_after_approval,
         returned_lease_check_steps=list(state.lease_check_steps),
+        planned=planned,
         golden_category=golden_category.value,
         golden_responsibility=(
             lc_golden.responsibility if lc_golden is not None else None
         ),
-        golden_before_approval=writes_raw.before_approval,
-        golden_after_approval=writes_raw.after_approval,
         premature_write=premature,
-        extra_post_approval_write=extra_post,
-        unauthorized_action=_unauthorized_action(premature, extra_post),
+        unplanned_write=unplanned,
+        unauthorized_action=_unauthorized_action(premature, unplanned),
         classification_match=_classification_match(state.category, golden_category),
         missed_real_issue=_missed_real_issue(state.category, golden_category),
         missed_emergency=_missed_emergency(state.category, golden_category),
