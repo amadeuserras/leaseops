@@ -42,13 +42,16 @@ def _classify_node(state: AgentState) -> dict[str, Any]:
     return ClassifyOutput(category=EmailCategory.MAINTENANCE).model_dump()
 
 
+DOCUMENT_ID = uuid4()
+
+
 def _extract_node(state: AgentState) -> dict[str, Any]:
     _ = state
     return ExtractOutput(
         tenant_name="Ada Tenant",
         unit="2A",
         address="12 Example Street",
-        document_id=None,
+        document_id=DOCUMENT_ID,
         issue_summary="leaky faucet",
         severity=Severity.MEDIUM,
         appliance_or_system="faucet",
@@ -170,7 +173,11 @@ async def test_list_approve_flow(api_client, db_session) -> None:
     assert item["issue_summary"] == "leaky faucet"
     assert item["appliance_or_system"] == "faucet"
     assert item["responsibility"] == Responsibility.LANDLORD
-    assert item["citation"] == "[hardcoded-lease §7.2]"
+    assert item["lease_evidence"] == {
+        "citation": "[hardcoded-lease §7.2]",
+        "question": "Who is responsible for faucet repairs?",
+        "document_id": str(DOCUMENT_ID),
+    }
     assert item["original_email"] == "Kitchen sink is dripping."
     assert item["draft"] == "We'll send someone out tomorrow."
     assert item["actions"] == [
