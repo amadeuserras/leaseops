@@ -7,7 +7,6 @@ from typing import Any, TypedDict, cast
 
 from leaseops.models.enums import EmailStatus
 
-# Packaged next to this module so Railway/site-packages installs can find it.
 _INBOX_PATH = Path(__file__).resolve().parent / "emails.json"
 
 
