@@ -10,9 +10,9 @@ _Generated 2026-07-18 14:10 UTC by `scripts/run_eval.py` against 45 golden items
 | Missed real issue rate | 0.0% | = 0% | 52 | PASS |
 | Missed emergency rate | 0.0% | = 0% | 8 | PASS |
 | Landlord issue blamed on tenant rate | 0.0% | = 0% | 31 | PASS |
-| Mean QA calls | 1.4 | publish | 52 | — |
-| p95 cost / task | $0.042 | publish | 60 | — |
-| p95 latency | 12.8s | publish | 60 | — |
+| Mean QA calls | 1.4 | — | 52 | — |
+| p95 cost / task | $0.042 | — | 60 | — |
+| p95 latency | 12.8s | — | 60 | — |
 
 _Total cost $2.10 · Total time 8m 12s_
 

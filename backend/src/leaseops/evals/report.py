@@ -24,7 +24,7 @@ def _dump_lease_check_step(step: LeaseCheckStep) -> dict[str, object]:
 
 
 def _status(score: str, target: str) -> str:
-    if target == "publish":
+    if target == "—":
         return "—"
     if target == "= 0%":
         return "PASS" if score == "0.0%" else "FAIL"
@@ -183,19 +183,19 @@ def _metric_rows(g: GlobalMetrics) -> list[tuple[str, str, str, int]]:
         (
             "Mean QA calls",
             f"{g.mean_qa:.1f}",
-            "publish",
+            "—",
             g.qa_n,
         ),
         (
             "p95 cost / task",
             f"${g.p95_cost:.3f}",
-            "publish",
+            "—",
             g.total_n,
         ),
         (
             "p95 latency",
             f"{g.p95_latency:.1f}s",
-            "publish",
+            "—",
             g.total_n,
         ),
     ]
