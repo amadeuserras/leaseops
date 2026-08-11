@@ -4,6 +4,8 @@ An AI agent that runs a property manager's maintenance inbox. It classifies tena
 
 **Plain English:** it reads the inbox, works out what each email is and whose fault it is, writes the reply, and then waits for you.
 
+**[Live demo →](https://leaseops.vercel.app)**
+
 ## What it does
 
 - Surfaces each processed email as an approval card: issue type, severity, responsibility verdict, draft reply, and the suggested actions, with one-click approve or reject.
