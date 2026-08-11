@@ -10,9 +10,12 @@ from leaseops.agent.runner import GraphRunner
 from leaseops.api.approvals import router as approvals_router
 from leaseops.api.inbox import router as inbox_router
 from leaseops.api.runs import router as runs_router
+from leaseops.api.sessions import router as sessions_router
 from leaseops.api.work_orders import router as work_orders_router
 from leaseops.core.config import settings
+from leaseops.db import demo_sessions as demo_sessions_repo
 from leaseops.db.base import Base
+from leaseops.db.models import DemoSession
 from leaseops.db.session import get_session, make_engine, use_database
 
 
@@ -38,14 +41,20 @@ async def db_session(test_engine):
 
 
 @pytest_asyncio.fixture
+async def demo_session(db_session) -> DemoSession:
+    return await demo_sessions_repo.create_empty_session(db_session)
+
+
+@pytest_asyncio.fixture
 async def runner() -> GraphRunner:
     return GraphRunner(graph=None)
 
 
 @pytest_asyncio.fixture
-async def api_client(db_session, runner):
+async def api_client(db_session, runner, demo_session):
     app = FastAPI()
     app.state.runner = runner
+    app.include_router(sessions_router)
     app.include_router(inbox_router)
     app.include_router(work_orders_router)
     app.include_router(runs_router)
@@ -57,5 +66,9 @@ async def api_client(db_session, runner):
     app.dependency_overrides[get_session] = override_session
 
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
+    async with AsyncClient(
+        transport=transport,
+        base_url="http://test",
+        headers={"X-Session-Id": str(demo_session.id)},
+    ) as client:
         yield client

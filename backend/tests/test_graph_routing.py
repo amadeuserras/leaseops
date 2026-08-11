@@ -87,9 +87,10 @@ def not_our_problem_runner() -> GraphRunner:
 
 
 async def test_not_our_problem_stream_ends_processed(
-    db_session, not_our_problem_runner: GraphRunner
+    db_session, demo_session, not_our_problem_runner: GraphRunner
 ) -> None:
     email = Email(
+        session_id=demo_session.id,
         sender="spam@example.com",
         subject=f"Buy crypto {uuid4()}",
         body="Totally unrelated sales pitch.",

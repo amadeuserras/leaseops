@@ -1,4 +1,42 @@
+import { SESSION_COOKIE, SESSION_HEADER } from '@/lib/session';
+
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000';
+
+const readSessionId = async (): Promise<string> => {
+  if (typeof window === 'undefined') {
+    const { cookies, headers } = await import('next/headers');
+    const value =
+      (await cookies()).get(SESSION_COOKIE)?.value ?? (await headers()).get(SESSION_HEADER);
+    if (!value) {
+      throw new Error('missing leaseops_session cookie');
+    }
+    return value;
+  }
+  const match = document.cookie.match(new RegExp(`(?:^|; )${SESSION_COOKIE}=([^;]*)`));
+  const value = match?.[1];
+  if (!value) {
+    throw new Error('missing leaseops_session cookie');
+  }
+  return decodeURIComponent(value);
+};
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const sessionId = await readSessionId();
+  const response = await fetch(`${BASE_URL}${path}`, {
+    ...init,
+    cache: 'no-store',
+    headers: {
+      'content-type': 'application/json',
+      'X-Session-Id': sessionId,
+      ...init?.headers,
+    },
+  });
+  if (!response.ok) {
+    const detail = await response.text().catch(() => '');
+    throw new Error(`${init?.method ?? 'GET'} ${path} failed: ${response.status} ${detail}`);
+  }
+  return (await response.json()) as T;
+}
 
 export type EmailStatus = 'pending' | 'processing' | 'awaiting_approval' | 'processed';
 
@@ -188,19 +226,6 @@ export type StreamEvent =
       cost_usd: number;
     };
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${BASE_URL}${path}`, {
-    ...init,
-    cache: 'no-store',
-    headers: { 'content-type': 'application/json', ...init?.headers },
-  });
-  if (!response.ok) {
-    const detail = await response.text().catch(() => '');
-    throw new Error(`${init?.method ?? 'GET'} ${path} failed: ${response.status} ${detail}`);
-  }
-  return (await response.json()) as T;
-}
-
 export function listEmails(): Promise<EmailListResponse> {
   return request<EmailListResponse>('/inbox');
 }
@@ -254,9 +279,13 @@ export async function* streamRun(
   emailId: string,
   signal: AbortSignal,
 ): AsyncGenerator<StreamEvent> {
+  const sessionId = await readSessionId();
   const response = await fetch(`${BASE_URL}/runs/stream`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: {
+      'content-type': 'application/json',
+      'X-Session-Id': sessionId,
+    },
     body: JSON.stringify({ email_id: emailId }),
     cache: 'no-store',
     signal,
@@ -271,9 +300,13 @@ export async function* streamRerun(
   emailId: string,
   signal: AbortSignal,
 ): AsyncGenerator<StreamEvent> {
+  const sessionId = await readSessionId();
   const response = await fetch(`${BASE_URL}/runs/rerun/stream`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: {
+      'content-type': 'application/json',
+      'X-Session-Id': sessionId,
+    },
     body: JSON.stringify({ email_id: emailId }),
     cache: 'no-store',
     signal,

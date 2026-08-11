@@ -50,22 +50,44 @@ async def list_runs(
     session: AsyncSession,
     *,
     status: RunStatus | None = None,
+    session_id: UUID | None = None,
 ) -> list[Run]:
     stmt = select(Run).order_by(Run.started_at.desc())
+    if session_id is not None:
+        stmt = stmt.join(Email, Email.id == Run.email_id).where(
+            Email.session_id == session_id
+        )
     if status is not None:
         stmt = stmt.where(Run.status == status)
     return list((await session.scalars(stmt)).all())
 
 
-async def get_latest_run(session: AsyncSession) -> Run | None:
-    return (
-        await session.scalars(select(Run).order_by(Run.started_at.desc()).limit(1))
-    ).first()
+async def get_latest_run(
+    session: AsyncSession, *, session_id: UUID | None = None
+) -> Run | None:
+    stmt = select(Run).order_by(Run.started_at.desc()).limit(1)
+    if session_id is not None:
+        stmt = stmt.join(Email, Email.id == Run.email_id).where(
+            Email.session_id == session_id
+        )
+    return (await session.scalars(stmt)).first()
 
 
 async def get_run_by_email_id(session: AsyncSession, email_id: UUID) -> Run | None:
     return (
         await session.scalars(select(Run).where(Run.email_id == email_id))
+    ).one_or_none()
+
+
+async def get_run_for_session(
+    session: AsyncSession, run_id: UUID, *, session_id: UUID
+) -> Run | None:
+    return (
+        await session.scalars(
+            select(Run)
+            .join(Email, Email.id == Run.email_id)
+            .where(Run.id == run_id, Email.session_id == session_id)
+        )
     ).one_or_none()
 
 
@@ -82,8 +104,15 @@ async def wipe_run(session: AsyncSession, email_id: UUID) -> UUID | None:
     return run_id
 
 
-async def get_agent_last_ran_at(session: AsyncSession) -> datetime | None:
-    return await session.scalar(select(func.max(Run.ended_at)))
+async def get_agent_last_ran_at(
+    session: AsyncSession, *, session_id: UUID | None = None
+) -> datetime | None:
+    stmt = select(func.max(Run.ended_at)).select_from(Run)
+    if session_id is not None:
+        stmt = stmt.join(Email, Email.id == Run.email_id).where(
+            Email.session_id == session_id
+        )
+    return await session.scalar(stmt)
 
 
 async def set_run_status(

@@ -133,8 +133,9 @@ def runner() -> GraphRunner:
     return GraphRunner(graph=build_test_graph(InMemorySaver(serde=CHECKPOINT_SERDE)))
 
 
-async def _seed_email(db_session) -> Email:
+async def _seed_email(db_session, demo_session) -> Email:
     email = Email(
+        session_id=demo_session.id,
         sender="tenant@example.com",
         subject=f"Approval test {uuid4()}",
         body="Kitchen sink is dripping.",
@@ -147,8 +148,8 @@ async def _seed_email(db_session) -> Email:
     return email
 
 
-async def test_list_approve_flow(api_client, db_session) -> None:
-    email = await _seed_email(db_session)
+async def test_list_approve_flow(api_client, db_session, demo_session) -> None:
+    email = await _seed_email(db_session, demo_session)
 
     run_response = await api_client.post("/runs", json={"email_id": str(email.id)})
     assert run_response.status_code == 201
@@ -201,8 +202,8 @@ async def test_list_approve_flow(api_client, db_session) -> None:
     assert approvals_response.json()["items"] == []
 
 
-async def test_reject_completes(api_client, db_session) -> None:
-    email = await _seed_email(db_session)
+async def test_reject_completes(api_client, db_session, demo_session) -> None:
+    email = await _seed_email(db_session, demo_session)
 
     run_response = await api_client.post("/runs", json={"email_id": str(email.id)})
     run_id = run_response.json()["id"]
@@ -219,8 +220,8 @@ async def test_reject_completes(api_client, db_session) -> None:
     assert email.status == EmailStatus.PROCESSED
 
 
-async def test_stream_persists_approval_step(db_session, runner) -> None:
-    email = await _seed_email(db_session)
+async def test_stream_persists_approval_step(db_session, demo_session, runner) -> None:
+    email = await _seed_email(db_session, demo_session)
     events = [event async for event in runner.stream(db_session, email)]
 
     assert any(event.get("type") == "paused" for event in events)
@@ -243,8 +244,10 @@ async def test_stream_persists_approval_step(db_session, runner) -> None:
     assert steps[-1].output["draft"] == "We'll send someone out tomorrow."
 
 
-async def test_approve_after_stream_persists_execute(db_session, runner) -> None:
-    email = await _seed_email(db_session)
+async def test_approve_after_stream_persists_execute(
+    db_session, demo_session, runner
+) -> None:
+    email = await _seed_email(db_session, demo_session)
     async for _ in runner.stream(db_session, email):
         pass
 
@@ -266,8 +269,10 @@ async def test_approve_after_stream_persists_execute(db_session, runner) -> None
     assert steps[-1].output == {"succeeded": True}
 
 
-async def test_stream_rerun_wipes_and_creates_new_run(db_session, runner) -> None:
-    email = await _seed_email(db_session)
+async def test_stream_rerun_wipes_and_creates_new_run(
+    db_session, demo_session, runner
+) -> None:
+    email = await _seed_email(db_session, demo_session)
 
     async for _ in runner.stream(db_session, email):
         pass
@@ -306,8 +311,10 @@ async def test_approve_unknown_run_is_404(api_client) -> None:
     assert approve_response.status_code == 404
 
 
-async def test_approve_when_not_paused_is_409(api_client, db_session) -> None:
-    email = await _seed_email(db_session)
+async def test_approve_when_not_paused_is_409(
+    api_client, db_session, demo_session
+) -> None:
+    email = await _seed_email(db_session, demo_session)
 
     run_response = await api_client.post("/runs", json={"email_id": str(email.id)})
     run_id = run_response.json()["id"]

@@ -146,8 +146,8 @@ async def main() -> None:
 
     print("🌱 Truncating and seeding evals database...")
     async with use_database(settings.evals_database_url), open_session() as session:
-        n_tenants, n_emails = await seed(session)
-    print(f"Seeded {n_tenants} tenant(s) and {n_emails} email(s)")
+        n_tenants = await seed(session)
+    print(f"Seeded {n_tenants} tenant(s)")
 
     print(f"🧪 Running evals on {len(items)} item(s)...")
     progress = _Progress()

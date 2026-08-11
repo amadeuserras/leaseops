@@ -18,6 +18,7 @@ from leaseops.agent.runtime import graph_runner
 from leaseops.agent.state import AgentState
 from leaseops.api.schemas import EmailCreate
 from leaseops.core.config import settings
+from leaseops.db import demo_sessions as demo_sessions_repo
 from leaseops.db import emails as emails_repo
 from leaseops.db.session import open_session, use_database
 from leaseops.evals.schemas import CaseResult, GoldenItem
@@ -36,6 +37,7 @@ async def _run_graph(
     email_payload = item.email
 
     async with open_session() as session:
+        demo = await demo_sessions_repo.create_empty_session(session)
         email = await emails_repo.create_email(
             session,
             EmailCreate(
@@ -44,6 +46,7 @@ async def _run_graph(
                 body=email_payload.body,
                 received_at=datetime(2026, 1, 1, tzinfo=UTC),
             ),
+            session_id=demo.id,
         )
 
         t0 = time.monotonic()

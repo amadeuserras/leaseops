@@ -50,8 +50,14 @@ def _actions_taken(
     return planned if executed else []
 
 
-async def create_email(session: AsyncSession, payload: EmailCreate) -> Email:
+async def create_email(
+    session: AsyncSession,
+    payload: EmailCreate,
+    *,
+    session_id: UUID,
+) -> Email:
     email = Email(
+        session_id=session_id,
         sender=payload.sender,
         subject=payload.subject,
         body=payload.body,
@@ -65,16 +71,26 @@ async def create_email(session: AsyncSession, payload: EmailCreate) -> Email:
 
 
 async def list_emails(
-    session: AsyncSession, *, status: EmailStatus | None = None
+    session: AsyncSession,
+    *,
+    session_id: UUID,
+    status: EmailStatus | None = None,
 ) -> list[Email]:
-    stmt = select(Email).order_by(Email.received_at.desc())
+    stmt = (
+        select(Email)
+        .where(Email.session_id == session_id)
+        .order_by(Email.received_at.desc())
+    )
     if status is not None:
         stmt = stmt.where(Email.status == status)
     return list((await session.scalars(stmt)).all())
 
 
 async def list_inbox_rows(
-    session: AsyncSession, *, status: EmailStatus | None = None
+    session: AsyncSession,
+    *,
+    session_id: UUID,
+    status: EmailStatus | None = None,
 ) -> list[InboxRow]:
     stmt = (
         select(Email, Tenant.unit)
@@ -82,6 +98,7 @@ async def list_inbox_rows(
             Tenant,
             Tenant.email == func.lower(func.trim(Email.sender)),
         )
+        .where(Email.session_id == session_id)
         .order_by(Email.received_at.desc())
     )
     if status is not None:
@@ -144,12 +161,27 @@ async def list_inbox_rows(
     ]
 
 
-async def get_email_by_id(session: AsyncSession, email_id: UUID) -> Email | None:
-    return await session.get(Email, email_id)
+async def get_email_by_id(
+    session: AsyncSession,
+    email_id: UUID,
+    *,
+    session_id: UUID | None = None,
+) -> Email | None:
+    email = await session.get(Email, email_id)
+    if email is None:
+        return None
+    if session_id is not None and email.session_id != session_id:
+        return None
+    return email
 
 
-async def get_inbox_row(session: AsyncSession, email_id: UUID) -> InboxRow | None:
-    email = await get_email_by_id(session, email_id)
+async def get_inbox_row(
+    session: AsyncSession,
+    email_id: UUID,
+    *,
+    session_id: UUID | None = None,
+) -> InboxRow | None:
+    email = await get_email_by_id(session, email_id, session_id=session_id)
     if email is None:
         return None
 

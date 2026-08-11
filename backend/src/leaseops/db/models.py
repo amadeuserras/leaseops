@@ -39,6 +39,17 @@ class Tenant(Base):
     unit: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
+class DemoSession(Base):
+    __tablename__ = "demo_sessions"
+
+    id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True), primary_key=True, default=uuid4
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_utcnow
+    )
+
+
 class Email(Base):
     __tablename__ = "emails"
     __table_args__ = (
@@ -50,6 +61,12 @@ class Email(Base):
 
     id: Mapped[UUID] = mapped_column(
         PGUUID(as_uuid=True), primary_key=True, default=uuid4
+    )
+    session_id: Mapped[UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("demo_sessions.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     sender: Mapped[str] = mapped_column(Text, nullable=False)
     subject: Mapped[str] = mapped_column(Text, nullable=False)

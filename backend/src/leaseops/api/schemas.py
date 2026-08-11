@@ -13,6 +13,10 @@ class HealthResponse(LeaseOpsModel):
     service: str = "leaseops"
 
 
+class SessionResponse(LeaseOpsModel):
+    id: UUID
+
+
 class EmailCreate(LeaseOpsModel):
     sender: str
     subject: str

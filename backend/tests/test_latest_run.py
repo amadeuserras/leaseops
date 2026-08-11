@@ -6,8 +6,9 @@ from leaseops.db.models import Email, Run
 from leaseops.models.enums import EmailStatus, RunStatus
 
 
-async def test_get_latest_run_email_id(api_client, db_session) -> None:
+async def test_get_latest_run_email_id(api_client, db_session, demo_session) -> None:
     older = Email(
+        session_id=demo_session.id,
         sender="a@example.com",
         subject="Older",
         body="body",
@@ -15,6 +16,7 @@ async def test_get_latest_run_email_id(api_client, db_session) -> None:
         status=EmailStatus.PENDING,
     )
     newer = Email(
+        session_id=demo_session.id,
         sender="b@example.com",
         subject="Newer",
         body="body",

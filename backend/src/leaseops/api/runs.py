@@ -7,10 +7,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from leaseops.agent.runner import GraphRunner
 from leaseops.agent.schemas import StepResponse, StepResponseAdapter
+from leaseops.api.deps import DemoSessionDep, SessionDep
 from leaseops.api.schemas import (
     EmailResponse,
     LatestRunResponse,
@@ -24,11 +24,8 @@ from leaseops.db import runs as runs_repo
 from leaseops.db import steps as steps_repo
 from leaseops.db.emails import InboxRow
 from leaseops.db.models import Run, Step
-from leaseops.db.session import get_session
 
 router = APIRouter(prefix="/runs", tags=["runs"])
-
-SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
 def get_runner(request: Request) -> GraphRunner:
@@ -79,8 +76,10 @@ def _stats(run: Run | None, steps: list[Step]) -> RunStats:
 
 
 @router.get("/latest", response_model=LatestRunResponse)
-async def get_latest_run(session: SessionDep) -> LatestRunResponse:
-    run = await runs_repo.get_latest_run(session)
+async def get_latest_run(
+    session: SessionDep, demo: DemoSessionDep
+) -> LatestRunResponse:
+    run = await runs_repo.get_latest_run(session, session_id=demo.id)
     return LatestRunResponse(email_id=run.email_id if run is not None else None)
 
 
@@ -88,9 +87,12 @@ async def get_latest_run(session: SessionDep) -> LatestRunResponse:
 async def start_run(
     payload: RunCreate,
     session: SessionDep,
+    demo: DemoSessionDep,
     runner: RunnerDep,
 ) -> RunResponse:
-    email = await emails_repo.get_email_by_id(session, payload.email_id)
+    email = await emails_repo.get_email_by_id(
+        session, payload.email_id, session_id=demo.id
+    )
     if email is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="email not found"
@@ -107,9 +109,12 @@ def _sse(event: dict[str, object]) -> str:
 async def stream_run(
     payload: RunCreate,
     session: SessionDep,
+    demo: DemoSessionDep,
     runner: RunnerDep,
 ) -> StreamingResponse:
-    email = await emails_repo.get_email_by_id(session, payload.email_id)
+    email = await emails_repo.get_email_by_id(
+        session, payload.email_id, session_id=demo.id
+    )
     if email is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="email not found"
@@ -126,9 +131,12 @@ async def stream_run(
 async def rerun_stream(
     payload: RunCreate,
     session: SessionDep,
+    demo: DemoSessionDep,
     runner: RunnerDep,
 ) -> StreamingResponse:
-    email = await emails_repo.get_email_by_id(session, payload.email_id)
+    email = await emails_repo.get_email_by_id(
+        session, payload.email_id, session_id=demo.id
+    )
     if email is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="email not found"
@@ -143,8 +151,10 @@ async def rerun_stream(
 
 
 @router.get("/{email_id}", response_model=RunDetailResponse)
-async def get_run(email_id: UUID, session: SessionDep) -> RunDetailResponse:
-    row = await emails_repo.get_inbox_row(session, email_id)
+async def get_run(
+    email_id: UUID, session: SessionDep, demo: DemoSessionDep
+) -> RunDetailResponse:
+    row = await emails_repo.get_inbox_row(session, email_id, session_id=demo.id)
     if row is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="email not found"

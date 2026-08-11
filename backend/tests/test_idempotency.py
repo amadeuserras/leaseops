@@ -12,8 +12,11 @@ from leaseops.db.work_orders import create_work_order
 from leaseops.models.enums import EmailStatus
 
 
-async def test_outbox_create_is_idempotent_for_same_email(db_session) -> None:
+async def test_outbox_create_is_idempotent_for_same_email(
+    db_session, demo_session
+) -> None:
     email = Email(
+        session_id=demo_session.id,
         sender="tenant@example.com",
         subject="Lease question",
         body="Can I paint the walls?",
@@ -36,7 +39,9 @@ async def test_outbox_create_is_idempotent_for_same_email(db_session) -> None:
     assert count == 1
 
 
-async def test_work_order_create_is_idempotent_for_same_email(db_session) -> None:
+async def test_work_order_create_is_idempotent_for_same_email(
+    db_session, demo_session
+) -> None:
     tenant = Tenant(
         email="tenant@example.com",
         name="Test Tenant",
@@ -47,6 +52,7 @@ async def test_work_order_create_is_idempotent_for_same_email(db_session) -> Non
     await db_session.flush()
 
     email = Email(
+        session_id=demo_session.id,
         sender="tenant@example.com",
         subject="Leaky faucet",
         body="Kitchen sink is dripping.",

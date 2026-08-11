@@ -188,8 +188,12 @@ class GraphRunner:
         run = await runs_repo.set_run_status(session, run, status, ended=not paused)
         yield RunFinishedEvent(status=status.value).model_dump(mode="json")
 
-    async def list_pending(self, session: AsyncSession) -> list[PendingApproval]:
-        paused = await runs_repo.list_runs(session, status=RunStatus.PAUSED)
+    async def list_pending(
+        self, session: AsyncSession, *, session_id: UUID | None = None
+    ) -> list[PendingApproval]:
+        paused = await runs_repo.list_runs(
+            session, status=RunStatus.PAUSED, session_id=session_id
+        )
         pending: list[PendingApproval] = []
         for run in paused:
             request = await self._pending_request(run.id)

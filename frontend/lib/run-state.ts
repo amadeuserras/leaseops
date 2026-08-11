@@ -379,7 +379,8 @@ function gateStyle(kind: 'paused' | 'approved' | 'rejected') {
 
 export function toDisplaySteps(state: RunState): DisplayStep[] {
   const approved = state.steps.some((step) => step.node === 'execute');
-  const extractOutput = state.steps.find((s) => s.node === 'extract')?.output as ExtractOutput | null;
+  const extractOutput = state.steps.find((s) => s.node === 'extract')
+    ?.output as ExtractOutput | null;
   const documentId = extractOutput?.document_id ?? null;
 
   return state.steps.map((step, index) => {
