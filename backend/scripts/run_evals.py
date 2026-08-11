@@ -32,11 +32,12 @@ _REPORTS_DIR = _EVALS_DIR / "reports"
 
 _FAILURE_CASE_IDS = [
     "kevin-chen-fridge-not-cooling",
-    "kevin-chen-paint-bedroom",
+    "priya-nadkarni-dishwasher-dead",
     "carlos-morales-storm-fence",
-    "isabel-reyes-cousin-moving-in",
     "carlos-morales-trampoline",
-    "darnell-washington-roaches",
+    "maria-vega-cat-approval",
+    "kevin-chen-paint-bedroom",
+    "isabel-reyes-cousin-moving-in",
 ]
 
 _GoldenItems = TypeAdapter(list[GoldenItem])

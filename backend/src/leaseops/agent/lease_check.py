@@ -35,7 +35,14 @@ _MAX_TOKENS = 2048
 _SYSTEM_PROMPT = """\
 Decide who is responsible for the tenant's request using only the lease answers provided.
 
-Ask questions about the reported issue, then call submit_verdict when you're ready to draw a conclusion. Reason and infer the verdict from the lease_qa answers, not outside knowledge. Always include 1–2 short reasoning sentences with each tool call, and ensure the submitted responsibility matches that reasoning. 
+Ask questions about the reported issue, then call submit_verdict when you're ready to draw a conclusion. Reason and infer the verdict from the lease_qa answers, not outside knowledge. Always include 1–2 short reasoning sentences with each tool call, and ensure the submitted responsibility matches that reasoning.
+
+Responsibility labels:
+- tenant: the lease puts the obligation or compliance duty on the tenant.
+- landlord: the lease puts the duty to fix, pay for, maintain, or provide on the landlord.
+- shared: the lease splits the duty between both parties.
+- unclear: the lease is silent or conflicting — do not guess.
+If the lease requires consent before the tenant acts, responsibility is tenant, not landlord.
 
 lease_qa calls remaining: {remaining} / {max_calls}
 """
