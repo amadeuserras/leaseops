@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime
+from typing import cast
 
 from leaseops.agent.schemas import LeaseCheckStep
 from leaseops.evals.schemas import CaseResult, GlobalMetrics
@@ -19,7 +20,7 @@ def _dump_lease_check_step(step: LeaseCheckStep) -> dict[str, object]:
     data = step.model_dump(mode="json")
     tool = data.get("tool")
     if isinstance(tool, dict):
-        tool.pop("citations", None)
+        cast(dict[str, object], tool).pop("citations", None)
     return data
 
 

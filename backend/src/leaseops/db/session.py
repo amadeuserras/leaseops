@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator, AsyncIterator
 from contextlib import asynccontextmanager
 
 from sqlalchemy.ext.asyncio import (
@@ -38,7 +38,7 @@ def _require_factory() -> async_sessionmaker[AsyncSession]:
 
 
 @asynccontextmanager
-async def use_database(database_url: str) -> AsyncIterator[None]:
+async def use_database(database_url: str) -> AsyncGenerator[None]:
     """Bind the process DB for this block. Required before open_session()."""
     global _factory, _engine, _database_url
     if _factory is not None:
@@ -56,7 +56,7 @@ async def use_database(database_url: str) -> AsyncIterator[None]:
 
 
 @asynccontextmanager
-async def open_session() -> AsyncIterator[AsyncSession]:
+async def open_session() -> AsyncGenerator[AsyncSession]:
     """Open a short-lived session (langgraph nodes and scripts)."""
     async with _require_factory()() as session:
         yield session
