@@ -1,9 +1,10 @@
 'use client';
 
 import { CitationBadge } from '@/components/citation-badge';
+import { RelativeTime } from '@/components/relative-time';
 import { useApprovalActions } from '@/hooks/use-approval-actions';
 import type { ApprovalListResponse, ApprovalRequestResponse, PlanAction } from '@/lib/api';
-import { fmtRelative, humVal } from '@/lib/format';
+import { humVal } from '@/lib/format';
 import { useState } from 'react';
 
 const CATEGORY_STYLE: Record<
@@ -256,7 +257,7 @@ function ApprovalCardView({
                 <span className="text-[13px]">{severityLabel}</span>
               </span>
             )}
-            {fmtRelative(item.received_at)}
+            <RelativeTime iso={item.received_at} />
           </span>
         </button>
 

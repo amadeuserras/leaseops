@@ -7,7 +7,8 @@ import {
   type Severity,
   senderDisplayName,
 } from '@/lib/api';
-import { fmtClock, fmtRelative, humVal, preview } from '@/lib/format';
+import { RelativeTime } from '@/components/relative-time';
+import { fmtClock, humVal, preview } from '@/lib/format';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -96,7 +97,7 @@ export function InboxPage({ data }: { data: EmailListResponse }) {
         </div>
         <div className="text-ink-45 flex items-center gap-1.5 text-[11.5px] whitespace-nowrap">
           <span className="bg-green h-[5px] w-[5px] rounded-full" />
-          Agent last ran {fmtRelative(data.agent_last_ran_at)}
+          Agent last ran <RelativeTime iso={data.agent_last_ran_at} />
         </div>
       </div>
 
