@@ -7,8 +7,8 @@ from typing import Any, TypedDict, cast
 
 from leaseops.models.enums import EmailStatus
 
-_SEED_DIR = Path(__file__).resolve().parents[3] / "seed_data"
-_INBOX_PATH = _SEED_DIR / "emails.json"
+# Packaged next to this module so Railway/site-packages installs can find it.
+_INBOX_PATH = Path(__file__).resolve().parent / "emails.json"
 
 
 class InboxTemplateRow(TypedDict):
