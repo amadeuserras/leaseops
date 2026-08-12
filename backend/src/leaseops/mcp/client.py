@@ -9,6 +9,8 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp.types import CallToolResult, TextContent
 
+from leaseops.core.config import settings
+
 _BACKEND_ROOT = Path(__file__).resolve().parents[3]
 
 
@@ -23,24 +25,18 @@ def _error_text(result: CallToolResult) -> str:
     return str(result)
 
 
-def require_ok(result: CallToolResult, tool: str) -> dict[str, object]:
-    if result.isError:
-        raise McpToolError(f"{tool} failed: {_error_text(result)}")
-    if result.structuredContent is None:
-        raise McpToolError(f"{tool} returned no structuredContent")
-    return result.structuredContent
-
-
 @asynccontextmanager
 async def mcp_session() -> AsyncGenerator[ClientSession]:
+    env = dict(os.environ)
+    env["LEASECLEAR_BASE_URL"] = settings.leaseclear_base_url
     server = StdioServerParameters(
         command="uv",
         args=["run", "lease-qa-mcp"],
         cwd=str(_BACKEND_ROOT),
-        env=dict(os.environ),
+        env=env,
     )
     async with (
-        stdio_client(server) as (read, write),
+        stdio_client(server) as (read, write),  # pyright: ignore[reportGeneralTypeIssues]
         ClientSession(read, write) as session,
     ):
         await session.initialize()
@@ -51,6 +47,12 @@ async def call_tool(
     session: ClientSession,
     name: str,
     arguments: dict[str, object],
+    *,
+    meta: dict[str, object] | None = None,
 ) -> dict[str, object]:
-    result = await session.call_tool(name, arguments=arguments)
-    return require_ok(result, name)
+    result = await session.call_tool(name, arguments=arguments, meta=meta)
+    if result.isError:
+        raise McpToolError(_error_text(result))
+    if result.structuredContent is None:
+        raise McpToolError(f"{name} returned no structuredContent")
+    return result.structuredContent

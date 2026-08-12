@@ -12,6 +12,7 @@ from anthropic.types import (
     ToolResultBlockParam,
     ToolUseBlock,
 )
+from mcp import ClientSession
 from pydantic import BaseModel, Field, ValidationError
 
 from leaseops.agent.citations import extract_citation_ids
@@ -47,12 +48,6 @@ lease_qa calls remaining: {remaining} / {max_calls}
 """
 
 
-class _LeaseQaFormat(BaseModel):
-    question: str = Field(
-        description="A single neutral question about lease terms.",
-    )
-
-
 class _SubmitVerdictFormat(BaseModel):
     reasoning: str = Field(
         description=(
@@ -67,18 +62,6 @@ class _SubmitVerdictFormat(BaseModel):
     )
 
 
-LEASE_QA_TOOL: ToolParam = {
-    "name": "lease_qa",
-    "description": (
-        "Ask one neutral, precise question about the tenant's lease. "
-        "The lease document is already scoped for this email. Returns an "
-        "answer grounded in the lease, or states that the lease does not "
-        "address the question."
-    ),
-    "strict": True,
-    "input_schema": transform_schema(_LeaseQaFormat.model_json_schema()),
-}
-
 SUBMIT_VERDICT_TOOL: ToolParam = {
     "name": "submit_verdict",
     "description": (
@@ -87,6 +70,20 @@ SUBMIT_VERDICT_TOOL: ToolParam = {
     "strict": True,
     "input_schema": transform_schema(_SubmitVerdictFormat.model_json_schema()),
 }
+
+
+async def _fetch_lease_qa_tool(session: ClientSession) -> ToolParam:
+    result = await session.list_tools()
+    tool = next((t for t in result.tools if t.name == "lease_qa"), None)
+    if tool is None:
+        raise RuntimeError("lease_qa tool not found in MCP server")
+
+    return {
+        "name": tool.name,
+        "description": tool.description or "",
+        "strict": True,
+        "input_schema": transform_schema(tool.inputSchema),
+    }
 
 
 def _task_message(state: AgentState) -> str:
@@ -161,6 +158,8 @@ async def lease_check(state: AgentState) -> LeaseCheckOutput:
 
     client = AsyncAnthropic(api_key=settings.anthropic_api_key)
     async with mcp_session() as session:
+        lease_qa_tool = await _fetch_lease_qa_tool(session)
+
         while True:
             used = _qa_call_count(steps)
             remaining = max(_MAX_QA_CALLS - used, 0)
@@ -183,7 +182,7 @@ async def lease_check(state: AgentState) -> LeaseCheckOutput:
                     max_calls=_MAX_QA_CALLS,
                 ),
                 messages=messages,
-                tools=[LEASE_QA_TOOL, SUBMIT_VERDICT_TOOL],
+                tools=[lease_qa_tool, SUBMIT_VERDICT_TOOL],
                 tool_choice=tool_choice,
             )
             emit_cost(
@@ -223,16 +222,17 @@ async def lease_check(state: AgentState) -> LeaseCheckOutput:
                     reasoning=_response_text(response),
                 )
 
-            qa = _LeaseQaFormat.model_validate(qa_use.input)
-            question = qa.question
+            question = str(qa_use.input["question"])
             reasoning = _response_text(response)
-            tool_args: dict[str, object] = {
-                "question": question,
-                "document_id": str(state.document_id),
-            }
+            tool_args: dict[str, object] = {"question": str(qa_use.input["question"])}
             emit_tool_call("lease_check", "lease_qa", tool_args, reasoning=reasoning)
             try:
-                qa_result = await call_tool(session, "lease_qa", tool_args)
+                qa_result = await call_tool(
+                    session,
+                    "lease_qa",
+                    tool_args,
+                    meta={"document_id": str(state.document_id)},
+                )
                 answer = str(qa_result["answer"])
                 is_error = False
             except McpToolError as exc:
