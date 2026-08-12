@@ -192,6 +192,7 @@ Postgres runs on host port **5434**. The test and eval databases (`leaseops_test
 ```bash
 docker compose exec postgres createdb -U leaseops leaseops_test
 docker compose exec postgres createdb -U leaseops leaseops_evals
+uv run alembic -x db=evals upgrade head
 ```
 
 
@@ -226,6 +227,7 @@ Evals run against `EVALS_DATABASE_URL` and make real model and MCP calls, so Lea
 
 ```bash
 cd backend
+uv run alembic -x db=evals upgrade head
 uv run python scripts/seed.py --evals
 uv run python scripts/run_evals.py
 ```
