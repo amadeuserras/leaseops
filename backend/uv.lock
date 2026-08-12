@@ -822,12 +822,26 @@ wheels = [
 [[package]]
 name = "lease-qa-mcp"
 version = "0.1.0"
-source = { git = "https://github.com/amadeuserras/lease-qa-mcp.git#32102ecd1cfac546d9eb3fffa1c942149455b214" }
+source = { editable = "../../lease-qa-mcp" }
 dependencies = [
     { name = "httpx" },
     { name = "mcp", extra = ["cli"] },
     { name = "pydantic" },
     { name = "pydantic-settings" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "httpx", specifier = ">=0.28" },
+    { name = "mcp", extras = ["cli"], specifier = ">=1.27,<2" },
+    { name = "pydantic", specifier = ">=2.0" },
+    { name = "pydantic-settings", specifier = ">=2.14" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pyright", specifier = ">=1.1.411" },
+    { name = "ruff", specifier = ">=0.16.2" },
 ]
 
 [[package]]
@@ -870,7 +884,7 @@ requires-dist = [
     { name = "httpx", specifier = ">=0.28" },
     { name = "langgraph", specifier = ">=1.2.9" },
     { name = "langgraph-checkpoint-postgres", specifier = ">=3.1.0" },
-    { name = "lease-qa-mcp", git = "https://github.com/amadeuserras/lease-qa-mcp.git" },
+    { name = "lease-qa-mcp", editable = "../../lease-qa-mcp" },
     { name = "mcp", extras = ["cli"], specifier = ">=1.27,<2" },
     { name = "openai", specifier = ">=2.47.0" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3.4" },
