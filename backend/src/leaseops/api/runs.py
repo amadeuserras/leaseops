@@ -11,6 +11,7 @@ from fastapi.responses import StreamingResponse
 from leaseops.agent.runner import GraphRunner
 from leaseops.agent.schemas import StepResponse, StepResponseAdapter
 from leaseops.api.deps import DemoSessionDep, SessionDep
+from leaseops.api.limiter import limit
 from leaseops.api.schemas import (
     EmailResponse,
     LatestRunResponse,
@@ -84,7 +85,9 @@ async def get_latest_run(
 
 
 @router.post("", response_model=RunResponse, status_code=status.HTTP_201_CREATED)
+@limit("10/minute")
 async def start_run(
+    request: Request,
     payload: RunCreate,
     session: SessionDep,
     demo: DemoSessionDep,
@@ -106,7 +109,9 @@ def _sse(event: dict[str, object]) -> str:
 
 
 @router.post("/stream")
+@limit("10/minute")
 async def stream_run(
+    request: Request,
     payload: RunCreate,
     session: SessionDep,
     demo: DemoSessionDep,
@@ -128,7 +133,9 @@ async def stream_run(
 
 
 @router.post("/rerun/stream")
+@limit("10/minute")
 async def rerun_stream(
+    request: Request,
     payload: RunCreate,
     session: SessionDep,
     demo: DemoSessionDep,

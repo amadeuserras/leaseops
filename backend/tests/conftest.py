@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pytest
 import pytest_asyncio
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
@@ -9,6 +10,11 @@ import leaseops.db.models  # noqa: F401
 from leaseops.agent.runner import GraphRunner
 from leaseops.api.approvals import router as approvals_router
 from leaseops.api.inbox import router as inbox_router
+from leaseops.api.limiter import (
+    RateLimitExceeded,
+    limiter,
+    rate_limit_exceeded_handler,
+)
 from leaseops.api.runs import router as runs_router
 from leaseops.api.sessions import router as sessions_router
 from leaseops.api.work_orders import router as work_orders_router
@@ -17,6 +23,11 @@ from leaseops.db import demo_sessions as demo_sessions_repo
 from leaseops.db.base import Base
 from leaseops.db.models import DemoSession
 from leaseops.db.session import get_session, make_engine, use_database
+
+
+@pytest.fixture(autouse=True)
+def reset_rate_limits() -> None:
+    limiter.reset()
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -54,6 +65,8 @@ async def runner() -> GraphRunner:
 async def api_client(db_session, runner, demo_session):
     app = FastAPI()
     app.state.runner = runner
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
     app.include_router(sessions_router)
     app.include_router(inbox_router)
     app.include_router(work_orders_router)

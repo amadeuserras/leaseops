@@ -9,6 +9,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from leaseops.agent.runtime import graph_runner
 from leaseops.api.approvals import router as approvals_router
 from leaseops.api.inbox import router as inbox_router
+from leaseops.api.limiter import (
+    RateLimitExceeded,
+    limiter,
+    rate_limit_exceeded_handler,
+)
 from leaseops.api.runs import router as runs_router
 from leaseops.api.schemas import HealthResponse
 from leaseops.api.sessions import router as sessions_router
@@ -37,6 +42,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 app.include_router(sessions_router)
 app.include_router(inbox_router)
 app.include_router(work_orders_router)

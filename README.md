@@ -119,6 +119,7 @@ Two consequences:
 - `GET`, `POST /work-orders` · `GET`, `PATCH`, `DELETE /work-orders/{work_order_id}`
 - `GET /health`
 
+Agent run endpoints (`POST /runs`, `/runs/stream`, `/runs/rerun/stream`) have a per-IP rate limit of 10/minute.
 MCP server exposes one tool: `lease_qa(question, document_id)`.
 
 ## Tech stack
