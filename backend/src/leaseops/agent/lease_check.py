@@ -24,7 +24,6 @@ from leaseops.agent.schemas import (
     SubmitVerdictTool,
 )
 from leaseops.agent.state import AgentState
-from leaseops.clients.leaseclear import LeaseQAResponse
 from leaseops.core.config import settings
 from leaseops.mcp.client import McpToolError, call_tool, mcp_session
 
@@ -234,7 +233,7 @@ async def lease_check(state: AgentState) -> LeaseCheckOutput:
             emit_tool_call("lease_check", "lease_qa", tool_args, reasoning=reasoning)
             try:
                 qa_result = await call_tool(session, "lease_qa", tool_args)
-                answer = LeaseQAResponse.model_validate(qa_result).answer
+                answer = str(qa_result["answer"])
                 is_error = False
             except McpToolError as exc:
                 answer = str(exc)

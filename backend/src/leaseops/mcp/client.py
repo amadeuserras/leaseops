@@ -35,7 +35,7 @@ def require_ok(result: CallToolResult, tool: str) -> dict[str, object]:
 async def mcp_session() -> AsyncGenerator[ClientSession]:
     server = StdioServerParameters(
         command="uv",
-        args=["run", "python", "-m", "leaseops.mcp.server"],
+        args=["run", "lease-qa-mcp"],
         cwd=str(_BACKEND_ROOT),
         env=dict(os.environ),
     )
