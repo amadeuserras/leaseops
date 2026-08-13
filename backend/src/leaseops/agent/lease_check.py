@@ -231,7 +231,7 @@ async def lease_check(state: AgentState) -> LeaseCheckOutput:
                     session,
                     "lease_qa",
                     tool_args,
-                    meta={"document_id": str(state.document_id)},
+                    meta={"document_ids": [str(state.document_id)]},
                 )
                 answer = str(qa_result["answer"])
                 is_error = False
