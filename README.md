@@ -162,7 +162,7 @@ MCP server exposes one tool: `lease_qa(question, document_id)`.
 
 ## Local setup
 
-`lease_check` talks to LeaseClear through the [leaseclear-mcp](https://pypi.org/project/leaseclear-mcp/) package (`uvx leaseclear-mcp`), using the demo corpus. Run [LeaseClear](https://github.com/amadeuserras/leaseclear) locally per its README.
+`lease_check` talks to hosted LeaseClear through the [leaseclear-mcp](https://pypi.org/project/leaseclear-mcp/) package (`uvx leaseclear-mcp`), using the demo corpus. Run [LeaseClear](https://github.com/amadeuserras/leaseclear) locally per its README if you want clickable citations against a local UI.
 
 ```bash
 # Backend
@@ -223,7 +223,7 @@ uv run pytest tests/test_approvals.py   # single file
 
 ## Evals
 
-Evals run against `EVALS_DATABASE_URL` and make real model and MCP calls, so LeaseClear must be running and both API keys must be set. A full 54-case run costs roughly $0.55 and takes about 20 minutes.
+Evals run against `EVALS_DATABASE_URL` and make real model and MCP calls, so both API keys must be set. A full 54-case run costs roughly $0.55 and takes about 20 minutes.
 
 ```bash
 cd backend

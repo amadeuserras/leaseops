@@ -65,4 +65,3 @@ jobs:
           JWT_SECRET: ci-placeholder
           ANTHROPIC_API_KEY: ci-placeholder
           OPENAI_API_KEY: ci-placeholder
-          LEASECLEAR_BASE_URL: http://localhost:8000

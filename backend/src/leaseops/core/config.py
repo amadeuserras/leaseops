@@ -16,7 +16,6 @@ class Settings(BaseSettings):
     jwt_secret: str
     anthropic_api_key: str
     openai_api_key: str
-    leaseclear_base_url: str
 
 
 settings = Settings()  # pyright: ignore[reportCallIssue]

@@ -1,14 +1,11 @@
 from __future__ import annotations
 
-import os
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp.types import CallToolResult, TextContent
-
-from leaseops.core.config import settings
 
 
 class McpToolError(RuntimeError):
@@ -26,7 +23,6 @@ def _server_params() -> StdioServerParameters:
     return StdioServerParameters(
         command="uvx",
         args=["leaseclear-mcp"],
-        env={**os.environ, "LEASECLEAR_API_URL": settings.leaseclear_base_url},
     )
 
 
