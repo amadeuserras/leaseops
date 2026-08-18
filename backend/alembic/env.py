@@ -20,7 +20,15 @@ from leaseops.db.models import (  # noqa: F401
 )
 
 config = context.config
-config.set_main_option("sqlalchemy.url", settings.database_url)
+
+_DB_URLS = {
+    "dev": settings.database_url,
+    "evals": settings.evals_database_url,
+    "tests": settings.test_database_url,
+}
+_db_key = context.get_x_argument(as_dictionary=True).get("db", "dev")
+config.set_main_option("sqlalchemy.url", _DB_URLS[_db_key])
+
 target_metadata = Base.metadata
 
 

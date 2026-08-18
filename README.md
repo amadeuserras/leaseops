@@ -162,7 +162,7 @@ MCP server exposes one tool: `lease_qa(question, document_id)`.
 
 ## Local setup
 
-`lease_check` calls the sibling [LeaseClear](https://github.com/amadeuserras/leaseclear) repo over MCP, so it needs to be checked out next to this one at `../leaseclear` and set up per its own README.
+`lease_check` talks to LeaseClear through the [leaseclear-mcp](https://pypi.org/project/leaseclear-mcp/) package (`uvx leaseclear-mcp`), using the demo corpus. Run [LeaseClear](https://github.com/amadeuserras/leaseclear) locally per its README.
 
 ```bash
 # Backend
@@ -192,6 +192,7 @@ Postgres runs on host port **5434**. The test and eval databases (`leaseops_test
 ```bash
 docker compose exec postgres createdb -U leaseops leaseops_test
 docker compose exec postgres createdb -U leaseops leaseops_evals
+uv run alembic -x db=evals upgrade head
 ```
 
 
@@ -226,6 +227,7 @@ Evals run against `EVALS_DATABASE_URL` and make real model and MCP calls, so Lea
 
 ```bash
 cd backend
+uv run alembic -x db=evals upgrade head
 uv run python scripts/seed.py --evals
 uv run python scripts/run_evals.py
 ```
