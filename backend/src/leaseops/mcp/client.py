@@ -11,7 +11,7 @@ from mcp.types import CallToolResult, TextContent
 
 from leaseops.core.config import settings
 
-_BACKEND_ROOT = Path(__file__).resolve().parents[3]
+_LEASECLEAR_MCP = Path(__file__).resolve().parents[4].parent / "leaseclear-mcp"
 
 
 class McpToolError(RuntimeError):
@@ -25,18 +25,18 @@ def _error_text(result: CallToolResult) -> str:
     return str(result)
 
 
+def _server_params() -> StdioServerParameters:
+    return StdioServerParameters(
+        command="uvx",
+        args=["--from", str(_LEASECLEAR_MCP), "leaseclear-mcp"],
+        env={**os.environ, "LEASECLEAR_API_URL": settings.leaseclear_base_url},
+    )
+
+
 @asynccontextmanager
 async def mcp_session() -> AsyncGenerator[ClientSession]:
-    env = dict(os.environ)
-    env["LEASECLEAR_BASE_URL"] = settings.leaseclear_base_url
-    server = StdioServerParameters(
-        command="uv",
-        args=["run", "lease-qa-mcp"],
-        cwd=str(_BACKEND_ROOT),
-        env=env,
-    )
     async with (
-        stdio_client(server) as (read, write),  # pyright: ignore[reportGeneralTypeIssues]
+        stdio_client(_server_params()) as (read, write),  # pyright: ignore[reportGeneralTypeIssues]
         ClientSession(read, write) as session,
     ):
         await session.initialize()

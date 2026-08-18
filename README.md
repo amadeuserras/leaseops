@@ -162,7 +162,7 @@ MCP server exposes one tool: `lease_qa(question, document_id)`.
 
 ## Local setup
 
-`lease_check` calls the sibling [LeaseClear](https://github.com/amadeuserras/leaseclear) repo over MCP, so it needs to be checked out next to this one at `../leaseclear` and set up per its own README.
+`lease_check` talks to LeaseClear through the sibling [leaseclear-mcp](https://github.com/amadeuserras/leaseclear-mcp) package (`uvx --from ../leaseclear-mcp leaseclear-mcp`). Check out `../leaseclear-mcp` and run [LeaseClear](https://github.com/amadeuserras/leaseclear) per its README.
 
 ```bash
 # Backend
