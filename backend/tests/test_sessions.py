@@ -7,6 +7,11 @@ from leaseops.db.models import Email
 from leaseops.models.enums import EmailStatus
 
 
+async def test_get_session_returns_404_when_missing(api_client) -> None:
+    response = await api_client.get("/sessions/00000000-0000-0000-0000-000000000001")
+    assert response.status_code == 404
+
+
 async def test_create_session_clones_inbox(api_client) -> None:
     response = await api_client.post("/sessions")
     assert response.status_code == 201

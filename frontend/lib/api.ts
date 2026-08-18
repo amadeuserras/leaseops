@@ -226,6 +226,33 @@ export type StreamEvent =
       cost_usd: number;
     };
 
+export type SessionLookup = 'ok' | 'missing' | 'error';
+
+export async function lookupSession(sessionId: string): Promise<SessionLookup> {
+  const response = await fetch(`${BASE_URL}/sessions/${encodeURIComponent(sessionId)}`, {
+    cache: 'no-store',
+  });
+  if (response.ok) {
+    return 'ok';
+  }
+  if (response.status === 404 || response.status === 422) {
+    return 'missing';
+  }
+  return 'error';
+}
+
+export async function createSession(): Promise<string | null> {
+  const created = await fetch(`${BASE_URL}/sessions`, {
+    method: 'POST',
+    cache: 'no-store',
+  });
+  if (!created.ok) {
+    return null;
+  }
+  const body = (await created.json()) as { id: string };
+  return body.id;
+}
+
 export function listEmails(): Promise<EmailListResponse> {
   return request<EmailListResponse>('/inbox');
 }
