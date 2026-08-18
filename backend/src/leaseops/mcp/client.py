@@ -3,15 +3,12 @@ from __future__ import annotations
 import os
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from pathlib import Path
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp.types import CallToolResult, TextContent
 
 from leaseops.core.config import settings
-
-_LEASECLEAR_MCP = Path(__file__).resolve().parents[4].parent / "leaseclear-mcp"
 
 
 class McpToolError(RuntimeError):
@@ -28,7 +25,7 @@ def _error_text(result: CallToolResult) -> str:
 def _server_params() -> StdioServerParameters:
     return StdioServerParameters(
         command="uvx",
-        args=["--from", str(_LEASECLEAR_MCP), "leaseclear-mcp"],
+        args=["leaseclear-mcp"],
         env={**os.environ, "LEASECLEAR_API_URL": settings.leaseclear_base_url},
     )
 

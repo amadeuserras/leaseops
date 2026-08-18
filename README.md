@@ -162,7 +162,7 @@ MCP server exposes one tool: `lease_qa(question, document_id)`.
 
 ## Local setup
 
-`lease_check` talks to LeaseClear through the sibling [leaseclear-mcp](https://github.com/amadeuserras/leaseclear-mcp) package (`uvx --from ../leaseclear-mcp leaseclear-mcp`). Check out `../leaseclear-mcp` and run [LeaseClear](https://github.com/amadeuserras/leaseclear) per its README.
+`lease_check` talks to LeaseClear through the [leaseclear-mcp](https://pypi.org/project/leaseclear-mcp/) package (`uvx leaseclear-mcp`), using the demo corpus. Run [LeaseClear](https://github.com/amadeuserras/leaseclear) locally per its README.
 
 ```bash
 # Backend
