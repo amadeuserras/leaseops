@@ -9,7 +9,7 @@ An AI agent that runs a property manager's maintenance inbox. It classifies tena
 ## What it does
 
 - Surfaces each processed email as an approval card: issue type, severity, responsibility verdict, draft reply, and the suggested actions, with one-click approve or reject.
-- Checks the tenant's actual lease to decide who's responsible, by asking LeaseClear questions over MCP.
+- Checks the tenant's actual lease to decide who's responsible, by asking LeaseClear questions through it's own MCP server repo [leaseclear-mcp](https://github.com/amadeuserras/leaseclear-mcp).
 - Pushes emergencies to the top instead of burying them among spam.
 - Streams the whole agent run live over SSE: every node, tool call, tool result, token count, cost, and latency.
 - Persists every run and every step, so a run can be reviewed or resumed later.
@@ -67,7 +67,7 @@ flowchart LR
 
 A real risk in a system like this: an unknown sender emails a question, the agent asks LeaseClear, which answers from a real lease, the agent puts that answer in a draft, and a distracted human approves it, sending private lease terms to whoever sent the email. Untrusted input would be choosing which document gets read.
 
-**The fix:** Every tenant lives in a `tenants` table that maps their email address to their real lease `document_id`. The document ID is structurally injected into the LeaseClear MCP tool call from this mapping, so the LLM never decides which document to query, it only sees a `question` schema.
+**The fix:** Every tenant lives in a `tenants` table that maps their email address to their real lease `document_id`. This ID is structurally passed as metadata to the MCP tool call, so the LLM never decides which document to query, it only sees a `question` schema.
 
 Two consequences:
 
@@ -120,7 +120,6 @@ Two consequences:
 - `GET /health`
 
 Agent run endpoints (`POST /runs`, `/runs/stream`, `/runs/rerun/stream`) have a per-IP rate limit of 10/minute.
-MCP server exposes one tool: `lease_qa(question, document_id)`.
 
 ## Tech stack
 
@@ -161,8 +160,6 @@ MCP server exposes one tool: `lease_qa(question, document_id)`.
 
 
 ## Local setup
-
-`lease_check` talks to hosted LeaseClear through the [leaseclear-mcp](https://pypi.org/project/leaseclear-mcp/) package (`uvx leaseclear-mcp`), using the demo corpus. Run [LeaseClear](https://github.com/amadeuserras/leaseclear) locally per its README if you want clickable citations against a local UI.
 
 ```bash
 # Backend
