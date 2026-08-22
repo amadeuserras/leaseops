@@ -79,7 +79,7 @@ export function Sidebar() {
       <div className="border-hairline mt-auto flex flex-col gap-2 border-t px-2.5 pt-3 pb-1">
         <div className="text-ink-55 flex items-center gap-1.5 text-[11px]">
           <span className="bg-green h-1.5 w-1.5 rounded-full" />
-          {buildInfo.evalsPassing}/{buildInfo.evalsTotal} evals passing
+          {buildInfo.evalsRan} evals ran
         </div>
         <div className="text-ink-40 font-mono text-[10.5px]">
           {buildInfo.version} · build {buildInfo.build}

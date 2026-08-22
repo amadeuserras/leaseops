@@ -361,16 +361,14 @@ export function rejectRun(runId: string): Promise<RunResponse> {
 // Mocks — everything below has no backend endpoint yet
 
 export interface BuildInfo {
-  evalsPassing: number;
-  evalsTotal: number;
+  evalsRan: number;
   version: string;
   build: string;
 }
 
 export function getBuildInfo(): BuildInfo {
   return {
-    evalsPassing: 42,
-    evalsTotal: 42,
+    evalsRan: 54,
     version: 'v0.4.2-beta',
     build: '8f21a0c',
   };
